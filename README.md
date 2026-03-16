@@ -40,7 +40,7 @@ In WorkBuddy / CodeBuddy, install this skill directly from the Marketplace, or a
 # Option A: from Marketplace (search "frontend-presentation-slides")
 
 # Option B: clone this repo into your skills folder
-git clone https://github.com/chouray/frontend-presentation-slides \
+git clone https://github.com/chouraycn/frontend-presentation-slides \
   ~/.codebuddy/skills/frontend-presentation-slides
 ```
 

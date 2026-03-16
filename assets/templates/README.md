@@ -496,3 +496,185 @@ Run `python3 scripts/inline_fonts.py template-pitch-deck.html` to produce an off
 | Photography studio / visual arts presentation | Hhart Red Power |
 | Red brand deck / bold manifesto keynote | Hhart Red Power |
 | High-contrast dark editorial with red accent | Hhart Red Power |
+
+---
+
+## JSON Content Schema
+
+Each template ships with a companion `.json` file (e.g. `template-pitch-deck.json`) that defines the slide content structure. These files are used by `scripts/generate_slides.py` to generate a filled presentation from structured content — without hand-editing HTML.
+
+### Root object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | ✓ | Deck title used in `<title>` and the first slide heading |
+| `template` | string | ✓ | Template key — one of: `claude-warmth` `pitch-deck` `product-launch` `quarterly-report` `tech-talk` `forai-white` `pash-orange` `hhart-red` |
+| `lang` | string | — | HTML `lang` attribute (default: `zh-CN`) |
+| `slides` | array | ✓ | Ordered array of slide objects (see Slide Types below) |
+
+### Slide Types
+
+Every slide object must have a `type` field. All other fields are optional unless marked ✓.
+
+---
+
+#### `title` — Hero cover / CTA slide
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string ✓ | Main heading (supports `\n` for line breaks) |
+| `subtitle` | string | Subtitle / supporting line |
+| `eyebrow` | string | Small label above the heading (e.g. `"Series A · 2025"`) |
+| `notes` | string | Speaker notes (shown in Presenter View) |
+
+---
+
+#### `text` — Heading + paragraph
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Section heading |
+| `body` | string | Paragraph body text |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `bullets` — Heading + bulleted list
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Slide heading |
+| `items` | string[] ✓ | Array of bullet strings |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `two-col` — Two-column layout
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Slide heading |
+| `left` | object | `{ title, body }` — left column content |
+| `right` | object | `{ title, body }` — right column content |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `stats` — Big number statistics grid
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Slide heading |
+| `stats` | object[] ✓ | Array of `{ value, label, trend? }` objects. `trend`: `"up"` `"down"` `"neutral"` |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `features` — Feature cards grid
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Slide heading |
+| `subtitle` | string | Supporting sub-heading |
+| `items` | object[] ✓ | Array of `{ icon, title, desc }` objects |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `quote` — Pull quote / testimonial
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `quote` | string ✓ | The quote text (no surrounding `""` needed) |
+| `author` | string | Attribution — `"Name · Role · Company"` |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `chart` — Data visualization
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Slide heading |
+| `chart_type` | string ✓ | One of: `bar` `line` `area` `donut` `hbar` `progress` `radar` `sankey` `treemap` |
+| `chart_data` | object ✓ | Passed directly to `SlideCharts.*()` — see `scripts/charts.js` for full API |
+| `chart_options` | object | Optional chart config overrides (e.g. `{ "showGrid": true }`) |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `image` — Full-width image
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Optional overlay heading |
+| `image_url` | string ✓ | URL or relative path to image |
+| `caption` | string | Caption text below the image |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `cta` — Call to action close slide
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string ✓ | CTA heading |
+| `subtitle` | string | Supporting line |
+| `primary_cta` | string | Primary button label |
+| `secondary_cta` | string | Secondary link label |
+| `url` | string | URL displayed on slide |
+| `offer` | string | Optional urgency line (e.g. `"Early access: first 3 months free"`) |
+| `notes` | string | Speaker notes |
+
+---
+
+#### `divider` — Section break
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | string ✓ | Large section label text |
+| `notes` | string | Speaker notes |
+
+---
+
+### Common fields (any slide type)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `bg` | string | Override the auto-resolved background CSS class (e.g. `"bg-dark"`, `"slide-cover"`). Bypasses template rhythm logic. Use only when you need a non-default background. |
+| `notes` | string | Speaker notes string. Rendered in the Presenter View notes panel. Supports plain text; avoid HTML. |
+
+---
+
+### Minimal valid example
+
+```json
+{
+  "title": "My Deck",
+  "template": "claude-warmth",
+  "lang": "zh-CN",
+  "slides": [
+    {
+      "type": "title",
+      "title": "Hello World",
+      "subtitle": "A minimal test deck",
+      "notes": "Wave at the audience."
+    },
+    {
+      "type": "bullets",
+      "title": "Key Points",
+      "items": ["Point one", "Point two", "Point three"]
+    },
+    {
+      "type": "quote",
+      "quote": "The best way to predict the future is to build it.",
+      "author": "Alan Kay"
+    }
+  ]
+}
+```
+
+Run with:
+```bash
+python3 scripts/generate_slides.py my-deck.json --output my-deck.html --open
+```

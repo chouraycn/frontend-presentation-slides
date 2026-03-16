@@ -23,6 +23,9 @@ Each template has a matching style-preview file in `assets/style-previews/`. Use
 | `template-forai-white.html` | `style-preview-forai-white.html` | ForAI White | Pure white + ink black | Editorial / Minimal |
 | `template-pash-orange.html` | `style-preview-pash-orange.html` | Pash Orange | White + pure orange `#FF5C00` | Confident / Agency |
 | `template-hhart-red.html` | `style-preview-hhart-red.html` | Hhart Red Power | Near-black + crimson `#C8102E` | Bold / Studio / Red Brand |
+| `template-healthcare.html` | `style-preview-healthcare.html` | Clinical Trust | Arctic white + teal `#0891b2` | Calm / Credible / Medical |
+| `template-finance.html` | `style-preview-finance.html` | Bloomberg Dark | Deep charcoal + amber `#f59e0b` | Data-Dense / Authoritative |
+| `template-education.html` | `style-preview-education.html` | Campus Bright | Sky blue + coral `#f97316` | Playful / Engaging / Learning |
 
 **Workflow**: Point users at 2–3 previews that match their mood → they pick one → open the matching template → fill in content.
 
@@ -496,6 +499,153 @@ Run `python3 scripts/inline_fonts.py template-pitch-deck.html` to produce an off
 | Photography studio / visual arts presentation | Hhart Red Power |
 | Red brand deck / bold manifesto keynote | Hhart Red Power |
 | High-contrast dark editorial with red accent | Hhart Red Power |
+| Medical / clinical research / hospital presentation | Healthcare |
+| Pharma / biotech / health policy | Healthcare |
+| Financial analysis / investment report / fund update | Finance |
+| Trading strategy / market outlook / earnings report | Finance |
+| Course intro / training workshop / school report | Education |
+| Onboarding material / e-learning module | Education |
+
+---
+
+### 9. `template-healthcare.html` — Medical & Clinical Presentations
+**Use when**: Clinical research, hospital reports, pharma presentations, health policy briefs, medical conference talks
+
+| Property | Value |
+|----------|-------|
+| **Style** | Clinical Trust |
+| **Colors** | Arctic white `#f0f9ff` + teal `#0891b2` + navy `#0c4a6e` |
+| **Fonts** | Inter (body) + Source Serif 4 (headings — readable at small sizes) |
+| **Slide count** | 9 slides |
+| **Mood** | Calm / Credible / Evidence-driven |
+
+**Slide structure**:
+1. **Cover** — Study/report title, institution, presenter, date
+2. **Background** — Clinical context and unmet need
+3. **Objectives** — Primary and secondary endpoints (`endpoint-list`)
+4. **Methodology** — Study design with patient flow diagram placeholder
+5. **Results** — Key findings with data tables and significance stars (`results-table`)
+6. **Safety Profile** — Adverse event summary (`ae-grid`)
+7. **Discussion** — Interpretation and limitations two-column
+8. **Conclusions** — Numbered key takeaways (`conclusion-list`)
+9. **References / Q&A** — Bibliography and contact
+
+**Custom components**:
+- `.endpoint-list` — Primary/secondary endpoint rows with `.primary` / `.secondary` badge prefixes.
+- `.results-table` — Clinical data table with `.sig` class for p-value cells (teal highlight), `.ns` for non-significant, footnote row support.
+- `.ae-grid` — 2×N adverse event card grid: event name, incidence %, severity badge.
+- `.conclusion-list` — Large-numbered conclusion list; numbers rendered in teal display type.
+- `.badge.primary` / `.badge.secondary` / `.badge.tertiary` — Endpoint classification pills.
+- `.caution-box` — Amber warning callout for safety notices and contraindications.
+
+**Quick customization**:
+```css
+/* In :root {} at top of file */
+--clr-bg:      #f0f9ff;    /* Arctic white — change to #ffffff for pure white */
+--clr-accent:  #0891b2;    /* Teal — swap to your institution's brand color */
+--clr-navy:    #0c4a6e;    /* Deep navy for headings */
+--clr-text:    #1e293b;
+--clr-success: #059669;    /* Positive result */
+--clr-danger:  #dc2626;    /* Safety alert */
+--clr-warning: #d97706;    /* Caution */
+--font-head: 'Source Serif 4', Georgia, serif;
+--font-body: 'Inter', system-ui, sans-serif;
+```
+
+---
+
+### 10. `template-finance.html` — Financial Analysis & Investment Reports
+**Use when**: Investment reports, fund updates, earnings analysis, market outlook, trading strategy decks, PE/VC deal reviews
+
+| Property | Value |
+|----------|-------|
+| **Style** | Bloomberg Dark |
+| **Colors** | Deep charcoal `#111827` + amber `#f59e0b` + green `#10b981` / red `#ef4444` |
+| **Fonts** | IBM Plex Mono (numbers/data) + IBM Plex Sans (body) |
+| **Slide count** | 9 slides |
+| **Mood** | Data-Dense / Authoritative / Terminal-style |
+
+**Slide structure**:
+1. **Cover** — Fund/report name, period, analyst, disclaimer line
+2. **Executive Summary** — 3-column key metrics bar (`kpi-bar`) + thesis bullets
+3. **Market Overview** — Macro snapshot with mini sparkline placeholders
+4. **Portfolio / Position Analysis** — Holdings table (`holdings-table`) with P&L columns
+5. **Performance Attribution** — Waterfall breakdown (`waterfall-chart` placeholder)
+6. **Risk Metrics** — VaR, Sharpe, drawdown grid (`risk-grid`)
+7. **Sector / Allocation** — Donut chart placeholder + allocation table
+8. **Outlook & Positioning** — Bull/Bear scenario two-column
+9. **Disclosures** — Legal boilerplate + contact
+
+**Custom components**:
+- `.kpi-bar` — Horizontal strip of 4–6 KPI cells: metric name, value, delta (green up / red down). Terminal-style borders.
+- `.holdings-table` — Dense data table: ticker, name, weight, cost, price, P&L%, P&L$. Rows with `.gain` / `.loss` class for green/red row coloring.
+- `.risk-grid` — 3×2 card grid for risk metrics: Sharpe, VaR, Max DD, Beta, Corr, Volatility.
+- `.waterfall-bar` — CSS-only horizontal waterfall item: positive (green), negative (red), total (amber).
+- `.scenario-col` — Bull/Bear/Base scenario card with color-coded header and bullet list.
+- `.disclaimer` — Small-print legal text block with reduced opacity.
+- `.ticker` — Monospace ticker symbol with amber color.
+- `.delta-up` / `.delta-down` — Inline P&L delta spans with arrow prefix.
+
+**Quick customization**:
+```css
+/* In :root {} at top of file */
+--clr-bg:      #111827;    /* Dark charcoal — swap to #0f172a for deeper dark */
+--clr-surface: #1f2937;    /* Card / table row background */
+--clr-accent:  #f59e0b;    /* Amber — your firm's brand color */
+--clr-gain:    #10b981;    /* Positive P&L */
+--clr-loss:    #ef4444;    /* Negative P&L */
+--clr-text:    #f9fafb;
+--clr-muted:   #9ca3af;
+--font-data: 'IBM Plex Mono', 'Courier New', monospace;
+--font-body: 'IBM Plex Sans', system-ui, sans-serif;
+```
+
+---
+
+### 11. `template-education.html` — Training, Workshops & Course Decks
+**Use when**: Course introductions, training workshops, onboarding sessions, school/university lectures, e-learning module slides
+
+| Property | Value |
+|----------|-------|
+| **Style** | Campus Bright |
+| **Colors** | Sky blue `#e0f2fe` + cobalt `#0284c7` + coral `#f97316` |
+| **Fonts** | Nunito (display — rounded, friendly) + Noto Sans (body — CJK-ready) |
+| **Slide count** | 9 slides |
+| **Mood** | Playful / Engaging / Accessible |
+
+**Slide structure**:
+1. **Cover** — Course/module name, instructor, session number
+2. **Learning Objectives** — Numbered objective list (`objective-list`)
+3. **Agenda** — Session roadmap with time estimates (`agenda-track`)
+4. **Concept 1** — Heading + body + visual placeholder, `callout-box` for key definition
+5. **Concept 2** — Two-column: explanation + example code / diagram
+6. **Exercise** — Interactive task card (`exercise-card`) with step-by-step instructions
+7. **Common Mistakes** — `mistake-list` with ✗ / ✓ correction pairs
+8. **Summary** — Key takeaway cards (`takeaway-grid`)
+9. **Resources & Next Steps** — Reading list + homework prompt
+
+**Custom components**:
+- `.objective-list` — Large-numbered learning objective rows with cobalt circle numbers.
+- `.agenda-track` — Timeline-style agenda: time slot, topic, duration pill. Highlight active row with `.active` class.
+- `.callout-box` — Bordered definition / key-concept box with coral left accent and label badge.
+- `.exercise-card` — Coral-header card with numbered exercise steps and estimated time badge.
+- `.mistake-list` — Two-column correction list: `.wrong` row (red ✗ prefix) + `.right` row (green ✓ prefix).
+- `.takeaway-grid` — 2×2 or 3-column grid of `.takeaway-card` (rounded, sky-blue bg, icon area).
+- `.progress-chips` — Row of session number chips to show position in course (`.done`, `.active`, `.todo`).
+- `.badge.time` — Duration pill (e.g., "10 min") for agenda items and exercises.
+
+**Quick customization**:
+```css
+/* In :root {} at top of file */
+--clr-bg:       #e0f2fe;   /* Sky blue — swap to #ffffff for neutral bg */
+--clr-accent:   #0284c7;   /* Cobalt blue — your institution color */
+--clr-accent-2: #f97316;   /* Coral — activity / exercise highlight */
+--clr-text:     #0f172a;
+--clr-success:  #16a34a;
+--clr-danger:   #dc2626;
+--font-head: 'Nunito', 'Varela Round', system-ui, sans-serif;
+--font-body: 'Noto Sans', 'PingFang SC', system-ui, sans-serif;
+```
 
 ---
 

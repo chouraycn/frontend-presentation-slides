@@ -25,7 +25,7 @@ First, determine what the user needs:
 - **Mode C** — Enhance or modify an existing HTML presentation → read the file and improve it
 - **Mode D** — Use an existing template → go to Phase 0D
 
-  Eight templates are available. If the user specifies one, jump directly to the matching sub-mode:
+  Eleven templates are available. If the user specifies one, jump directly to the matching sub-mode:
 
   | Sub-mode | Template | Style name | Best for |
   |---|---|---|---|
@@ -37,12 +37,15 @@ First, determine what the user needs:
   | **D6** | `template-forai-white.html` | ForAI White | Design portfolios, agency pitches, minimal editorial |
   | **D7** | `template-pash-orange.html` | Pash Orange | Agency / studio pitches, orange brand identity |
   | **D8** | `template-hhart-red.html` | Hhart Red Power | Creative studio pitches, red brand identity, photography studio |
+  | **D9** | `template-healthcare.html` | Clinical Trust | Clinical research, medical conferences, hospital reports |
+  | **D10** | `template-finance.html` | Bloomberg Dark | Investment reports, fund updates, earnings analysis |
+  | **D11** | `template-education.html` | Campus Bright | Training workshops, course decks, onboarding |
 
   > Not sure which to pick? Open `assets/index.html` for a visual gallery — let the user choose by look.
 
 ### Phase 0D: Template Quick-Start
 
-When user asks to "use a template", "quickly create a [type] deck", or their scenario clearly matches one of the eight templates:
+When user asks to "use a template", "quickly create a [type] deck", or their scenario clearly matches one of the eleven templates:
 
 1. **Match the template** based on use case:
 
@@ -56,6 +59,9 @@ When user asks to "use a template", "quickly create a [type] deck", or their sce
    | D6 | Design portfolio / minimal editorial | `assets/templates/template-forai-white.html` | ForAI White | pure white `#ffffff` + ink `#0a0a0a` |
    | D7 | Agency / studio pitch / orange brand | `assets/templates/template-pash-orange.html` | Pash Orange | white `#FFFFFF` + pure orange `#FF5C00` |
    | D8 | Creative studio / red brand / photography | `assets/templates/template-hhart-red.html` | Hhart Red Power | near-black `#0a0a0a` + crimson `#C8102E` |
+   | D9 | Clinical research / medical conference | `assets/templates/template-healthcare.html` | Clinical Trust | arctic white `#f0f9ff` + teal `#0891b2` |
+   | D10 | Investment report / fund update / earnings | `assets/templates/template-finance.html` | Bloomberg Dark | charcoal `#111827` + amber `#f59e0b` |
+   | D11 | Training workshop / course / onboarding | `assets/templates/template-education.html` | Campus Bright | sky blue `#e0f2fe` + cobalt `#0284c7` + coral `#f97316` |
 
    > When unsure, direct the user to `assets/index.html` — the visual gallery lets them pick by look rather than description.
 
@@ -188,6 +194,88 @@ Guide the user to open the preview files. Ask:
 - Which style resonates most?
 - Any elements to mix or modify?
 - Any colors, fonts, or vibes to avoid?
+
+---
+
+## Phase 2.3: Interactive Module Planning (if applicable)
+
+If the presentation is for a live audience (workshop, conference, all-hands, classroom), ask:
+
+> "Would any slides benefit from real-time audience interaction? Available modules:
+> - **Poll** — Multiple-choice vote with live tally
+> - **Quiz** — Question with answer reveal and explanation
+> - **Word Cloud** — Audience submits words; cloud updates live in real time
+> - **Timer** — Countdown or stopwatch (great for exercises)
+> - **Rating** — Star or emoji rating at the end of a session
+> - **QR Code** — Link to a resource, form, or sign-up page"
+
+If yes, identify which slides need which modules. Then:
+
+1. **Inline `scripts/interactive.js`** into the final HTML before `</body>` (alongside `charts.js` if charts are also present).
+
+2. **Add module containers** to the relevant slides:
+   ```html
+   <!-- Poll example -->
+   <div id="poll-slide3"></div>
+
+   <!-- Word Cloud example -->
+   <div id="cloud-slide5"></div>
+
+   <!-- Timer example -->
+   <div id="timer-exercise"></div>
+   ```
+
+3. **Initialize modules** in the inline `<script>` after the container:
+   ```js
+   // Poll
+   SlideInteractive.poll('#poll-slide3', {
+     question: 'What is your biggest challenge today?',
+     options: ['Time', 'Budget', 'People', 'Technology'],
+     allowMultiple: false
+   });
+
+   // Word Cloud — static preset list
+   SlideInteractive.wordcloud('#cloud-slide5',
+     ['AI', 'Automation', 'Data', 'Cloud', 'Security', 'UX', 'DevOps'],
+     { maxSize: 3.5, minSize: 0.9 }
+   );
+
+   // Word Cloud — live audience input (attendees type and press Enter)
+   SlideInteractive.wordcloud('#cloud-live', [], {
+     showInput: true,   // shows an input box below the cloud
+     id: 'session-cloud',   // persists across reloads
+     maxWords: 50
+   });
+
+   // Timer for a hands-on exercise
+   SlideInteractive.timer('#timer-exercise', {
+     mode: 'countdown',
+     seconds: 300,   // 5 minutes
+     warningAt: 60,
+     dangerAt: 30,
+     autoStart: false
+   });
+
+   // QR code linking to resources
+   SlideInteractive.qrcode('#qr-resources', 'https://example.com/resources', {
+     size: 180,
+     label: 'Scan for resources'
+     // offline: true  ← add this if presenting without internet
+   });
+   ```
+
+4. **Export session data** after the presentation:
+   ```js
+   // In browser console after the session:
+   console.log(SlideInteractive.exportData());
+   ```
+
+**Module availability**:
+- All modules are zero-dependency and work offline (QR code has optional network fallback — see `offline: true`)
+- `wordcloud` supports both a static preset list and a live audience-input mode
+- Vote / word data persists in localStorage across page reloads
+- Multi-window sync via BroadcastChannel (works with Presenter Mode)
+- Call `SlideInteractive.clearData()` to reset between sessions
 
 ---
 
@@ -461,7 +549,7 @@ Reordering, combining, or omitting slides requires **explicit user instruction**
 
 ### Step 4c — Template selection (ask the user before generating)
 
-After showing the slide summary, **pause and ask the user to choose a template** before generating any HTML. Present the eight options as a clear comparison table, and point them to the visual gallery if they want to see screenshots:
+After showing the slide summary, **pause and ask the user to choose a template** before generating any HTML. Present the eleven options as a clear comparison table, and point them to the visual gallery if they want to see screenshots:
 
 > "I've extracted **N slides** from your PPT. Before I generate the HTML, please pick a template style — each one is a complete, zero-dependency presentation with full Presenter Mode:
 >
@@ -475,10 +563,13 @@ After showing the slide summary, **pause and ask the user to choose a template**
 > | 6 | **ForAI White** | Design Studio | Pure white + ink | Portfolios, agency pitches |
 > | 7 | **Pash Orange** | Agency Editorial | White + pure orange | Studio pitches, brand decks |
 > | 8 | **Hhart Red Power** | Studio Red | Near-black + crimson | Creative studio, red brand |
+> | 9 | **Clinical Trust** | Healthcare | Arctic white + teal | Medical/clinical reports |
+> | 10 | **Bloomberg Dark** | Finance | Charcoal + amber | Investment reports, earnings |
+> | 11 | **Campus Bright** | Education | Sky blue + coral | Training, courses, onboarding |
 >
 > 👉 Want to see visuals first? Open `assets/index.html` in your browser for the interactive style gallery.
 >
-> Just reply with a number (1–8) or style name, and I'll start generating."
+> Just reply with a number (1–11) or style name, and I'll start generating."
 
 **Wait for the user's reply before proceeding to Step 4d.** Do not auto-select a template or skip this step.
 
@@ -737,14 +828,19 @@ If the deck contains Chinese/Japanese/Korean text (detected via `\u4e00–\u9fff
 - `references/troubleshooting.md` — Common issues and solutions
 - `scripts/extract_pptx.py` — PPT content extraction script (v2). Extracts text, tables, SmartArt, images, speaker notes, and layout hints. Produces `slides.json` + `images/` directory.
 - `scripts/charts.js` — Zero-dependency SVG chart engine v2.0. Provides `SlideCharts.bar()`, `.line()`, `.area()`, `.donut()`, `.horizontalBar()`, `.progress()`, `.radar()`, `.sankey()`. All chart functions return a **ChartInstance** with `update(newData)`, `setOptions(newOpts)`, `loadURL(url)`, `listenPostMessage()` for dynamic updates. Sankey (flow/Sankey diagram) accepts `{ nodes: string[], links: [{source, target, value}] }` and renders a layered flow diagram with SVG cubic-bezier links and gradient coloring. **Inline this file's contents** into the final HTML — do not load it as an external script in production.
-- `scripts/generate_slides.py` — AI content generation pipeline. Accepts a JSON outline **or a topic description via `--expand`** and outputs a complete single-file HTML presentation. Two usage modes: (1) outline mode: `python3 scripts/generate_slides.py outline.json --template claude-warmth --output out.html`; (2) expand mode: `python3 scripts/generate_slides.py --expand "主题描述" --slides 10 --template claude-warmth --output out.html` — automatically calls an LLM (Anthropic → OpenAI → codebuddy CLI fallback chain) to generate a full outline from the topic, then renders the HTML. `--slides N` controls the number of slides (default 10, max 20). Supported `--template` choices: `claude-warmth`, `pitch-deck`, `product-launch`, `quarterly-report`, `tech-talk`, `forai-white`, `pash-orange`, `hhart-red`.
+- `scripts/interactive.js` — Zero-dependency interactive slide modules. Provides `SlideInteractive.poll()` (live audience poll with vote tally), `.quiz()` (multiple-choice quiz with reveal), `.wordcloud()` (animated word cloud — static preset list or live audience-input mode with real-time `BroadcastChannel` sync), `.timer()` (countdown / stopwatch with urgency colors), `.rating()` (star/emoji rating widget), `.qrcode()` (pure-JS QR code with offline fallback). All data stored in `localStorage`; votes and words broadcast via `BroadcastChannel` for multi-window sync. **Inline this file's contents** into the final HTML when interactive slides are needed. Usage: `SlideInteractive.wordcloud('#el', words, { showInput: true, id: 'my-cloud' })`. Export session data with `SlideInteractive.exportData()`.
+- `scripts/generate_slides.py` — AI content generation pipeline. Accepts a JSON outline **or a topic description via `--expand`** and outputs a complete single-file HTML presentation. Two usage modes: (1) outline mode: `python3 scripts/generate_slides.py outline.json --template claude-warmth --output out.html`; (2) expand mode: `python3 scripts/generate_slides.py --expand "主题描述" --slides 10 --template claude-warmth --output out.html` — automatically calls an LLM (Anthropic → OpenAI → codebuddy CLI fallback chain) to generate a full outline from the topic, then renders the HTML. `--slides N` controls the number of slides (default 10, max 20). Supported `--template` choices: `claude-warmth`, `pitch-deck`, `product-launch`, `quarterly-report`, `tech-talk`, `forai-white`, `pash-orange`, `hhart-red`, `healthcare`, `finance`, `education`.
+- `scripts/audit_deck.py` — **AI Content Audit tool** (Direction 2). Analyzes a finished HTML presentation for content quality issues and outputs a Markdown or JSON improvement report. Checks: text density (>120 words or >6 bullets per slide), data gaps (claims without numbers), title variety (generic/duplicate titles), CTA coverage (deck with no clear call-to-action), readability (avg sentence length), and narrative flow (abrupt topic jumps). Scores 0–100. Optional `--llm` flag calls codebuddy CLI for narrative suggestions. Usage: `python3 scripts/audit_deck.py presentation.html` → produces `presentation-audit.md`. Options: `--format json`, `--llm`, `--output`, `--verbose`.
 - `scripts/export_pdf.py` — PDF export tool. Supports three backends (Playwright, Puppeteer, WeasyPrint) with auto-detection. Page size options: `16x9` (default, 1920×1080), `4x3`, `A4`, `Letter`, or custom `WxH` in mm. Key options: `--backend {auto|playwright|puppeteer|weasyprint}`, `--landscape` (force landscape), `--margin MM` (page margin in mm, default 0), `--wait SECS` (wait for JS animations to settle, default 1.5), `--scale FACTOR` (Playwright only), `--open` (open PDF after export). Usage: `python3 scripts/export_pdf.py my_deck.html --page-size 16x9 --wait 2 --open`
+- `scripts/export_pptx.py` — **HTML → PowerPoint export** (Direction 3). Converts an HTML presentation back to an editable `.pptx` file (closes the PPT↔HTML two-way loop). Auto-detects theme (light/dark) from CSS variables. Preserves slide types (title, bullets, stats, quote, two-col, text, end), extracts speaker notes. Requirements: `pip3 install python-pptx beautifulsoup4`. Usage: `python3 scripts/export_pptx.py deck.html` → `deck.pptx`. Options: `--theme {auto|light|dark}`, `--no-notes`, `--output`, `--verbose`.
+- `scripts/export_video.py` — **HTML → MP4 video export** (Direction 4). Records each slide using headless Playwright, then stitches frames into a video with FFmpeg. Supports fade transitions, custom per-slide duration (uniform or per-slide via `--slide-durations`), variable FPS, and vertical (9:16 Stories) format. Requirements: `pip install playwright && playwright install chromium` + `ffmpeg` in PATH. Usage: `python3 scripts/export_video.py deck.html --duration 5 --transition fade`. Options: `--size 1920x1080` (or `1080x1920` for vertical), `--fps 30`, `--no-transition`, `--quality 18`, `--slide-durations "8,4,4,6,10"` (per-slide timing), `--open`.
 - `scripts/inline_fonts.py` — Font offline tool. Detects Google Fonts CDN links, downloads WOFF2 files, Base64-encodes them, and outputs a self-contained HTML. Run: `python3 scripts/inline_fonts.py input.html`. Use `--list` to inspect detected fonts without modifying the file (no network access required for `--list` mode).
-- `scripts/parse_html.py` — **Reverse-edit tool** (new). Parses a finished HTML presentation back into the JSON outline format consumed by `generate_slides.py`. Enables a two-way editing workflow: HTML → JSON → edit → regenerate. Usage: `python3 scripts/parse_html.py deck.html --pretty` → produces `deck.json`. Flags: `--output` (custom path), `--pretty` (indent JSON), `--stats` (slide-count summary only), `--verbose` (print each slide as parsed). Requires: `pip3 install beautifulsoup4`.
-- `scripts/embed_images.py` — **Image inlining tool** (new). Converts all local `<img src="...">` and CSS `background-image: url(...)` references into base64 data URIs, making the HTML fully self-contained for sharing/archiving. Usage: `python3 scripts/embed_images.py deck.html`. Flags: `--output` (custom path), `--list` (list images only), `--resize W` (max-width resize; requires Pillow), `--quality Q` (JPEG quality 1–95, default 88), `--skip-missing`, `--verbose`. Requires: `pip3 install beautifulsoup4`; optional: `pip3 install Pillow` for resize.
+- `scripts/parse_html.py` — **Reverse-edit tool**. Parses a finished HTML presentation back into the JSON outline format consumed by `generate_slides.py`. Enables a two-way editing workflow: HTML → JSON → edit → regenerate. Usage: `python3 scripts/parse_html.py deck.html --pretty` → produces `deck.json`. Flags: `--output` (custom path), `--pretty` (indent JSON), `--stats` (slide-count summary only), `--verbose` (print each slide as parsed). Requires: `pip3 install beautifulsoup4`.
+- `scripts/embed_images.py` — **Image inlining tool**. Converts all local `<img src="...">` and CSS `background-image: url(...)` references into base64 data URIs, making the HTML fully self-contained for sharing/archiving. Usage: `python3 scripts/embed_images.py deck.html`. Flags: `--output` (custom path), `--list` (list images only), `--resize W` (max-width resize; requires Pillow), `--quality Q` (JPEG quality 1–95, default 88), `--skip-missing`, `--verbose`. Requires: `pip3 install beautifulsoup4`; optional: `pip3 install Pillow` for resize.
+- `scripts/apply_comments.py` — **Reviewer comments tool** (Direction 5). Reads a structured JSON comments file and applies text changes to an HTML deck. Supports five actions: `replace` / `insert` / `delete` (content changes), `highlight` (wraps target text in `<mark>` with custom color for visual review — no content change), and `note` (informational, no file change). Supports `--dry-run` to preview changes without writing, and auto-creates timestamped backups. Generate a blank template with `--init`. Usage: `python3 scripts/apply_comments.py review.json`. Init template: `python3 scripts/apply_comments.py --init deck.html` → produces `deck-comments.json`.
 - `setup.html` — **Interactive config wizard** (new). Open in any browser for a 3-step visual configurator: choose visual style → fill in content details → copy the generated CLI command. No install required. Located at the project root.
 - `assets/demos/presenter-mode-demo.html` — Full Presenter Mode demo and reference implementation. Press `[P]` to see the two-window sync in action.
-- `assets/templates/` — Template library with **8** ready-to-customize presentations (pitch-deck, tech-talk, quarterly-report, product-launch, claude-warmth, forai-white, pash-orange, hhart-red). All templates include v2 Presenter Mode (bidirectional navigation, laser pointer, blackout), mobile responsive CSS, and print/PDF styles. See `assets/templates/README.md` for catalog.
+- `assets/templates/` — Template library with **11** ready-to-customize presentations: 8 general-purpose (pitch-deck, tech-talk, quarterly-report, product-launch, claude-warmth, forai-white, pash-orange, hhart-red) + 3 industry-specific (healthcare, finance, education). All templates include v2 Presenter Mode (bidirectional navigation, laser pointer, blackout), mobile responsive CSS, and print/PDF styles. See `assets/templates/README.md` for catalog.
 
 ### Two-Way Editing Workflow
 
@@ -766,6 +862,60 @@ python3 scripts/embed_images.py my_deck.html
 python3 scripts/inline_fonts.py my_deck-embedded.html --output my_deck-final.html
 ```
 
+### Collaborative Review Workflow
+
+When a reviewer (e.g., manager, client) wants to suggest changes without editing the HTML directly:
+
+```bash
+# Step 1: Generate a blank comments template for the reviewer
+python3 scripts/apply_comments.py --init deck.html
+# → Produces deck-comments.json  (send this to the reviewer)
+
+# Step 2: Reviewer fills in deck-comments.json with their suggestions:
+# {
+#   "deck": "deck.html",
+#   "reviewer": "Alice",
+#   "comments": [
+#     { "id": "c1", "slide": 3, "action": "replace",
+#       "find": "increases efficiency", "replace": "increases efficiency by 40%",
+#       "note": "Add the Q3 pilot metric" },
+#     { "id": "c2", "slide": 5, "action": "highlight",
+#       "find": "market size of $4.2B", "color": "#ffdd57",
+#       "note": "Needs a citation — flag for discussion" },
+#     { "id": "c3", "slide": 7, "action": "note",
+#       "note": "Needs a citation here — ask David" }
+#   ]
+# }
+
+# Step 3: Preview changes (dry run)
+python3 scripts/apply_comments.py deck-comments.json --dry-run
+
+# Step 4: Apply changes (auto-creates backup)
+python3 scripts/apply_comments.py deck-comments.json
+
+# Step 5: Audit the revised deck for content quality
+python3 scripts/audit_deck.py deck.html
+```
+
+**When to suggest the review workflow**:
+- User says "send to my manager for review" or "get feedback from the client"
+- User mentions a reviewer or collaborator who needs to suggest changes
+- User wants to track what changed between versions
+
+### Content Quality Audit Workflow
+
+Before delivering any deck, you may run the audit tool proactively:
+
+```bash
+python3 scripts/audit_deck.py presentation.html
+# → Produces presentation-audit.md with a 0–100 quality score
+
+# For AI-assisted narrative suggestions:
+python3 scripts/audit_deck.py presentation.html --llm
+```
+
+**When to run automatically**: Run the audit after Phase 3 generation for any deck with 8+ slides. If the score is below 70, address high-severity issues before delivery.
+
 ### When to suggest each post-processing tool
 
 | Scenario | Tool |
@@ -774,5 +924,9 @@ python3 scripts/inline_fonts.py my_deck-embedded.html --output my_deck-final.htm
 | User wants to edit slide text without AI | `parse_html.py` → edit JSON → `generate_slides.py` |
 | Presentation will be shown offline (no Wi-Fi) | `inline_fonts.py --cjk` (if CJK text) |
 | User wants a PDF for printing / email attachment | `export_pdf.py` |
+| User wants an editable PowerPoint file | `export_pptx.py` |
+| User wants a video for social media / async review | `export_video.py` |
+| User wants to check content quality before presenting | `audit_deck.py` |
+| Reviewer wants to suggest changes without editing HTML | `apply_comments.py --init` → fill JSON → `apply_comments.py` |
 | User is new and unsure how to start | Open `setup.html` in browser |
 

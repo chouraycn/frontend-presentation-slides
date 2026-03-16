@@ -92,10 +92,17 @@ frontend-presentation-slides/
 ├── scripts/
 │   ├── generate_slides.py            # Core AI → HTML generator
 │   ├── extract_pptx.py               # PPTX → slide JSON extractor
-│   ├── export_pdf.py                 # HTML → PDF via Puppeteer
+│   ├── export_pdf.py                 # HTML → PDF via Puppeteer/Playwright
+│   ├── export_pptx.py                # HTML → PPTX round-trip exporter
+│   ├── export_video.py               # HTML → MP4 video exporter
 │   ├── inline_fonts.py               # Inline web fonts for offline use
-│   └── charts.js                     # Chart rendering helpers
-└── references/                       # Design guidelines & animation references
+│   ├── embed_images.py               # Embed external images as base64
+│   ├── parse_html.py                 # Parse existing HTML slides → JSON
+│   ├── apply_comments.py             # Apply review comments to slides
+│   ├── audit_deck.py                 # Content quality audit tool
+│   ├── charts.js                     # Zero-dependency SVG chart engine
+│   └── interactive.js                # Zero-dependency interactive components
+└── references/                       # Design guidelines & troubleshooting docs
 ```
 
 ---
@@ -107,8 +114,15 @@ frontend-presentation-slides/
 | `scripts/generate_slides.py` | Convert AI-structured slide JSON → HTML | Python 3.10+ |
 | `scripts/extract_pptx.py` | Parse .pptx and emit structured slide data | `python-pptx` |
 | `scripts/export_pdf.py` | Headless-Chrome PDF export | `pyppeteer` or `playwright` |
+| `scripts/export_pptx.py` | Convert HTML slides back to .pptx | `python-pptx` |
+| `scripts/export_video.py` | Export HTML slides to MP4 video | `playwright`, `ffmpeg` |
 | `scripts/inline_fonts.py` | Embed Google Fonts inline for offline HTML | Python 3.10+ |
-| `scripts/charts.js` | Chart.js / D3 chart generation helpers | Node.js 16+ |
+| `scripts/embed_images.py` | Embed external images as base64 data URIs | Python 3.10+ |
+| `scripts/parse_html.py` | Parse existing HTML slides back to JSON | Python 3.10+ |
+| `scripts/apply_comments.py` | Apply replace/insert/delete/highlight/note review ops | Python 3.10+ |
+| `scripts/audit_deck.py` | Content quality audit (length, contrast, duplicates) | Python 3.10+ |
+| `scripts/charts.js` | Zero-dependency SVG chart engine (9 chart types) | Node.js 16+ |
+| `scripts/interactive.js` | Zero-dependency interactive components (poll, quiz, wordcloud…) | Node.js 16+ |
 
 ---
 

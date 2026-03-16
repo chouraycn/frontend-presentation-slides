@@ -45,8 +45,15 @@
     "generate_slides": "scripts/generate_slides.py",
     "extract_pptx": "scripts/extract_pptx.py",
     "export_pdf": "scripts/export_pdf.py",
+    "export_pptx": "scripts/export_pptx.py",
+    "export_video": "scripts/export_video.py",
     "inline_fonts": "scripts/inline_fonts.py",
-    "charts": "scripts/charts.js"
+    "embed_images": "scripts/embed_images.py",
+    "parse_html": "scripts/parse_html.py",
+    "apply_comments": "scripts/apply_comments.py",
+    "audit_deck": "scripts/audit_deck.py",
+    "charts": "scripts/charts.js",
+    "interactive": "scripts/interactive.js"
   },
   "main": "SKILL.md",
   "icon": "assets/style-previews/style-preview-pitch-deck.html"

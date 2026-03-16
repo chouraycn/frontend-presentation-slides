@@ -16,8 +16,8 @@ Examples:
     python3 scripts/generate_slides.py slides.json --template pitch-deck --output my_deck.html
 
     # Expand a brief topic into a full deck with LLM:
-    python3 scripts/generate_slides.py --expand "AI在金融风控中的应用" --slides 10 --output ai_finrisk.html
-    python3 scripts/generate_slides.py --expand "Q3 2025 产品复盘" --template quarterly-report --lang zh-CN
+    python3 scripts/generate_slides.py --expand "大模型时代的产品设计原则" --slides 10 --output ai_product.html
+    python3 scripts/generate_slides.py --expand "2025年度品牌战略复盘" --template quarterly-report --lang zh-CN
     python3 scripts/generate_slides.py --expand "Intro to Rust" --template tech-talk --slides 12 --lang en
 
     # Specify title:

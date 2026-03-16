@@ -65,7 +65,7 @@ When user asks to "use a template", "quickly create a [type] deck", or their sce
 
 4. **Customize**: Replace placeholder content, adjust colors via `:root {}` CSS variables, and deliver the final file. Refer to `assets/templates/README.md` for each template's exact CSS variable names and component reference.
 
-5. **Skip Phase 1 and Phase 2** — templates already have a defined structure and style. Go directly to content customization and delivery.
+5. **Skip Phase 1 and Phase 2** — templates already have a defined structure and style. Go directly to **Phase 3** (content customization and generation) and then **Phase 5** (delivery).
 
 See `assets/templates/README.md` for full template catalog and component reference.
 See `assets/index.html` for the interactive visual gallery of all templates.
@@ -157,47 +157,30 @@ Ask the user which feeling they want to convey (multiple choice OK):
 - 🧘 Calm / Focused
 - 💡 Inspiring / Moving
 
-### Step 2b — Generate 3 style previews
-
-**Option 1 — Reuse an existing template preview** (faster, recommended when mood matches):
+### Step 2b — Present style previews
 
 Eight named previews are available in `assets/style-previews/`. Each is a faithful 3-slide taste of its corresponding template:
 
-| Sub-mode | Preview file | Style name | Mood | Best for |
+| # | Preview file | Style name | Mood | Best for |
 |---|---|---|---|---|
 | D1 | `style-preview-pitch-deck.html` | Dark Elegance | Impressive / Premium | Investor decks, luxury brands |
 | D2 | `style-preview-tech-talk.html` | Vibrant Energy | Exciting / Electric | Tech talks, conferences, startups |
 | D3 | `style-preview-quarterly-report.html` | Clean Minimal | Calm / Focused | Business reviews, OKR reports |
 | D4 | `style-preview-claude-warmth.html` | Claude Warmth | Inspiring / Warm | Brand storytelling, culture decks |
-| D5 | `style-preview-product-launch.html` | Warm Inspire | Bold / Dramatic | Product launches, feature reveals |
-| D6 | `style-preview-forai-white.html` | ForAI White | Editorial / Minimal | Design portfolios, agency pitches |
+| D5 | `style-preview-product-launch.html` | Warm Inspire | Inspiring / Dramatic | Product launches, feature reveals |
+| D6 | `style-preview-forai-white.html` | ForAI White | Calm / Editorial | Design portfolios, agency pitches |
 | D7 | `style-preview-pash-orange.html` | Pash Orange | Confident / Agency | Agency/studio pitches, orange brand identity |
 | D8 | `style-preview-hhart-red.html` | Hhart Red Power | Bold / Studio / Red | Creative studio, photography, red brand |
 
-Point the user at 2–3 that match their mood, ask them to pick one, then proceed to Phase 0D.
+**Decision logic:**
 
-**Option 2 — Show all 8 previews side-by-side** (when the user hasn't narrowed down a vibe):
-
-All eight preview files are available in `assets/style-previews/`. Present the full table so the user can make a direct comparison:
-
-| # | File | Style Name | Mood | Best For |
-|---|------|-----------|------|---------|
-| 1 | `style-preview-pitch-deck.html` | Dark Elegance | Sleek / Premium | Investor decks, premium brand |
-| 2 | `style-preview-tech-talk.html` | Vibrant Energy | Bold / Dynamic | Tech talks, startup pitches |
-| 3 | `style-preview-quarterly-report.html` | Clean Minimal | Calm / Focused | Business reviews, OKR reports |
-| 4 | `style-preview-claude-warmth.html` | Claude Warmth | Inspiring / Warm | Brand storytelling, culture decks |
-| 5 | `style-preview-product-launch.html` | Warm Inspire | Bold / Dramatic | Product launches, feature reveals |
-| 6 | `style-preview-forai-white.html` | ForAI White | Editorial / Minimal | Design portfolios, agency pitches |
-| 7 | `style-preview-pash-orange.html` | Pash Orange | Confident / Agency | Agency/studio pitches, orange brand |
-| 8 | `style-preview-hhart-red.html` | Hhart Red Power | Bold / Studio / Red | Creative studio, photography, red brand |
-
-Ask the user to open 2–3 that look appealing and pick one. If none fits and a fully custom aesthetic is needed, generate new preview HTML inline and present it directly via `preview_url` (do **not** create new files in `assets/style-previews/`).
-
-Rules for any custom-generated previews:
-- Each preview shows 2–3 sample slides with real-looking content
-- Use completely different visual identities (not just color swaps)
-- Include actual entrance animations so the user can see motion
-- File size: keep each preview under 50KB
+- **If the user selected a mood in Step 2a** → recommend the 2–3 previews that best match that mood (use the Mood column above), ask them to pick one, then proceed to **Phase 3**.
+- **If the user's mood is unclear or they want to browse** → present the full table above, ask them to open any that appeal and pick one, then proceed to **Phase 3**.
+- **If none of the 8 styles fit** → generate a custom preview HTML inline and present it directly via `preview_url` (do **not** create new files in `assets/style-previews/`). Custom preview rules:
+  - Show 2–3 sample slides with real-looking content
+  - Use a completely distinct visual identity (not just a color swap)
+  - Include entrance animations so the user can see motion
+  - Keep file size under 50 KB
 
 ### Step 2c — Collect feedback
 
@@ -755,7 +738,7 @@ If the deck contains Chinese/Japanese/Korean text (detected via `\u4e00–\u9fff
 - `scripts/extract_pptx.py` — PPT content extraction script (v2). Extracts text, tables, SmartArt, images, speaker notes, and layout hints. Produces `slides.json` + `images/` directory.
 - `scripts/charts.js` — Zero-dependency SVG chart engine v2.0. Provides `SlideCharts.bar()`, `.line()`, `.area()`, `.donut()`, `.horizontalBar()`, `.progress()`, `.radar()`, `.sankey()`. All chart functions return a **ChartInstance** with `update(newData)`, `setOptions(newOpts)`, `loadURL(url)`, `listenPostMessage()` for dynamic updates. Sankey (flow/Sankey diagram) accepts `{ nodes: string[], links: [{source, target, value}] }` and renders a layered flow diagram with SVG cubic-bezier links and gradient coloring. **Inline this file's contents** into the final HTML — do not load it as an external script in production.
 - `scripts/generate_slides.py` — AI content generation pipeline. Accepts a JSON outline **or a topic description via `--expand`** and outputs a complete single-file HTML presentation. Two usage modes: (1) outline mode: `python3 scripts/generate_slides.py outline.json --template claude-warmth --output out.html`; (2) expand mode: `python3 scripts/generate_slides.py --expand "主题描述" --slides 10 --template claude-warmth --output out.html` — automatically calls an LLM (Anthropic → OpenAI → codebuddy CLI fallback chain) to generate a full outline from the topic, then renders the HTML. `--slides N` controls the number of slides (default 10, max 20). Supported `--template` choices: `claude-warmth`, `pitch-deck`, `product-launch`, `quarterly-report`, `tech-talk`, `forai-white`, `pash-orange`, `hhart-red`.
-- `scripts/export_pdf.py` — PDF export tool. Supports three backends (Playwright, Puppeteer, WeasyPrint) with auto-detection. Supports 16x9, 4x3, A4, Letter page sizes. Usage: `python3 scripts/export_pdf.py my_deck.html --page-size 16x9`
+- `scripts/export_pdf.py` — PDF export tool. Supports three backends (Playwright, Puppeteer, WeasyPrint) with auto-detection. Page size options: `16x9` (default, 1920×1080), `4x3`, `A4`, `Letter`, or custom `WxH` in mm. Key options: `--backend {auto|playwright|puppeteer|weasyprint}`, `--landscape` (force landscape), `--margin MM` (page margin in mm, default 0), `--wait SECS` (wait for JS animations to settle, default 1.5), `--scale FACTOR` (Playwright only), `--open` (open PDF after export). Usage: `python3 scripts/export_pdf.py my_deck.html --page-size 16x9 --wait 2 --open`
 - `scripts/inline_fonts.py` — Font offline tool. Detects Google Fonts CDN links, downloads WOFF2 files, Base64-encodes them, and outputs a self-contained HTML. Run: `python3 scripts/inline_fonts.py input.html`. Use `--list` to inspect detected fonts without modifying the file (no network access required for `--list` mode).
 - `scripts/parse_html.py` — **Reverse-edit tool** (new). Parses a finished HTML presentation back into the JSON outline format consumed by `generate_slides.py`. Enables a two-way editing workflow: HTML → JSON → edit → regenerate. Usage: `python3 scripts/parse_html.py deck.html --pretty` → produces `deck.json`. Flags: `--output` (custom path), `--pretty` (indent JSON), `--stats` (slide-count summary only), `--verbose` (print each slide as parsed). Requires: `pip3 install beautifulsoup4`.
 - `scripts/embed_images.py` — **Image inlining tool** (new). Converts all local `<img src="...">` and CSS `background-image: url(...)` references into base64 data URIs, making the HTML fully self-contained for sharing/archiving. Usage: `python3 scripts/embed_images.py deck.html`. Flags: `--output` (custom path), `--list` (list images only), `--resize W` (max-width resize; requires Pillow), `--quality Q` (JPEG quality 1–95, default 88), `--skip-missing`, `--verbose`. Requires: `pip3 install beautifulsoup4`; optional: `pip3 install Pillow` for resize.

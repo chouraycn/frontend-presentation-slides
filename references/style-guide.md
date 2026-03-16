@@ -4,14 +4,14 @@
 
 | Mood | Color Palette | Typography | Animation Style | Background | Template |
 |------|--------------|------------|-----------------|------------|----------|
-| Impressive / Confident | Deep navy + gold | Serif heading + clean sans | Slow fade, large scale | Dark gradient | `template-pitch-deck.html` |
-| Exciting / Energetic | Vibrant gradient (purple→pink) | Bold condensed + geometric | Spring bounce, slide-in | Noise texture / particles | `template-tech-talk.html` |
+| Impressive / Premium | Deep navy + gold | Serif heading + clean sans | Slow fade, large scale | Dark gradient | `template-pitch-deck.html` |
+| Exciting / Electric | Vibrant gradient (purple→pink) | Bold condensed + geometric | Spring bounce, slide-in | Noise texture / particles | `template-tech-talk.html` |
 | Calm / Focused | Soft neutrals (cream, slate) | Minimal sans-serif | Subtle fade-up | Solid color or subtle grid | `template-quarterly-report.html` |
-| Inspiring / Moving | Warm tones (amber, terracotta) | Humanist serif + rounded sans | Gentle bloom, stagger | Organic texture | `template-product-launch.html` |
-| Inspiring / Brand Warmth | Cream + terracotta-orange | Serif + humanist sans | Ease-out stagger | Warm orbs + dark contrast sections | `template-claude-warmth.html` |
-| Calm / Design-forward | Pure white + ink black | Editorial serif (italic) + geometric sans | Clean fade-up | Dot-grid / hairline texture | `template-forai-white.html` |
+| Inspiring / Dramatic | Warm tones (amber, terracotta) | Humanist serif + rounded sans | Gentle bloom, stagger | Organic texture | `template-product-launch.html` |
+| Inspiring / Warm | Cream + terracotta-orange | Serif + humanist sans | Ease-out stagger | Warm orbs + dark contrast sections | `template-claude-warmth.html` |
+| Calm / Editorial | Pure white + ink black | Editorial serif (italic) + geometric sans | Clean fade-up | Dot-grid / hairline texture | `template-forai-white.html` |
 | Confident / Agency | White + pure orange `#FF5C00` | Bebas Neue (display) + DM Serif Display + DM Sans | Bold slide-in, scale-up | Dot-grid + asymmetric layout | `template-pash-orange.html` |
-| Bold / Manifesto | Near-black `#0a0a0a` + crimson red `#C8102E` | Bebas Neue / Impact (display) + Inter (body) | Hard cut, scale-up, slide-in | Full-bleed red accent sections + corner mark | `template-hhart-red.html` |
+| Bold / Studio / Red | Near-black `#0a0a0a` + crimson red `#C8102E` | Barlow Condensed 800 (display) + Barlow 300/400 (body) | Hard cut, scale-up, slide-in | Full-bleed red accent sections + corner mark | `template-hhart-red.html` |
 
 ---
 
@@ -210,7 +210,7 @@ Inspired by claude.com — warm cream backgrounds, terracotta-orange accents, mi
 }
 ```
 
-Preview file: `assets/style-previews/style-preview-claude.html`
+Preview file: `assets/style-previews/style-preview-claude-warmth.html`
 
 Key characteristics:
 - Hero slide: cream bg + large orbs (blurred radial gradients) + concentric circle geometry
@@ -219,7 +219,7 @@ Key characteristics:
 - Quote/Transition slide: dark background + oversized quotation mark — demonstrates the light→dark→light→dark narrative rhythm that characterizes Claude Warmth decks
 - Typography: Lora (headings, serif) + Source Sans Pro (body); −0.03em letter-spacing on headings, `clamp()` everywhere
 - Animations: `cubic-bezier(0.16, 1, 0.3, 1)` ease-out + spring variant for scale
-- Suitable moods: Calm / Focused, Inspiring / Moving, brand storytelling, all-hands
+- Suitable moods: Calm / Focused, Inspiring / Warm, brand storytelling, all-hands
 
 **Template file:** `assets/templates/template-claude-warmth.html` — 8-slide production-ready deck.
 Slide structure: Cover → Opening Story → Values → Timeline → Impact Stats → People Grid → What's Next → Close.
@@ -313,20 +313,19 @@ Inspired by editorial design, campaign work, and brand manifestos — near-black
   --accent2:      #e8314a;    /* lighter red for gradients / hover */
 
   /* Font stack */
-  --font-display: 'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif;  /* all-caps display */
-  --font-head:    'Inter', system-ui, sans-serif;  /* bold headings */
-  --font-body:    'Inter', system-ui, sans-serif;  /* body copy */
+  --font-display: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;  /* condensed bold display */
+  --font-body:    'Barlow', 'Inter', system-ui, sans-serif;  /* body copy */
 }
 ```
 
 Key characteristics:
 - Background: near-black `#0a0a0a` with minimal decoration
-- Typography: Bebas Neue (or Impact) for ultra-bold condensed display text; Inter for structured body copy
+- Typography: Barlow Condensed 800 for ultra-bold condensed display text; Barlow 300/400 for structured body copy
 - Signature detail: full-bleed crimson red sections (`bg-red`) for covers, CTAs, and quote slides; corner-mark decorations
 - Red stat values: numbers rendered in `var(--accent)` for maximum punch
 - Pull-quote style: large tracked text with decorative horizontal rules
 - Animations: hard cut + `scale-up` — editorial snap, no gentle fades
-- Suitable moods: Bold / Manifesto, editorial, campaign launches, brand power decks, sports/action brands
+- Suitable moods: Bold / Studio / Red, editorial, campaign launches, brand power decks, sports/action brands
 
 **Template file:** `assets/templates/template-hhart-red.html`
 Key components: `.pull-quote`, `.attr`, `.stat-block`, `.stat-row`, `.stat-value`, `.stat-label`, `.btn-primary`, `.corner-mark`, `.bg-dark`, `.bg-mid`, `.bg-red`.
@@ -917,7 +916,7 @@ window.addEventListener('load', () => {
 });
 ```
 
-**Step 5** — Add `[P]` key shortcut: see `assets/presenter-mode-demo.html` for the complete `openPresenterView()` implementation.
+**Step 5** — Add `[P]` key shortcut: see `assets/demos/presenter-mode-demo.html` for the complete `openPresenterView()` implementation.
 
 ### Speaker notes
 
@@ -950,4 +949,4 @@ Click the timer display to reset to 00:00.
 
 ### Reference implementation
 
-`assets/presenter-mode-demo.html` — 5-slide demo that explains and demonstrates the feature with the full inline Presenter View HTML template.
+`assets/demos/presenter-mode-demo.html` — 5-slide demo that explains and demonstrates the feature with the full inline Presenter View HTML template.

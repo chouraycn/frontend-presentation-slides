@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<!--
+  template-forai-white.html — ForAI White · Minimal Design Studio Style
+  ─────────────────────────────────────────────────────────────────────
+  Inspired by forai.design: pure white backgrounds, editorial typography,
+  generous whitespace, subtle grid/dot textures, confident minimalism.
+
+  Best for: Design portfolios, agency pitches, product design reviews,
+            brand presentations, creative studio decks
+
+  Style: ForAI White — pure white, editorial black, accent ink
+  Colors: Pure white #ffffff · Ink black #0a0a0a · Muted grey #f5f5f5
+  Fonts: DM Serif Display (headings) + DM Sans (body)
+  Slide count: 9
+  Mood: Calm / Focused / Design-forward
+
+  HOW TO USE:
+    1. Edit :root {} constants (font, accent, bg)
+    2. Fill in your actual content
+    3. Press [P] for presenter mode
+    4. Paste scripts/charts.js before </body> for data slides
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForAI White — [Your Presentation Title]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── 1. CSS Custom Properties (Theme) ───────────────────────── */
+    :root {
+      /* Core palette — inspired by forai.design */
+      --bg:           #ffffff;         /* Pure white */
+      --bg-muted:     #f7f7f5;         /* Off-white surfaces */
+      --bg-invert:    #0a0a0a;         /* Inverted slide bg */
+      --ink:          #0a0a0a;         /* Primary text */
+      --ink-2:        #3d3d3d;         /* Secondary text */
+      --ink-3:        #8c8c8c;         /* Muted / captions */
+      --ink-4:        #c4c4c4;         /* Hairlines / dividers */
+      --accent:       #0a0a0a;         /* Default accent = ink */
+      --accent-warm:  #e85d26;         /* Optional warm accent */
+      --accent-cool:  #1a56db;         /* Optional cool accent */
+      --border:       rgba(0,0,0,0.08);
+
+      /* Typography — CJK-aware */
+      --font-head: 'DM Serif Display', 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC', Georgia, 'Times New Roman', serif;
+      --font-body: 'DM Sans', 'Noto Sans SC', 'PingFang SC', system-ui, -apple-system, sans-serif;
+
+      /* Spacing rhythm */
+      --gap-xs: 8px;
+      --gap-sm: 16px;
+      --gap-md: 28px;
+      --gap-lg: 48px;
+      --gap-xl: 72px;
+    }
+
+    /* ── 2. Base Reset & Typography ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2.4rem, 5.5vw, 5rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    h2 {
+      font-family: var(--font-head);
+      font-size: clamp(1.7rem, 3.2vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+    h3 {
+      font-family: var(--font-body);
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    p {
+      font-family: var(--font-body);
+      font-size: clamp(0.875rem, 1.4vw, 1rem);
+      line-height: 1.75;
+      color: var(--ink-2);
+      font-weight: 300;
+    }
+    strong { color: var(--ink); font-weight: 600; }
+    em { font-style: italic; }
+
+    /* ── CJK typography optimizations ── */
+    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+
+    /* ── 3. Slide Container & Layout ────────────────────────────── */
+    .slides-container {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      height: 100vh;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Content wrappers */
+    .slide-content {
+      width: min(90%, 1080px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-md);
+      position: relative;
+      z-index: 1;
+    }
+    .slide-content.centered {
+      text-align: center;
+      align-items: center;
+    }
+    .slide-content.wide {
+      width: min(96%, 1280px);
+    }
+    .slide-content.narrow {
+      width: min(80%, 760px);
+    }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap-lg);
+      align-items: center;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--gap-md);
+    }
+
+    /* ── Slide Variants ──────────────────────────────────────────── */
+    .slide-invert {
+      background: var(--bg-invert);
+      color: #fff;
+    }
+    .slide-invert h1,
+    .slide-invert h2,
+    .slide-invert h3 { color: #fff; }
+    .slide-invert p { color: rgba(255,255,255,0.6); }
+    .slide-invert .eyebrow { color: rgba(255,255,255,0.45); }
+    .slide-invert .divider { background: rgba(255,255,255,0.12); }
+
+    .slide-muted { background: var(--bg-muted); }
+
+    /* ── 4. Background Textures ──────────────────────────────────── */
+    /* Dot grid — signature forai.design element */
+    .bg-dots::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Fine line grid */
+    .bg-grid::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* Corner mark — editorial detail */
+    .corner-mark::after {
+      content: '';
+      position: absolute;
+      bottom: 48px;
+      right: 60px;
+      width: 40px;
+      height: 40px;
+      border-right: 1.5px solid var(--ink-4);
+      border-bottom: 1.5px solid var(--ink-4);
+    }
+
+    /* ── 5. Component Styles ─────────────────────────────────────── */
+
+    /* Eyebrow label */
+    .eyebrow {
+      font-family: var(--font-body);
+      font-size: clamp(0.6rem, 0.9vw, 0.7rem);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--ink-3);
+      font-weight: 500;
+    }
+
+    /* Slide number tag */
+    .slide-num {
+      position: absolute;
+      top: 40px;
+      right: 60px;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
+      font-weight: 400;
+    }
+    .slide-invert .slide-num { color: rgba(255,255,255,0.25); }
+
+    /* Horizontal divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--ink-4);
+      margin: 4px 0;
+    }
+    .divider-short {
+      width: 48px;
+      height: 2px;
+      background: var(--ink);
+    }
+
+    /* Large display number */
+    .display-num {
+      font-family: var(--font-head);
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+    }
+    .display-num sup {
+      font-size: 0.35em;
+      vertical-align: super;
+      letter-spacing: 0;
+    }
+
+    /* Stat block */
+    .stat-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--ink-3);
+      font-weight: 500;
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .stat-desc {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      font-weight: 300;
+    }
+
+    /* Feature card — clean bordered */
+    .feature-card {
+      padding: var(--gap-md);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .feature-card:hover { border-color: var(--ink-3); }
+    .feature-card .fc-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+    }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 600; }
+    .feature-card p { font-size: 0.85rem; line-height: 1.65; }
+
+    /* Case study / work item */
+    .work-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .work-item .work-visual {
+      background: var(--bg-muted);
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .work-item .work-info {
+      padding: var(--gap-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--gap-sm);
+    }
+    .work-item .work-tag {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--ink-3);
+      font-weight: 500;
+    }
+    .work-item h3 {
+      font-family: var(--font-head);
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    /* Testimonial */
+    .testimonial-block {
+      border-left: 2px solid var(--ink);
+      padding-left: var(--gap-md);
+    }
+    .testimonial-block blockquote {
+      font-family: var(--font-head);
+      font-size: clamp(1.1rem, 2vw, 1.8rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .testimonial-block .attribution {
+      margin-top: 16px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      font-weight: 400;
+    }
+    .testimonial-block .attribution strong {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    /* Process step row */
+    .process-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .process-item {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: var(--gap-sm);
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: baseline;
+    }
+    .process-item:last-child { border-bottom: none; }
+    .process-item .step-num {
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      color: var(--ink-3);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      padding-top: 2px;
+    }
+    .process-item .step-body { display: flex; flex-direction: column; gap: 4px; }
+    .process-item h3 { font-size: 0.95rem; font-weight: 500; }
+    .process-item p { font-size: 0.85rem; line-height: 1.6; }
+
+    /* Logo / client grid */
+    .client-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .client-cell {
+      background: var(--bg);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 120px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--ink-3);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      min-height: 64px;
+    }
+    .slide-invert .client-grid { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.08); }
+    .slide-invert .client-cell { background: var(--bg-invert); color: rgba(255,255,255,0.4); }
+
+    /* Tag pill */
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
+    }
+
+    /* CTA button */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--ink);
+    }
+    .btn-arrow::after { content: '→'; }
+
+    /* ── 6. Animation Classes ────────────────────────────────────── */
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-animate].visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    [data-animate="fade"] {
+      transform: none;
+      transition: opacity 0.8s ease;
+    }
+    [data-animate="slide-left"] {
+      transform: translateX(-32px);
+    }
+    [data-animate="slide-left"].visible { transform: translateX(0); }
+    [data-animate="scale"] {
+      transform: scale(0.94);
+      transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    [data-animate="scale"].visible { transform: scale(1); }
+
+    /* ── 7. Navigation ───────────────────────────────────────────── */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--ink);
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+
+    .nav-dots {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--ink-4);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      border: none;
+      padding: 0;
+    }
+    .nav-dot.active {
+      background: var(--ink);
+      transform: scale(1.4);
+    }
+
+    /* ── Slide counter + Presenter button ───────────────────────── */
+    .slide-counter {
+      position: fixed; bottom: 16px; right: 20px;
+      font-size: 11px; color: var(--ink-3); z-index: 100;
+      font-family: var(--font-body);
+    }
+    #presenterBtn {
+      position: fixed; bottom: 16px; left: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--ink-3); font-size: 11px; font-family: var(--font-body);
+      padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    #presenterBtn:hover { border-color: var(--ink-2); color: var(--ink); }
+
+    /* ── 8. Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      .work-item { grid-template-columns: 1fr; }
+      .nav-dots { display: none; }
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .slide-num { display: none; }
+    }
+
+    /* ── 9. Print / PDF ──────────────────────────────────────────── */
+    @media print {
+      .slides-container { overflow: visible; height: auto; }
+      .slide { page-break-after: always; height: 100vh; overflow: hidden; position: relative; transform: none !important; }
+      .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
+    }
+
+    /* ── 10. Reduced motion ──────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      [data-animate] { transition: none; }
+      * { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation dots -->
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+<!-- Slide counter -->
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">9</span></div>
+
+<!-- Presenter mode button -->
+<button id="presenterBtn" title="Presenter view (P)">演讲者视图 [P]</button>
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 1 — Cover                             ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide bg-dots corner-mark"
+           aria-label="Cover slide"
+           data-notes="Opening slide. Introduce yourself and set the context.">
+    <span class="slide-num">01 / 09</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Design · Strategy · AI</p>
+      <h1 data-animate style="transition-delay:0.08s">
+        We design<br>
+        <em>products people</em><br>
+        actually want.
+      </h1>
+      <div class="divider-short" data-animate style="transition-delay:0.16s"></div>
+      <p data-animate style="transition-delay:0.22s; max-width:480px">
+        A design studio focused on AI companies — from zero-to-one brand
+        identity to production-ready interfaces.
+      </p>
+      <div data-animate style="transition-delay:0.3s; display:flex; gap:12px; margin-top:8px">
+        <a href="#" class="btn btn-primary btn-arrow">View work</a>
+        <a href="#" class="btn btn-outline">Get in touch</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 2 — About / Positioning               ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-muted bg-grid"
+           aria-label="About slide"
+           data-notes="Who we are and what makes us different.">
+    <span class="slide-num">02 / 09</span>
+    <div class="slide-content two-col" style="align-items:start; gap: 80px">
+      <div style="display:flex; flex-direction:column; gap:20px">
+        <p class="eyebrow" data-animate>About</p>
+        <h2 data-animate style="transition-delay:0.06s">
+          Design built for<br>the AI era.
+        </h2>
+        <div class="divider" data-animate style="transition-delay:0.12s"></div>
+        <p data-animate style="transition-delay:0.18s">
+          We believe the best AI products earn trust through clarity.
+          Our work lives at the intersection of <strong>product thinking,
+          visual craft, and systems design</strong> — so your team ships
+          with confidence.
+        </p>
+        <p data-animate style="transition-delay:0.24s">
+          Based in San Francisco. Working globally.
+        </p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0">
+        <div class="process-item" data-animate style="transition-delay:0.14s">
+          <span class="step-num">01</span>
+          <div class="step-body">
+            <h3>Brand Identity</h3>
+            <p>Logo, type, color, motion — the full system.</p>
+          </div>
+        </div>
+        <div class="process-item" data-animate style="transition-delay:0.22s">
+          <span class="step-num">02</span>
+          <div class="step-body">
+            <h3>Product Design</h3>
+            <p>End-to-end UX/UI from wireframes to Figma handoff.</p>
+          </div>
+        </div>
+        <div class="process-item" data-animate style="transition-delay:0.3s">
+          <span class="step-num">03</span>
+          <div class="step-body">
+            <h3>Design Systems</h3>
+            <p>Scalable component libraries your engineers love.</p>
+          </div>
+        </div>
+        <div class="process-item" data-animate style="transition-delay:0.38s">
+          <span class="step-num">04</span>
+          <div class="step-body">
+            <h3>Marketing Sites</h3>
+            <p>High-converting pages that match your brand promise.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 3 — Numbers / Social Proof             ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+           aria-label="Key metrics"
+           data-notes="Lead with the numbers — they create credibility before the work examples.">
+    <span class="slide-num">03 / 09</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>By the numbers</p>
+      <div class="divider" data-animate style="transition-delay:0.06s"></div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap-lg); margin-top:16px">
+        <div class="stat-block" data-animate style="transition-delay:0.1s">
+          <span class="stat-value">48<span style="font-family:var(--font-body);font-size:0.45em;color:var(--ink-3)">+</span></span>
+          <span class="stat-label">AI companies</span>
+          <span class="stat-desc">Served across seed to Series C</span>
+        </div>
+        <div class="stat-block" data-animate style="transition-delay:0.18s">
+          <span class="stat-value">$2.4<span style="font-family:var(--font-body);font-size:0.4em;color:var(--ink-3)">B</span></span>
+          <span class="stat-label">Raised by clients</span>
+          <span class="stat-desc">Combined funding post-rebrand</span>
+        </div>
+        <div class="stat-block" data-animate style="transition-delay:0.26s">
+          <span class="stat-value">6<span style="font-family:var(--font-body);font-size:0.45em;color:var(--ink-3)">wk</span></span>
+          <span class="stat-label">Average timeline</span>
+          <span class="stat-desc">Brand to launch, not months</span>
+        </div>
+        <div class="stat-block" data-animate style="transition-delay:0.34s">
+          <span class="stat-value">97<span style="font-family:var(--font-body);font-size:0.4em;color:var(--ink-3)">%</span></span>
+          <span class="stat-label">Repeat clients</span>
+          <span class="stat-desc">Work that builds trust</span>
+        </div>
+      </div>
+      <div class="divider" data-animate style="transition-delay:0.42s; margin-top:16px"></div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 4 — Featured Work 01                  ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-muted"
+           aria-label="Case study 1"
+           data-notes="Walk through the visual transformation and measurable outcome.">
+    <span class="slide-num">04 / 09</span>
+    <div class="slide-content wide">
+      <p class="eyebrow" data-animate>Selected work</p>
+      <div class="work-item" data-animate style="transition-delay:0.1s">
+        <div class="work-visual" style="background:linear-gradient(135deg,#e8f0fe 0%,#f0e8ff 100%)">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.4">
+            <rect x="8" y="8" width="64" height="64" rx="8" stroke="#1a1a1a" stroke-width="1.5"/>
+            <circle cx="40" cy="40" r="16" stroke="#1a1a1a" stroke-width="1.5"/>
+            <line x1="8" y1="40" x2="72" y2="40" stroke="#1a1a1a" stroke-width="1"/>
+            <line x1="40" y1="8" x2="40" y2="72" stroke="#1a1a1a" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="work-info">
+          <div>
+            <div class="work-tag" style="margin-bottom:12px">Brand Identity · Product Design</div>
+            <h3 style="font-family:var(--font-head);font-size:clamp(1.4rem,2.5vw,2.2rem);font-weight:400;letter-spacing:-0.015em;line-height:1.2">
+              Redesigning trust for<br>an enterprise AI platform
+            </h3>
+          </div>
+          <div>
+            <p style="margin-bottom:16px">
+              From a developer tool to a boardroom-ready brand.
+              We rebuilt the visual language, design system, and
+              marketing site over 8 weeks.
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px">
+              <span class="tag">Brand</span>
+              <span class="tag">Design System</span>
+              <span class="tag">Marketing Site</span>
+            </div>
+            <div style="display:flex; gap:32px">
+              <div class="stat-block">
+                <span class="stat-value" style="font-size:2rem">+320%</span>
+                <span class="stat-desc">Demo requests</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-value" style="font-size:2rem">$40M</span>
+                <span class="stat-desc">Series B raised</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 5 — Featured Work 02                  ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+           aria-label="Case study 2"
+           data-notes="Second case study — show range. Different industry or design challenge.">
+    <span class="slide-num">05 / 09</span>
+    <div class="slide-content wide">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+        <div class="work-item" style="flex-direction:column; border:1px solid var(--border); overflow:hidden" data-animate>
+          <div class="work-visual" style="background:linear-gradient(135deg,#fff7ed 0%,#fce7f3 100%); height:200px">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.35">
+              <path d="M10 50 L30 10 L50 50 Z" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+              <circle cx="30" cy="30" r="12" stroke="#1a1a1a" stroke-width="1"/>
+            </svg>
+          </div>
+          <div class="work-info" style="padding:20px">
+            <div class="work-tag">Consumer AI · Mobile</div>
+            <h3 style="font-family:var(--font-head);font-size:1.4rem;font-weight:400;margin-top:8px">
+              Zero to launch in 6 weeks
+            </h3>
+            <p style="font-size:0.82rem;margin-top:8px">
+              Full product design for a generative AI creative tool —
+              from concept to App Store in record time.
+            </p>
+            <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+              <span class="tag">Mobile UX</span>
+              <span class="tag">Prototyping</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="work-item" style="flex-direction:column; border:1px solid var(--border); overflow:hidden" data-animate style="transition-delay:0.12s">
+          <div class="work-visual" style="background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%); height:200px">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.35">
+              <rect x="8" y="8" width="44" height="32" rx="4" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+              <line x1="8" y1="28" x2="52" y2="28" stroke="#1a1a1a" stroke-width="1"/>
+              <rect x="20" y="44" width="20" height="8" rx="2" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+            </svg>
+          </div>
+          <div class="work-info" style="padding:20px">
+            <div class="work-tag">B2B SaaS · Dashboard</div>
+            <h3 style="font-family:var(--font-head);font-size:1.4rem;font-weight:400;margin-top:8px">
+              Data that tells a story
+            </h3>
+            <p style="font-size:0.82rem;margin-top:8px">
+              Redesigned a complex analytics dashboard for
+              non-technical users — clarity without dumbing it down.
+            </p>
+            <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+              <span class="tag">Dashboard</span>
+              <span class="tag">Data Viz</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 6 — Testimonial (Inverted)            ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-invert"
+           aria-label="Client testimonial"
+           data-notes="Let a client speak for you. This is your most credible content.">
+    <span class="slide-num" style="color:rgba(255,255,255,0.25)">06 / 09</span>
+    <div class="slide-content narrow">
+      <p class="eyebrow" data-animate style="color:rgba(255,255,255,0.35)">Client feedback</p>
+      <div class="testimonial-block" data-animate style="transition-delay:0.1s; border-color:rgba(255,255,255,0.2)">
+        <blockquote style="color:#fff">
+          "They didn't just make us look good — they helped us
+          understand what we actually were. That clarity changed
+          how we pitch, how we hire, how we think."
+        </blockquote>
+        <div class="attribution" style="color:rgba(255,255,255,0.45)">
+          <strong style="color:rgba(255,255,255,0.7)">Sarah Chen</strong>,
+          CEO at Meridian AI &nbsp;·&nbsp; Series B, $40M
+        </div>
+      </div>
+      <div class="divider" data-animate style="transition-delay:0.2s; background:rgba(255,255,255,0.1); margin-top:24px"></div>
+      <p data-animate style="transition-delay:0.28s; color:rgba(255,255,255,0.35); font-size:0.8rem">
+        One of 48 companies we've helped define their identity.
+      </p>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 7 — Process                           ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide slide-muted bg-grid"
+           aria-label="Our process"
+           data-notes="The how — demystify your working style so prospects feel safe.">
+    <span class="slide-num">07 / 09</span>
+    <div class="slide-content two-col" style="gap:80px; align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <p class="eyebrow" data-animate>How we work</p>
+        <h2 data-animate style="transition-delay:0.06s">
+          Fast, precise,<br>no surprises.
+        </h2>
+        <p data-animate style="transition-delay:0.12s">
+          Our process is designed for speed without cutting corners.
+          You'll have a clear view of progress every step of the way.
+        </p>
+        <div style="display:flex; gap:8px; margin-top:8px" data-animate style="transition-delay:0.18s">
+          <span class="tag">Async-first</span>
+          <span class="tag">Weekly check-ins</span>
+          <span class="tag">Figma-based</span>
+        </div>
+      </div>
+      <div class="process-list" data-animate style="transition-delay:0.1s">
+        <div class="process-item">
+          <span class="step-num">Week 1</span>
+          <div class="step-body">
+            <h3>Discovery & Audit</h3>
+            <p>Stakeholder interviews, competitive landscape, brand audit.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <span class="step-num">Week 2–3</span>
+          <div class="step-body">
+            <h3>Direction Setting</h3>
+            <p>3 directions → 1 chosen → refined with your feedback.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <span class="step-num">Week 4–5</span>
+          <div class="step-body">
+            <h3>Full Production</h3>
+            <p>All assets, design system, and motion guidelines.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <span class="step-num">Week 6</span>
+          <div class="step-body">
+            <h3>Handoff & Launch</h3>
+            <p>Developer handoff, training, and 30-day support.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 8 — Clients / Trust                  ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide"
+           aria-label="Client logos"
+           data-notes="Social proof through familiar names. Don't rush past this slide.">
+    <span class="slide-num">08 / 09</span>
+    <div class="slide-content centered">
+      <p class="eyebrow" data-animate>Trusted by teams building the future</p>
+      <h2 data-animate style="transition-delay:0.06s; max-width:600px">
+        From first-time founders<br>to frontier labs.
+      </h2>
+      <div class="client-grid" data-animate style="transition-delay:0.14s; width:100%; margin-top:16px">
+        <div class="client-cell">Meridian AI</div>
+        <div class="client-cell">Prism Labs</div>
+        <div class="client-cell">Volta Health</div>
+        <div class="client-cell">Cortex ML</div>
+        <div class="client-cell">Starlight</div>
+        <div class="client-cell">Aether Systems</div>
+        <div class="client-cell">Novaform</div>
+        <div class="client-cell">Quanta AI</div>
+      </div>
+      <p class="stat-desc" data-animate style="transition-delay:0.22s; margin-top:12px">
+        + 40 more companies across healthcare, finance, creative tools, and infrastructure.
+      </p>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  SLIDE 9 — CTA / Close                      ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section class="slide bg-dots corner-mark"
+           aria-label="Call to action"
+           data-notes="End with a single clear next step. Make it easy for them to say yes.">
+    <span class="slide-num">09 / 09</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Ready to start?</p>
+      <h1 data-animate style="transition-delay:0.08s; max-width:700px">
+        Let's build something<br>
+        <em>worth noticing.</em>
+      </h1>
+      <div class="divider-short" data-animate style="transition-delay:0.16s"></div>
+      <p data-animate style="transition-delay:0.22s; max-width:440px">
+        We take on 4–6 projects per quarter. Currently accepting
+        new clients for Q3 2025.
+      </p>
+      <div data-animate style="transition-delay:0.3s; display:flex; gap:12px; margin-top:8px; align-items:center">
+        <a href="mailto:hello@forai.design" class="btn btn-primary btn-arrow">
+          Start a project
+        </a>
+        <span style="font-family:var(--font-body); font-size:0.8rem; color:var(--ink-3); font-weight:400">
+          hello@forai.design
+        </span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ── SlidePresentation Controller ─────────────────────────────── */
+class SlidePresentation {
+  constructor() {
+    this.container   = document.getElementById('slidesContainer');
+    this.slides      = Array.from(document.querySelectorAll('.slide'));
+    this.dots        = document.getElementById('navDots');
+    this.progressBar = document.getElementById('progressBar');
+    this.current     = 0;
+    this.navigating  = false;
+
+    // Set total slide count in counter
+    const totalEl = document.getElementById('totalSlides');
+    if (totalEl) totalEl.textContent = this.slides.length;
+
+    // Rewrite every .slide-num span to match actual slide count (NN / TT)
+    const totalSlideCount = this.slides.length;
+    this.slides.forEach((section, i) => {
+      const numEl = section.querySelector('.slide-num');
+      if (numEl) {
+        const nn = String(i + 1).padStart(2, '0');
+        const tt = String(totalSlideCount).padStart(2, '0');
+        numEl.textContent = `${nn} / ${tt}`;
+      }
+    });
+
+    // Init positions: stack slides using translateY
+    this.slides.forEach((s, i) => {
+      s.style.transform = `translateY(${i * 100}vh)`;
+    });
+
+    this._buildDots();
+    this._bindEvents();
+    this._updateUI(0);
+    // Trigger initial animations
+    setTimeout(() => {
+      this.slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), 100 + i * 110);
+      });
+    }, 200);
+  }
+
+  _buildDots() {
+    this.slides.forEach((_, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-dot';
+      btn.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      btn.addEventListener('click', () => this.goTo(i));
+      this.dots.appendChild(btn);
+    });
+  }
+
+  _bindEvents() {
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowRight': case 'ArrowDown': case ' ':
+          e.preventDefault(); this.next(); break;
+        case 'ArrowLeft': case 'ArrowUp':
+          e.preventDefault(); this.prev(); break;
+        case 'Home': this.goTo(0); break;
+        case 'End': this.goTo(this.slides.length - 1); break;
+        case 'p': case 'P': this._openPresenterView(); break;
+      }
+    });
+
+    // Presenter button
+    const presenterBtn = document.getElementById('presenterBtn');
+    if (presenterBtn) presenterBtn.addEventListener('click', () => this._openPresenterView());
+
+    // postMessage bridge — allows Presenter iframe to drive this page
+    window.addEventListener('message', e => {
+      if (e.data && e.data.type === 'goto-slide') this.goTo(e.data.index, true);
+    });
+
+    // Touch / swipe
+    let touchStartY = 0;
+    this.container.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    this.container.addEventListener('touchend', e => {
+      const delta = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(delta) > 50) delta > 0 ? this.next() : this.prev();
+    });
+
+    // Wheel: one slide per scroll gesture, prevents multi-slide jumps
+    this.container.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (this.navigating) return;
+      e.deltaY > 0 ? this.next() : this.prev();
+    }, { passive: false });
+
+    // BroadcastChannel (Presenter Mode)
+    this._channel = new BroadcastChannel('slides-presenter-sync');
+    this._channel.onmessage = e => {
+      const { type, payload } = e.data || {};
+      if (type === 'navigate' && payload) this.goTo(payload.index, true);
+      if (type === 'request-init') this._broadcastState();
+      if (type === 'pointer-pos' && payload) this._showLaser(payload.x, payload.y);
+      if (type === 'blackout' && payload) this._setBlackout(payload.active);
+    };
+
+    // Laser pointer overlay
+    this._laserDot = document.createElement('div');
+    this._laserDot.style.cssText = 'position:fixed;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#ff3b30 30%,rgba(255,59,48,0));pointer-events:none;z-index:9999;display:none;transform:translate(-50%,-50%);';
+    document.body.appendChild(this._laserDot);
+
+    // Blackout overlay
+    this._blackoutOverlay = document.createElement('div');
+    this._blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9998;display:none;cursor:pointer;';
+    this._blackoutOverlay.addEventListener('click', () => this._setBlackout(false));
+    document.body.appendChild(this._blackoutOverlay);
+  }
+
+  _initObserver() {
+    // No longer needed — animations now triggered directly in goTo()
+    // Kept as no-op for compatibility
+  }
+
+  next() { if (this.current < this.slides.length - 1) this.goTo(this.current + 1); }
+  prev() { if (this.current > 0) this.goTo(this.current - 1); }
+
+  goTo(idx, fromBroadcast = false) {
+    if (idx < 0 || idx >= this.slides.length) return;
+    if (idx === this.current && !this.navigating) return;
+    this.navigating = true;
+    // Shift every slide by translateY relative to target
+    this.slides.forEach((s, j) => {
+      s.style.transform = `translateY(${(j - idx) * 100}vh)`;
+    });
+    // Trigger enter animations on incoming slide
+    this.slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 110);
+    });
+    this._updateUI(idx);
+    if (!fromBroadcast) this._broadcastState();
+    setTimeout(() => { this.navigating = false; }, 650);
+  }
+
+  _updateUI(idx) {
+    this.current = idx;
+    // Update slide counter
+    const currentEl = document.getElementById('currentSlide');
+    if (currentEl) currentEl.textContent = idx + 1;
+    const pct = this.slides.length > 1
+      ? (idx / (this.slides.length - 1)) * 100 : 100;
+    this.progressBar.style.width = pct + '%';
+    this.dots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+      d.setAttribute('aria-current', i === idx ? 'true' : 'false');
+    });
+    // Update slide aria-current
+    this.slides.forEach((s, i) => s.setAttribute('aria-current', i === idx ? 'true' : 'false'));
+  }
+
+  _showLaser(x, y) {
+    this._laserDot.style.display = 'block';
+    this._laserDot.style.left = (x * 100) + '%';
+    this._laserDot.style.top = (y * 100) + '%';
+    clearTimeout(this._laserDot._hideTimer);
+    this._laserDot._hideTimer = setTimeout(() => { this._laserDot.style.display = 'none'; }, 1200);
+  }
+
+  _setBlackout(active) {
+    this._blackoutOverlay.style.display = active ? 'block' : 'none';
+  }
+
+  _broadcastState() {
+    const notes = this.slides[this.current]?.dataset.notes || '';
+    this._channel.postMessage({
+      type: 'slide-change',
+      payload: { index: this.current, total: this.slides.length, notes }
+    });
+    this._channel.postMessage({
+      type: 'source-url',
+      payload: { url: location.href }
+    });
+  }
+
+  /* ── Presenter Mode v2 ─────────────────────────────────────── */
+  _openPresenterView() {
+    const html = this._presenterViewHTML();
+    const w = window.open('', 'PresenterView',
+      'width=1280,height=800,scrollbars=no,toolbar=no,menubar=no');
+    if (!w) { alert('请允许弹出窗口以使用演讲者视图。\n请点击地址栏的弹出窗口拦截图标。'); return; }
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => this._broadcastState(), 350);
+  }
+
+  _presenterViewHTML() {
+    return `<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>演讲者视图 — ForAI White</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0d0d18;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;}
+  #topbar{background:#111120;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  #timer{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;color:#6b7280;cursor:pointer;user-select:none;transition:color .2s;}
+  #timer:hover{color:#9ca3af;} #timer.warn{color:#f59e0b;} #timer.over{color:#ef4444;}
+  #slide-counter{margin-left:auto;font-size:13px;color:#888;}
+  #slide-counter strong{color:#fff;font-size:15px;}
+  .topbar-divider{width:1px;height:26px;background:rgba(255,255,255,0.1);flex-shrink:0;}
+  .nav-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.12);color:#ccc;font-size:16px;width:36px;height:32px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;flex-shrink:0;}
+  .nav-btn:hover{background:#252540;border-color:rgba(255,255,255,.2);}
+  .tool-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.1);color:#aaa;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;letter-spacing:.08em;transition:background .15s;}
+  .tool-btn:hover{background:#252540;}
+  .tool-btn.active{background:rgba(220,40,40,.2);border-color:rgba(220,40,40,.4);color:#ff6b6b;}
+  #blackout-btn.blackout-active{background:rgba(0,0,0,.6);border-color:#555;color:#ccc;}
+  #main{display:grid;grid-template-columns:3fr 2fr;height:100%;overflow:hidden;}
+  #current-pane{position:relative;overflow:hidden;background:#0a0a14;}
+  #current-preview{width:100%;height:100%;position:relative;overflow:hidden;}
+  #current-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
+  #right-col{display:grid;grid-template-rows:1fr 1fr;overflow:hidden;}
+  #next-pane{background:#0f0f1e;overflow:hidden;position:relative;border-left:1px solid rgba(255,255,255,.05);}
+  #next-preview{width:100%;height:100%;position:relative;overflow:hidden;}
+  #next-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
+  #next-label,#current-label{position:absolute;top:8px;left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.25);z-index:10;}
+  #notes-pane{background:#111;padding:16px 18px;display:flex;flex-direction:column;gap:8px;overflow:hidden;border-left:1px solid rgba(255,255,255,.05);border-top:1px solid rgba(255,255,255,.05);}
+  #notes-label{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.3);flex-shrink:0;}
+  #notes-text{font-size:13px;line-height:1.7;color:#ccc;flex:1;overflow-y:auto;}
+  #notes-text.empty{color:#555;font-style:italic;}
+  #progress{position:fixed;bottom:0;left:0;width:0;height:2px;background:#6366f1;transition:width .4s;z-index:200;}
+  .laser-dot{position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,.85);box-shadow:0 0 12px 4px rgba(220,40,40,.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);display:none;}
+</style>
+</head><body>
+<div id="topbar">
+  <button class="nav-btn" id="prevBtn" title="Previous (←)">&#8592;</button>
+  <button class="nav-btn" id="nextBtn" title="Next (→)">&#8594;</button>
+  <div class="topbar-divider"></div>
+  <span id="timer" title="Click to reset">00:00</span>
+  <div class="topbar-divider"></div>
+  <button class="tool-btn" id="laser-btn">&#9679; 激光笔</button>
+  <button class="tool-btn" id="blackout-btn">&#9632; 黑屏</button>
+  <div class="topbar-divider"></div>
+  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
+</div>
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前</div>
+    <div id="current-preview"><iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
+  </div>
+  <div id="right-col">
+    <div id="next-pane">
+      <div id="next-label">下一张</div>
+      <div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
+    </div>
+    <div id="notes-pane">
+      <div id="notes-label">演讲备注</div>
+      <div id="notes-text" class="empty">（此幻灯片无备注）</div>
+    </div>
+  </div>
+</div>
+<div id="progress"></div>
+<div class="laser-dot" id="laser-dot"></div>
+<script>
+  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null;
+  let laserActive=false,blackoutActive=false;
+  const ch=new BroadcastChannel('slides-presenter-sync');
+  ch.addEventListener('message',(e)=>{
+    const{type,payload}=e.data||{};
+    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
+    if(type==='source-url'){
+      const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+      if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}
+    }
+    if(type==='pointer-pos'&&payload){const d=document.getElementById('laser-dot');d.style.left=(payload.x*100)+'%';d.style.top=(payload.y*100)+'%';d.style.display='block';}
+    if(type==='pointer-hide'){document.getElementById('laser-dot').style.display='none';}
+    if(type==='blackout'&&payload){toggleBlackout(payload.active);}
+  });
+  ch.postMessage({type:'request-init'});
+  function updateUI(p){
+    document.getElementById('pv-current').textContent=currentIndex+1;
+    document.getElementById('pv-total').textContent=totalSlides;
+    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
+    const n=document.getElementById('notes-text'),t=p.notes||'';
+    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
+    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
+    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
+    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
+    if(!timerRunning)startTimer();
+  }
+  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform='scale('+s+')';f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
+  function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=1800)el.classList.add('over');else if(timerSeconds>=1200){el.classList.add('warn');el.classList.remove('over');}else{el.classList.remove('warn','over');}},1000);}
+  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
+  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
+  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
+  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')document.getElementById('laser-btn').click();else if(e.key.toLowerCase()==='b')document.getElementById('blackout-btn').click();});
+  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
+  // Laser
+  const laserBtn=document.getElementById('laser-btn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
+  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
+  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  // Blackout
+  let blackoutEl=null;
+  function toggleBlackout(active){blackoutActive=active!==undefined?active:!blackoutActive;document.getElementById('blackout-btn').classList.toggle('blackout-active',blackoutActive);document.getElementById('blackout-btn').textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';if(blackoutActive){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.addEventListener('click',()=>{toggleBlackout(false);ch.postMessage({type:'blackout',payload:{active:false}});});document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}else if(blackoutEl){blackoutEl.style.display='none';}}
+  document.getElementById('blackout-btn').addEventListener('click',()=>{toggleBlackout();ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
+<\/script></body></html>`;
+  }
+}
+
+/* ── Init ──────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  window._deck = new SlidePresentation();
+});
+</script>
+
+</body>
+</html>

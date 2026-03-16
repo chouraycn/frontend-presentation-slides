@@ -1,0 +1,53 @@
+{
+  "name": "frontend-presentation-slides",
+  "version": "1.0.0",
+  "displayName": "Frontend Presentation Slides",
+  "description": "Create zero-dependency, animation-rich HTML presentations. Convert PPT/PPTX to web slides, or build from scratch using 8 handcrafted templates — Dark Elegance, Vibrant Energy, Claude Warmth, Pash Orange, ForAI White, Hhart Red, Warm Inspire, Clean Minimal.",
+  "author": "chouray",
+  "license": "MIT",
+  "homepage": "https://github.com/chouray/frontend-presentation-slides",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chouray/frontend-presentation-slides"
+  },
+  "keywords": [
+    "slides",
+    "presentation",
+    "HTML",
+    "PPT",
+    "PPTX",
+    "animations",
+    "templates",
+    "pitch-deck",
+    "zero-dependency",
+    "幻灯片",
+    "演示文稿",
+    "PPT转HTML"
+  ],
+  "categories": ["productivity", "frontend", "design"],
+  "engines": {
+    "codebuddy": ">=1.0.0"
+  },
+  "skills": [
+    {
+      "name": "frontend-presentation-slides",
+      "path": "SKILL.md",
+      "description": "Create zero-dependency, animation-rich HTML presentations that run entirely in the browser."
+    }
+  ],
+  "assets": {
+    "templates": "assets/templates/",
+    "previews": "assets/style-previews/",
+    "gallery": "assets/index.html",
+    "demos": "assets/demos/"
+  },
+  "scripts": {
+    "generate_slides": "scripts/generate_slides.py",
+    "extract_pptx": "scripts/extract_pptx.py",
+    "export_pdf": "scripts/export_pdf.py",
+    "inline_fonts": "scripts/inline_fonts.py",
+    "charts": "scripts/charts.js"
+  },
+  "main": "SKILL.md",
+  "icon": "assets/style-previews/style-preview-pitch-deck.html"
+}

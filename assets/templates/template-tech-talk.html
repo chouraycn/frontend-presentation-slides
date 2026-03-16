@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<!--
+  template-tech-talk.html — Tech Talk / Conference Talk Template
+  ─────────────────────────────────────────────────────────────────────────────
+  Best for: conference talk, internal tech sharing, architecture review, tutorial
+  Style: Vibrant Energy — deep purple + pink gradient
+  Slides: 9 (Hook → Problem → Deep Dive → Code/Demo → Benchmarks → Lessons → Q&A)
+
+  HOW TO USE:
+    1. Edit :root {} constants (colors, fonts)
+    2. Replace placeholder content in each <section>
+    3. Paste scripts/charts.js before </body> for charts
+    4. Add data-notes for speaker notes
+    5. Press [P] for presenter mode
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Talk — [Topic]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────
+       CONSTANTS
+       ───────────────────────────────────────────────────── */
+    :root {
+      --bg:             #0b0b1e;
+      --surface:        #141428;
+      --surface2:       #1c1c38;
+      --accent:         #7c3aed;
+      --accent2:        #ec4899;
+      --accent3:        #10b981;
+      --text-primary:   #ffffff;
+      --text-secondary: #8888aa;
+      --code-bg:        #0d0d20;
+      --code-text:      #e2e8f0;
+      --chart3: #10b981; --chart4: #f59e0b; --chart5: #3b82f6; --chart6: #ef4444;
+      --font-heading: 'Space Grotesk', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-body:    'DM Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 4vw, 3.2rem); font-weight: 700; line-height: 1.1; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.3rem, 2.8vw, 2.2rem); font-weight: 700; line-height: 1.2; }
+    h3 { font-family: var(--font-heading); font-size: clamp(1rem, 1.8vw, 1.4rem); font-weight: 600; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem); line-height: 1.75; }
+
+    /* ── CJK typography optimizations ── */
+    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .slide-content { width: min(86%, 1000px); display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; width: min(92%, 1100px); }
+    .slide-content.col-6040 { display: grid; grid-template-columns: 3fr 2fr; gap: 44px; align-items: start; width: min(92%, 1100px); }
+
+    /* Backgrounds */
+    .bg-hero {
+      background:
+        radial-gradient(ellipse at 20% 40%, rgba(124,58,237,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(236,72,153,0.15) 0%, transparent 45%),
+        var(--bg);
+    }
+    .bg-dark { background: var(--bg); }
+    .bg-surface { background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%); }
+    .bg-code {
+      background:
+        linear-gradient(135deg, #0a0a1c 0%, #10102a 100%);
+    }
+
+    /* Gradient strip at top of hero */
+    .bg-hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+
+    /* ── Text components ── */
+    .eyebrow {
+      font-family: var(--font-heading); font-size: clamp(0.65rem, 1vw, 0.78rem);
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent2); font-weight: 600;
+    }
+    .subtitle { color: var(--text-secondary); font-family: var(--font-body); }
+    .accent { color: var(--accent); }
+    .accent2 { color: var(--accent2); }
+    .accent3 { color: var(--accent3); }
+
+    .tag {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4);
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);
+    }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Code block */
+    pre.code-block {
+      background: var(--code-bg); border-radius: 10px;
+      padding: 20px 24px; overflow-x: auto;
+      border: 1px solid rgba(124,58,237,0.2);
+      border-left: 3px solid var(--accent);
+      font-family: var(--font-mono); font-size: clamp(0.72rem, 1.2vw, 0.85rem);
+      line-height: 1.65; color: var(--code-text);
+    }
+    pre.code-block .kw  { color: #c084fc; } /* keyword */
+    pre.code-block .fn  { color: #60a5fa; } /* function */
+    pre.code-block .str { color: #86efac; } /* string */
+    pre.code-block .cm  { color: #475569; } /* comment */
+    pre.code-block .num { color: #f9a8d4; } /* number */
+
+    /* Steps list */
+    .steps-list { list-style: none; display: flex; flex-direction: column; gap: 20px; counter-reset: steps; }
+    .steps-list li {
+      counter-increment: steps;
+      display: flex; align-items: flex-start; gap: 16px;
+      font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem);
+    }
+    .steps-list li::before {
+      content: counter(steps, decimal-leading-zero);
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+      color: var(--accent); min-width: 28px; padding-top: 0.2em;
+    }
+
+    /* Feature card */
+    .card {
+      background: var(--surface); border-radius: 10px; padding: 20px 22px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card-title {
+      font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 8px;
+    }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Benchmark table */
+    .bench-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: clamp(0.8rem, 1.3vw, 0.9rem); }
+    .bench-table th { text-align: left; padding: 10px 14px; color: var(--text-secondary); font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .bench-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .bench-table tr.highlight td { color: var(--accent2); font-weight: 600; background: rgba(124,58,237,0.06); }
+    .bench-win { color: var(--accent3); }
+    .bench-lose { color: var(--text-secondary); }
+
+    /* ── Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    [data-animate="left"] { transform: translateX(-24px); }
+    [data-animate="fade"] { transform: none; }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    /* ── Navigation ── */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent2); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-mono); }
+    #presenterBtn { position: fixed; bottom: 16px; left: 18px; background: var(--surface); border: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100; }
+    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
+    .slide-label { position: absolute; top: 22px; left: 24px; font-family: var(--font-mono); font-size: 10px; color: rgba(124,58,237,0.3); z-index: 1; }
+
+    /* ─── Mobile responsive ─────────────────────────────── */
+    @media (max-width: 900px) {
+      .slide-content.two-col,
+      .slide-content.col-6040 {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+      pre.code-block { font-size: 0.72rem; padding: 14px 16px; }
+    }
+    @media (max-width: 640px) {
+      .slide-content { width: 91%; }
+      .nav-dots { display: none; }
+      h1 { font-size: clamp(1.4rem, 7vw, 2.2rem); }
+      h2 { font-size: clamp(1.1rem, 5vw, 1.6rem); }
+      pre.code-block { font-size: 0.68rem; padding: 12px 14px; }
+      .bench-table { font-size: 0.75rem; }
+      .bench-table th, .bench-table td { padding: 7px 8px; }
+      .tags { justify-content: center; }
+    }
+
+    /* ─── Print / PDF export ────────────────────────────── */
+    @media print {
+      html, body { height: auto; overflow: visible; }
+      .slides-container { height: auto; overflow: visible; position: static; }
+      .slide {
+        height: 100vh !important;
+        min-height: 100vh;
+        page-break-after: always;
+        page-break-inside: avoid;
+        position: relative !important;
+        transform: none !important;
+        overflow: visible;
+      }
+      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      [data-animate] { opacity: 1 !important; transform: none !important; }
+      pre.code-block { overflow: visible; white-space: pre-wrap; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span>/<span id="totalSlides">9</span></div>
+<button id="presenterBtn">演讲者视图 [P]</button>
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- Slide 1: Hook / Title -->
+  <section class="slide bg-hero" role="region" aria-label="Title"
+    data-notes="Open with a bold claim or surprising statistic. Introduce yourself in 1 sentence. Tell them what they'll take away today.">
+    <span class="slide-label">01</span>
+    <div class="slide-content centered" style="max-width:800px;">
+      <div class="tags" style="justify-content:center;" data-animate>
+        <span class="tag">Architecture</span>
+        <span class="tag">Performance</span>
+        <span class="tag">Lessons Learned</span>
+      </div>
+      <h1 data-animate>[Talk Title:<br>The Problem You Solved]</h1>
+      <p class="subtitle" data-animate style="font-size:clamp(1rem,1.8vw,1.15rem);">Subtitle: the key insight or surprising number that makes people lean in</p>
+      <p data-animate style="font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 12px;">YOUR NAME · @handle · Company · Venue, Year</p>
+    </div>
+  </section>
+
+  <!-- Slide 2: Context / Why This Matters -->
+  <section class="slide bg-dark" role="region" aria-label="Context"
+    data-notes="Set the scene. 1-2 minutes. Why is this problem worth solving? What's the scale / scope?">
+    <span class="slide-label">02</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Context</p>
+      <h2 data-animate>[Why this problem matters in 10 words]</h2>
+      <ul class="steps-list">
+        <li data-animate><div><strong>The situation</strong><p class="subtitle">Describe the starting conditions that led to this problem.</p></div></li>
+        <li data-animate><div><strong>The constraint</strong><p class="subtitle">What was the hard constraint that made it non-trivial?</p></div></li>
+        <li data-animate><div><strong>The stakes</strong><p class="subtitle">What would happen if you didn't solve it? Latency, reliability, cost.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 3: The Approach -->
+  <section class="slide bg-surface" role="region" aria-label="Approach"
+    data-notes="Your high-level architectural decision. Mention alternatives you considered and why you rejected them.">
+    <span class="slide-label">03</span>
+    <div class="slide-content two-col">
+      <div>
+        <p class="eyebrow" data-animate>Our Approach</p>
+        <h2 data-animate>[Architecture decision in a headline]</h2>
+        <p class="subtitle" data-animate style="margin-top: 12px;">[2-3 sentence overview of the solution and the core trade-off it makes]</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" data-animate>
+          <div class="card-title">Option A (rejected)</div>
+          <p class="subtitle">Why this seemed obvious but didn't work.</p>
+        </div>
+        <div class="card" data-animate style="border-color: rgba(124,58,237,0.4);">
+          <div class="card-title" style="color: var(--accent);">Option B (chosen) ✓</div>
+          <p class="subtitle">The key insight that made this the right choice.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Option C (rejected)</div>
+          <p class="subtitle">What this would cost you in complexity or performance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Deep Dive — Code -->
+  <section class="slide bg-code" role="region" aria-label="Code"
+    data-notes="Walk through the key code piece. Keep it to the critical 10-20 lines. Highlight the insight, not the boilerplate.">
+    <span class="slide-label">04</span>
+    <div class="slide-content col-6040">
+      <div>
+        <p class="eyebrow" data-animate>Core Implementation</p>
+        <h2 data-animate>The critical [X] lines</h2>
+        <pre class="code-block" data-animate><code><span class="cm">// The key insight: [describe what this does]</span>
+<span class="kw">async function</span> <span class="fn">processItems</span>(items) {
+  <span class="kw">const</span> batches = <span class="fn">chunk</span>(items, <span class="num">100</span>);
+
+  <span class="kw">return</span> <span class="fn">Promise.all</span>(
+    batches.<span class="fn">map</span>(batch =&gt;
+      <span class="fn">processBatch</span>(batch)
+    )
+  );
+}
+
+<span class="cm">// Replace with your actual code</span></code></pre>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+        <p class="eyebrow" data-animate>Why it works</p>
+        <div class="card" data-animate>
+          <div class="card-title">Insight 1</div>
+          <p class="subtitle">What makes this approach clever.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Insight 2</div>
+          <p class="subtitle">The edge case this handles that others miss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: Benchmarks / Results -->
+  <section class="slide bg-dark" role="region" aria-label="Results"
+    data-notes="Show the numbers. Before/after is the most compelling format. Be specific about test conditions.">
+    <span class="slide-label">05</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Results</p>
+      <h2 data-animate>[X]× improvement / [Y]% reduction in [metric]</h2>
+      <table class="bench-table" data-animate>
+        <thead>
+          <tr><th>Scenario</th><th>Before</th><th>After</th><th>Delta</th></tr>
+        </thead>
+        <tbody>
+          <tr class="highlight">
+            <td>[Main metric]</td>
+            <td class="bench-lose">[old value]</td>
+            <td class="bench-win">[new value]</td>
+            <td class="bench-win">↓ [X]%</td>
+          </tr>
+          <tr>
+            <td>[Secondary metric]</td>
+            <td class="bench-lose">[old value]</td>
+            <td class="bench-win">[new value]</td>
+            <td class="bench-win">↑ [X]×</td>
+          </tr>
+          <tr>
+            <td>[Third metric]</td>
+            <td>[old value]</td>
+            <td>[new value]</td>
+            <td>[delta]</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Uncomment + paste charts.js for benchmark chart:
+      <div id="benchChart" class="chart-container" style="height:200px;" data-animate></div>
+      -->
+    </div>
+  </section>
+
+  <!-- Slide 6: Pitfalls / What Not to Do -->
+  <section class="slide bg-surface" role="region" aria-label="Pitfalls"
+    data-notes="The mistakes you made, so the audience doesn't have to. This is often the most memorable part of a tech talk.">
+    <span class="slide-label">06</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>What we got wrong first</p>
+      <h2 data-animate>Three pitfalls to avoid</h2>
+      <div class="card-grid">
+        <div class="card" data-animate style="border-color: rgba(239,68,68,0.2);">
+          <div class="card-title" style="color: #f87171;">⚠ Pitfall 1</div>
+          <p class="subtitle">[Describe the mistake and why it seemed reasonable at the time]</p>
+        </div>
+        <div class="card" data-animate style="border-color: rgba(239,68,68,0.2);">
+          <div class="card-title" style="color: #f87171;">⚠ Pitfall 2</div>
+          <p class="subtitle">[The assumption that turned out to be wrong in production]</p>
+        </div>
+        <div class="card" data-animate style="border-color: rgba(239,68,68,0.2);">
+          <div class="card-title" style="color: #f87171;">⚠ Pitfall 3</div>
+          <p class="subtitle">[The edge case that only appeared at scale]</p>
+        </div>
+        <div class="card" data-animate style="border-color: rgba(16,185,129,0.3);">
+          <div class="card-title" style="color: var(--accent3);">✓ The fix</div>
+          <p class="subtitle">[What you'd do differently and the lesson learned]</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 7: Key Takeaways -->
+  <section class="slide bg-dark" role="region" aria-label="Takeaways"
+    data-notes="The 3 things you want them to remember. Say these explicitly. Repeat the top one.">
+    <span class="slide-label">07</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>TL;DR</p>
+      <h2 data-animate>Three things to remember</h2>
+      <ul class="steps-list">
+        <li data-animate>
+          <div>
+            <strong>[Takeaway #1]</strong>
+            <p class="subtitle">One sentence that makes this immediately actionable.</p>
+          </div>
+        </li>
+        <li data-animate>
+          <div>
+            <strong>[Takeaway #2]</strong>
+            <p class="subtitle">The trade-off they need to be aware of.</p>
+          </div>
+        </li>
+        <li data-animate>
+          <div>
+            <strong>[Takeaway #3]</strong>
+            <p class="subtitle">The most surprising or counterintuitive thing you learned.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 8: Resources -->
+  <section class="slide bg-surface" role="region" aria-label="Resources"
+    data-notes="Give them somewhere to go. GitHub repo, blog post, docs. Make it easy to follow up.">
+    <span class="slide-label">08</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Go deeper</p>
+      <h2 data-animate>Resources</h2>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" data-animate>
+          <div class="card-title">GitHub Repository</div>
+          <p style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent);">github.com/your-org/your-repo</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Blog Post / RFC</div>
+          <p style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent);">your-blog.com/post-title</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Further Reading</div>
+          <p class="subtitle">[Paper, book, or talk that inspired your approach]</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 9: Q&A -->
+  <section class="slide bg-hero" role="region" aria-label="Q&A"
+    data-notes="Thank the audience. Open for questions. Have your 3 hardest expected questions ready.">
+    <span class="slide-label">09</span>
+    <div class="slide-content centered" style="max-width:640px;">
+      <p class="eyebrow" data-animate>Thank you</p>
+      <h1 data-animate>Questions?</h1>
+      <p class="subtitle" data-animate style="font-size:clamp(1rem,1.8vw,1.15rem); margin-top: 12px;">
+        @handle · your@email.com
+      </p>
+      <p data-animate style="font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 20px;">
+        Slides: github.com/you/this-talk
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const CHANNEL = 'slides-presenter-sync';
+  let presenterWin = null;
+  let bc = null;
+  try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(container.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let navigating = false;
+  document.getElementById('totalSlides').textContent = total;
+  // Init positions
+  slides.forEach((s, i) => { s.style.transform = 'translateY(' + (i * 100) + 'vh)'; });
+  const dotsEl = document.getElementById('navDots');
+  slides.forEach((_, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', `Slide ${i+1}`); b.onclick = () => goTo(i); dotsEl.appendChild(b); });
+  function updateChrome(i) { current = i; document.getElementById('currentSlide').textContent = i+1; const pct = total>1?(i/(total-1))*100:100; document.getElementById('progressBar').style.width=pct+'%'; dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i)); slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false')); if(bc)bc.postMessage({type:'slide-change',payload:{index:i,total,notes:slides[i]?.dataset?.notes||''}}); }
+  function goTo(i) { i=Math.max(0,Math.min(i,total-1)); if(i===current&&!navigating)return; navigating=true; slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';}); slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{el.classList.remove('visible');setTimeout(()=>el.classList.add('visible'),j*120);}); updateChrome(i); setTimeout(()=>{navigating=false;},650); }
+  updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*120));},200);
+  document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}else if(e.key==='Home'){e.preventDefault();goTo(0);}else if(e.key==='End'){e.preventDefault();goTo(total-1);}else if(e.key.toLowerCase()==='p')openPresenter();else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}});
+  let touchY=0; container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true}); container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
+  container.addEventListener('wheel',e=>{e.preventDefault();if(navigating)return;goTo(current+(e.deltaY>0?1:-1));},{passive:false});
+  function openPresenter(){
+    if(presenterWin&&!presenterWin.closed){presenterWin.focus();if(bc)bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});return;}
+    const tpl=document.getElementById('presenter-view-html').textContent;
+    presenterWin=window.open('','_blank','width=1100,height=700,menubar=no,toolbar=no,location=no,status=no');
+    if(!presenterWin){alert('请允许弹出窗口以打开演讲者视图。');return;}
+    presenterWin.document.open();presenterWin.document.write(tpl);presenterWin.document.close();
+    setTimeout(()=>{if(bc){bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}},500);
+  }
+  document.getElementById('presenterBtn').addEventListener('click',openPresenter);
+  if(bc)bc.addEventListener('message',e=>{
+    if(e.data?.type==='request-init'){bc.postMessage({type:'init',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}
+    if(e.data?.type==='navigate')goTo(e.data.payload.index);
+    if(e.data?.type==='pointer-pos')relayPointer(e.data.payload);
+    if(e.data?.type==='blackout')toggleBlackout(e.data.payload.active);
+  });
+
+  // ── Laser pointer relay ──────────────────────────────────────
+  let laserDot=null;
+  function relayPointer({x,y}){
+    if(!laserDot){laserDot=document.createElement('div');laserDot.style.cssText='position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,0.85);box-shadow:0 0 12px 4px rgba(220,40,40,0.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';document.body.appendChild(laserDot);}
+    laserDot.style.left=(x*window.innerWidth)+'px';laserDot.style.top=(y*window.innerHeight)+'px';laserDot.style.display='block';
+    clearTimeout(laserDot._hide);laserDot._hide=setTimeout(()=>{if(laserDot)laserDot.style.display='none';},3000);
+  }
+
+  // ── Blackout relay ──────────────────────────────────────────
+  let blackoutEl=null;
+  function toggleBlackout(active){
+    if(active){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.title='点击退出黑屏';blackoutEl.addEventListener('click',()=>toggleBlackout(false));document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}
+    else if(blackoutEl){blackoutEl.style.display='none';}
+  }
+
+  // postMessage bridge — Presenter view iframe drives navigation on this page
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);
+  });
+</script>
+
+<!-- ══ Inline Presenter View Template v2 (bidirectional nav + laser + blackout) ══ -->
+<script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者视图</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d18; color: #e0e0f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+    #topbar { background: #111120; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #7c3aed; cursor: pointer; user-select: none; transition: color 0.2s; }
+    #timer:hover { color: #ec4899; } #timer.warn { color: #f59e0b; } #timer.over { color: #ef4444; }
+    #timer-label { font-size: 10px; color: #555; margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: #888; }
+    #slide-counter strong { color: #fff; font-size: 15px; }
+    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    .nav-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.12); color: #ccc; font-size: 16px; width: 36px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .nav-btn:hover { background: #282840; border-color: rgba(124,58,237,0.5); color: #fff; }
+    .tool-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.1); color: #999; font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .tool-btn:hover { border-color: rgba(124,58,237,0.5); color: #fff; }
+    .tool-btn.active { background: rgba(124,58,237,0.25); border-color: #7c3aed; color: #c4b5fd; }
+    .tool-btn.blackout-active { background: rgba(0,0,0,0.6); border-color: #555; color: #888; }
+    #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
+    #current-pane { grid-row: 1 / 3; background: #1a1a2e; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(124,58,237,0.4); box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #7c3aed; font-weight: 600; background: rgba(124,58,237,0.08); }
+    #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
+    #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
+    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(220,40,40,0.9); box-shadow: 0 0 10px 3px rgba(220,40,40,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
+    #next-pane { background: #111120; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); }
+    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #777; font-weight: 500; }
+    #next-preview { flex: 1; position: relative; overflow: hidden; }
+    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.65; }
+    #notes-pane { background: #111120; border-radius: 10px; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); }
+    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #555; margin-bottom: 8px; font-weight: 500; }
+    #notes-text { font-size: 13px; line-height: 1.7; color: #b8b8d8; }
+    #notes-text.empty { color: #3a3a5a; font-style: italic; }
+    #progress { position: fixed; bottom: 0; left: 0; height: 3px; background: #7c3aed; transition: width 0.3s ease; }
+  </style>
+</head>
+<body>
+<div id="topbar">
+  <div><div id="timer">00:00</div><div id="timer-label">点击重置</div></div>
+  <div class="topbar-divider"></div>
+  <button class="nav-btn" id="prevBtn" title="上一张 (←)">&#8592;</button>
+  <button class="nav-btn" id="nextBtn" title="下一张 (→)">&#8594;</button>
+  <div class="topbar-divider"></div>
+  <button class="tool-btn" id="laserBtn">&#9679; 激光笔</button>
+  <button class="tool-btn" id="blackoutBtn">&#9632; 黑屏</button>
+  <div class="topbar-divider"></div>
+  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
+</div>
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前幻灯片</div>
+    <div id="current-preview">
+      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+      <div id="laser-dot"></div>
+    </div>
+  </div>
+  <div id="next-pane"><div id="next-label">下一张</div><div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div></div>
+  <div id="notes-pane"><div id="notes-label">演讲备注</div><div id="notes-text" class="empty">（此幻灯片无备注）</div></div>
+</div>
+<div id="progress" style="width:0%"></div>
+<script>
+  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null,laserActive=false,blackoutActive=false;
+  const ch=new BroadcastChannel('slides-presenter-sync');
+  ch.addEventListener('message',(e)=>{
+    const{type,payload}=e.data||{};
+    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
+    if(type==='source-url'){const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}}
+  });
+  ch.postMessage({type:'request-init'});
+  function updateUI(p){
+    document.getElementById('pv-current').textContent=currentIndex+1;
+    document.getElementById('pv-total').textContent=totalSlides;
+    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
+    const n=document.getElementById('notes-text'),t=p.notes||'';
+    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
+    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
+    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
+    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
+    if(!timerRunning)startTimer();
+  }
+  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform=`scale(${s})`;f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
+  function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=30*60)el.classList.add('over');else if(timerSeconds>=20*60){el.classList.add('warn');el.classList.remove('over');}},1000);}
+  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
+  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
+  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
+  const laserBtn=document.getElementById('laserBtn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
+  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
+  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  const blackoutBtn=document.getElementById('blackoutBtn');
+  blackoutBtn.addEventListener('click',()=>{blackoutActive=!blackoutActive;blackoutBtn.classList.toggle('blackout-active',blackoutActive);blackoutBtn.textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
+  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')laserBtn.click();else if(e.key.toLowerCase()==='b')blackoutBtn.click();});
+  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
+<\/script>
+</body>
+</html>
+</script>
+
+</body>
+</html>

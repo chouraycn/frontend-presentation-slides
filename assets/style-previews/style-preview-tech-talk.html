@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview B — Vibrant Energy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Synced from template-tech-talk.html ── */
+    :root {
+      --bg:             #0b0b1e;
+      --surface:        #141428;
+      --surface2:       #1c1c38;
+      --accent:         #7c3aed;
+      --accent2:        #ec4899;
+      --accent3:        #10b981;
+      --text-primary:   #ffffff;
+      --text-secondary: #8888aa;
+      --code-bg:        #0d0d20;
+      --code-text:      #e2e8f0;
+      --font-heading: 'Space Grotesk', system-ui, sans-serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 4vw, 3.2rem); font-weight: 700; line-height: 1.1; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.3rem, 2.8vw, 2.2rem); font-weight: 700; line-height: 1.2; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem); line-height: 1.75; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide {
+      height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide-content { width: min(86%, 1000px); display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+
+    /* Slide backgrounds */
+    .bg-hero {
+      background:
+        radial-gradient(ellipse at 20% 40%, rgba(124,58,237,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(236,72,153,0.15) 0%, transparent 45%),
+        var(--bg);
+    }
+    .bg-hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+    .bg-dark { background: var(--bg); }
+    .bg-surface { background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%); }
+    .bg-code { background: linear-gradient(135deg, #0a0a1c 0%, #10102a 100%); }
+
+    /* Text components */
+    .eyebrow {
+      font-family: var(--font-heading); font-size: clamp(0.65rem, 1vw, 0.78rem);
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent2); font-weight: 600;
+    }
+    .subtitle { color: var(--text-secondary); font-family: var(--font-body); }
+    .accent  { color: var(--accent); }
+    .accent2 { color: var(--accent2); }
+    .accent3 { color: var(--accent3); }
+
+    /* Tag pills */
+    .tag {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4);
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);
+    }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Code block */
+    pre.code-block {
+      background: var(--code-bg); border-radius: 10px;
+      padding: 20px 24px; overflow-x: auto;
+      border: 1px solid rgba(124,58,237,0.2);
+      border-left: 3px solid var(--accent);
+      font-family: var(--font-mono); font-size: clamp(0.72rem, 1.2vw, 0.85rem);
+      line-height: 1.65; color: var(--code-text);
+    }
+    pre.code-block .kw  { color: #c084fc; }
+    pre.code-block .fn  { color: #60a5fa; }
+    pre.code-block .str { color: #86efac; }
+    pre.code-block .cm  { color: #475569; }
+    pre.code-block .num { color: #f9a8d4; }
+
+    /* Steps list */
+    .steps-list { list-style: none; display: flex; flex-direction: column; gap: 20px; counter-reset: steps; }
+    .steps-list li {
+      counter-increment: steps;
+      display: flex; align-items: flex-start; gap: 16px;
+      font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem);
+    }
+    .steps-list li::before {
+      content: counter(steps, decimal-leading-zero);
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+      color: var(--accent); min-width: 28px; padding-top: 0.2em;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border-radius: 10px; padding: 20px 22px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card-title { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Slide label */
+    .slide-label { position: absolute; top: 22px; left: 24px; font-family: var(--font-mono); font-size: 10px; color: rgba(124,58,237,0.3); z-index: 1; }
+
+    /* Navigation */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent2); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-mono); }
+
+    /* Style label */
+    .style-label { position: fixed; top: 20px; right: 60px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; color: rgba(124,58,237,0.5); z-index: 100; }
+    .style-label span { color: var(--accent2); }
+
+    /* Animations */
+    [data-animate] { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    [data-animate="left"] { transform: translateX(-24px); }
+    [data-animate="fade"] { transform: none; }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+  </style>
+</head>
+<body>
+
+<div class="style-label">Style Preview — <span>B: Vibrant Energy</span></div>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Hero / Title -->
+  <section class="slide bg-hero">
+    <span class="slide-label">01</span>
+    <div class="slide-content centered" style="max-width:800px;">
+      <div class="tags" style="justify-content:center;" data-animate>
+        <span class="tag">Architecture</span>
+        <span class="tag">Performance</span>
+        <span class="tag">Open Source</span>
+      </div>
+      <h1 data-animate>Vibrant Energy —<br>Built for Tech Talks</h1>
+      <p class="subtitle" data-animate style="font-size:clamp(1rem,1.8vw,1.15rem);">Deep purple gradients, mono code blocks, numbered steps — ideal for technical deep-dives and conference talks.</p>
+      <p data-animate style="font-size:12px; color:rgba(255,255,255,0.3); margin-top:12px;">YOUR NAME · @handle · Company · Venue, Year</p>
+    </div>
+  </section>
+
+  <!-- Slide 2: Steps / Context -->
+  <section class="slide bg-dark">
+    <span class="slide-label">02</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>The Approach</p>
+      <h2 data-animate>How we solved it in 3 steps</h2>
+      <ul class="steps-list">
+        <li data-animate>
+          <div><strong>Identify the bottleneck</strong>
+          <p class="subtitle">Profile first, optimize second — 80% of latency hid in one query.</p></div>
+        </li>
+        <li data-animate>
+          <div><strong>Redesign the data model</strong>
+          <p class="subtitle">Denormalized reads cut p99 from 1.2 s to 38 ms at 10× load.</p></div>
+        </li>
+        <li data-animate>
+          <div><strong>Ship incrementally</strong>
+          <p class="subtitle">Feature flags let us roll out to 1% → 10% → 100% without downtime.</p></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 3: Code Block -->
+  <section class="slide bg-code">
+    <span class="slide-label">03</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Core Implementation</p>
+      <h2 data-animate>The critical <span class="accent2">12 lines</span></h2>
+      <pre class="code-block" data-animate><code><span class="cm">// Key insight: batch DB calls instead of N+1 queries</span>
+<span class="kw">async function</span> <span class="fn">loadItems</span>(ids<span class="num">: string[]</span>) {
+  <span class="kw">const</span> rows = <span class="kw">await</span> db.<span class="fn">query</span>(
+    <span class="str">`SELECT * FROM items WHERE id = ANY($1)`</span>,
+    [ids]
+  );
+  <span class="kw">return</span> <span class="fn">groupById</span>(rows);
+}</code></pre>
+      <div class="card-grid" data-animate>
+        <div class="card"><div class="card-title accent3">Before</div><p class="subtitle">N+1 queries · p99 = 1.2 s</p></div>
+        <div class="card" style="border-color:rgba(124,58,237,0.4);"><div class="card-title accent">After</div><p class="subtitle">1 batch query · p99 = 38 ms</p></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0, navigating = false;
+
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+  });
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'active' : '';
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goToSlide(i);
+    navDots.appendChild(b);
+  });
+
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    if (idx === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)'; });
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    current = idx;
+    document.getElementById('currentSlide').textContent = idx + 1;
+    navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
+    progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  setTimeout(() => {
+    slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), 200 + i * 120);
+    });
+  }, 0);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+  });
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+</script>
+</body>
+</html>

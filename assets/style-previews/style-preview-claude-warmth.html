@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview — Claude Warmth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Synced from template-claude-warmth.html ── */
+    :root {
+      --bg:            #F6F0E8;
+      --bg-card:       #FDFAF5;
+      --bg-dark:       #1C1917;
+      --bg-mid:        #EDE5D8;
+
+      --accent:        #DA7756;
+      --accent2:       #C9A96E;
+      --accent3:       #7A9E7E;
+      --accent4:       #7B6EA0;
+
+      --text-primary:  #1C1917;
+      --text-secondary:#57534E;
+      --text-tertiary: #A8A29E;
+      --text-on-dark:  #F5F0E8;
+      --text-sec-dark: #A8A29E;
+
+      --surface:       #FDFAF5;
+      --surface-border:rgba(218,119,86,0.12);
+
+      --font-heading: 'Inter', -apple-system, sans-serif;
+      --font-body:    'Inter', -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(2.4rem,5.5vw,4.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.7rem,3.5vw,3.2rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+    p  { font-family: var(--font-body); font-size: clamp(0.9rem,1.5vw,1.05rem); line-height: 1.75; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .slide-content { width: min(84%, 960px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+
+    /* Backgrounds */
+    .bg-light {
+      background: var(--bg);
+      background-image: radial-gradient(ellipse at 15% 15%, rgba(218,119,86,0.07) 0%, transparent 50%),
+                        radial-gradient(ellipse at 85% 85%, rgba(201,169,110,0.06) 0%, transparent 50%);
+    }
+    .bg-dark { background: var(--bg-dark); }
+    .bg-dark-warm {
+      background: var(--bg-dark);
+      background-image: radial-gradient(ellipse at 50% 60%, rgba(218,119,86,0.12) 0%, transparent 55%),
+                        radial-gradient(ellipse at 20% 20%, rgba(201,169,110,0.07) 0%, transparent 40%);
+    }
+
+    /* Concentric circles (hero/CTA decoration) */
+    .circle-deco { position: absolute; border-radius: 50%; pointer-events: none; border: 1px solid rgba(218,119,86,0.12); }
+    .circle-deco-1 { width: 520px; height: 520px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .circle-deco-2 { width: 360px; height: 360px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-color: rgba(218,119,86,0.08); }
+    .circle-deco-3 { width: 200px; height: 200px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-color: rgba(218,119,86,0.06); }
+
+    /* Orb blobs */
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.25; }
+    .orb-terracotta { background: #DA7756; width: 340px; height: 340px; top: -80px; right: -80px; }
+    .orb-gold       { background: #C9A96E; width: 260px; height: 260px; bottom: -60px; left: 10%; opacity: 0.18; }
+
+    /* Text helpers */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.62rem,0.95vw,0.75rem);
+      text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600;
+    }
+    .eyebrow-light { color: var(--accent); }
+    .eyebrow-dark  { color: var(--accent2); }
+    .subtitle-light { color: var(--text-secondary); }
+    .subtitle-dark  { color: var(--text-sec-dark); }
+    .accent-text   { color: var(--accent); }
+    .on-dark       { color: var(--text-on-dark); }
+
+    /* Feature grid (light) */
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feature-card {
+      background: var(--surface); border-radius: 14px; padding: 24px 20px;
+      border: 1px solid var(--surface-border);
+      box-shadow: 0 2px 12px rgba(28,25,23,0.06);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .feature-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: rgba(218,119,86,0.1); border: 1px solid rgba(218,119,86,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .feature-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+    .feature-desc  { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* Stats */
+    .stats-row { display: flex; gap: 48px; flex-wrap: wrap; }
+    .stat-item { display: flex; flex-direction: column; gap: 4px; }
+    .stat-number { font-family: var(--font-heading); font-size: clamp(2.8rem,6vw,5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .stat-label  { font-size: 0.82rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat-number.light { color: var(--accent); }
+    .stat-number.dark  { color: var(--accent2); }
+    .stat-label.light  { color: var(--text-secondary); }
+    .stat-label.dark   { color: var(--text-sec-dark); }
+
+    /* Quote */
+    .quote-mark {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 12rem; line-height: 0.7; color: rgba(218,119,86,0.15);
+      position: absolute; top: 40px; left: 40px; pointer-events: none;
+      font-weight: 700; user-select: none;
+    }
+    .quote-text {
+      font-family: var(--font-heading); font-size: clamp(1.35rem,2.8vw,2rem);
+      font-weight: 600; letter-spacing: -0.02em; line-height: 1.4;
+      color: var(--text-on-dark);
+    }
+    .quote-cite { font-size: 0.82rem; color: var(--text-sec-dark); font-family: var(--font-body); margin-top: 8px; }
+
+    /* Divider */
+    .divider { width: 48px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+    /* Tag pill */
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(218,119,86,0.1); border: 1px solid rgba(218,119,86,0.2);
+      border-radius: 100px; padding: 4px 12px;
+      font-size: 0.75rem; font-weight: 500; color: var(--accent); font-family: var(--font-body);
+    }
+
+    /* Navigation */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(218,119,86,0.2); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent); transform: scale(1.6); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-tertiary); z-index: 100; font-family: var(--font-body); }
+
+    /* Style label */
+    .style-label { position: fixed; top: 20px; left: 24px; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--text-secondary); z-index: 100; }
+    .style-label span { color: var(--accent); font-weight: 600; }
+
+    /* Animations */
+    [data-animate] { opacity: 0; transform: translateY(22px); transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1); }
+    [data-animate="scale"] { transform: scale(0.88); }
+    [data-animate="blur"] { opacity: 0; filter: blur(10px); transition: opacity 0.75s ease, filter 0.75s ease; transform: none; }
+    [data-animate].visible { opacity: 1; transform: none; filter: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none !important; } }
+
+    @media (max-width: 640px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .stats-row { flex-direction: column; gap: 24px; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="style-label">Style Preview — <span>Claude Warmth</span></div>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Light cover with circle decoration -->
+  <section class="slide bg-light">
+    <div class="circle-deco circle-deco-1"></div>
+    <div class="circle-deco circle-deco-2"></div>
+    <div class="circle-deco circle-deco-3"></div>
+    <div class="orb orb-terracotta"></div>
+    <div class="orb orb-gold"></div>
+    <div class="slide-content centered" style="max-width:720px;">
+      <span class="tag" data-animate>Brand Story · 2026</span>
+      <h1 data-animate>Warm cream meets<br><span class="accent-text">terracotta contrast</span></h1>
+      <div class="divider" data-animate style="margin:8px auto;"></div>
+      <p class="subtitle-light" data-animate>Claude Warmth — light ↔ dark alternating rhythm. Ideal for brand stories, AI product decks, and design showcases.</p>
+    </div>
+  </section>
+
+  <!-- Slide 2: Dark slide with stats -->
+  <section class="slide bg-dark-warm">
+    <div class="quote-mark">"</div>
+    <div class="slide-content" style="max-width:840px;">
+      <p class="eyebrow eyebrow-dark" data-animate>By the Numbers</p>
+      <div class="stats-row" data-animate>
+        <div class="stat-item">
+          <span class="stat-number dark">4.2M</span>
+          <span class="stat-label dark">Monthly Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number dark">98%</span>
+          <span class="stat-label dark">Satisfaction</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number dark">3×</span>
+          <span class="stat-label dark">YoY Growth</span>
+        </div>
+      </div>
+      <p class="on-dark" data-animate style="opacity:0.7; margin-top:8px;">Numbers rendered on the dark contrast slide — gold accent keeps the warmth alive.</p>
+    </div>
+  </section>
+
+  <!-- Slide 3: Light feature grid -->
+  <section class="slide bg-light">
+    <div class="slide-content centered">
+      <p class="eyebrow eyebrow-light" data-animate>Why It Works</p>
+      <h2 data-animate>Three design <span class="accent-text">principles</span></h2>
+      <div class="feature-grid" data-animate>
+        <div class="feature-card">
+          <div class="feature-icon">🌿</div>
+          <div class="feature-title">Warm Palette</div>
+          <div class="feature-desc">Cream, sand, and terracotta create a calm, trustworthy atmosphere.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◐</div>
+          <div class="feature-title">Light ↔ Dark</div>
+          <div class="feature-desc">Alternating slide backgrounds create visual rhythm and focus.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">Aa</div>
+          <div class="feature-title">Inter Tight</div>
+          <div class="feature-desc">Heavy weight + tight tracking makes headlines feel confident and modern.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0, navigating = false;
+
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+  });
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'active' : '';
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goToSlide(i);
+    navDots.appendChild(b);
+  });
+
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    if (idx === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)'; });
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    current = idx;
+    document.getElementById('currentSlide').textContent = idx + 1;
+    navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
+    progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  setTimeout(() => { slides[0].querySelectorAll('[data-animate]').forEach((el, i) => { setTimeout(() => el.classList.add('visible'), 200 + i * 120); }); }, 0);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+  });
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+</script>
+</body>
+</html>

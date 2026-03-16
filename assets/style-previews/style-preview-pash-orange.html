@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview — Pash Orange (Agency / Studio Editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* ── Synced from template-pash-orange.html ── */
+    :root {
+      --bg:           #FFFFFF;
+      --bg-mid:       #F7F7F5;
+      --bg-card:      #F2F2EF;
+      --bg-invert:    #FF5C00;
+      --orange:       #FF5C00;
+      --orange-light: #FF8040;
+      --orange-dim:   rgba(255,92,0,0.10);
+      --orange-glow:  rgba(255,92,0,0.05);
+      --ink:          #0a0a0a;
+      --ink-mid:      #666666;
+      --ink-light:    #BBBBBB;
+      --ink-invert:   #FFFFFF;
+      --border:       rgba(0,0,0,0.08);
+      --border-orange: rgba(255,92,0,0.3);
+      --font-display: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
+      --font-heading: 'DM Serif Display', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+      --gap-xs: 8px; --gap-sm: 16px; --gap-md: 32px; --gap-lg: 56px; --gap-xl: 96px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    .display { font-family: var(--font-display); font-size: clamp(4rem, 10vw, 10rem); line-height: 0.92; letter-spacing: 0.02em; color: var(--ink); }
+    .display-sm { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 5rem); line-height: 0.95; letter-spacing: 0.02em; }
+    h1 { font-family: var(--font-heading); font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.6rem, 3.5vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; }
+    p  { font-family: var(--font-body); font-size: clamp(0.85rem, 1.4vw, 1rem); line-height: 1.8; color: var(--ink-mid); }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1); }
+    .slide-content { width: min(86%, 1100px); display: flex; flex-direction: column; gap: var(--gap-md); position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; width: min(92%, 1200px); }
+    .slide-content.asymmetric { display: grid; grid-template-columns: 3fr 2fr; gap: 80px; align-items: center; width: min(92%, 1200px); }
+
+    /* Backgrounds */
+    .bg-black { background: var(--bg); }
+    .bg-mid   { background: var(--bg-mid); }
+    .bg-orange { background: var(--orange); }
+
+    /* Dot-grid */
+    .bg-dots::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 32px 32px; pointer-events: none; z-index: 0;
+    }
+
+    /* Ambient glow */
+    .bg-glow::after {
+      content: ''; position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,92,0,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Text components */
+    .eyebrow { font-family: var(--font-body); font-size: clamp(0.6rem, 0.9vw, 0.72rem); text-transform: uppercase; letter-spacing: 0.22em; color: var(--orange); font-weight: 600; }
+    .counter { font-family: var(--font-display); font-size: clamp(0.9rem, 1.5vw, 1.1rem); color: var(--ink-light); letter-spacing: 0.08em; }
+    .o { color: var(--orange); }
+    .divider { width: 100%; height: 1px; background: var(--border); }
+    .divider-orange { width: 40px; height: 2px; background: var(--orange); }
+    .tag { display: inline-block; font-family: var(--font-body); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); border: 1px solid var(--border-orange); padding: 4px 12px; border-radius: 2px; font-weight: 600; }
+
+    /* Stat block grid */
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .stat-block { background: var(--bg-card); padding: 36px 28px; display: flex; flex-direction: column; gap: 8px; }
+    .stat-value { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5.5rem); color: var(--orange); line-height: 1; letter-spacing: 0.02em; }
+    .stat-label { font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.14em; }
+
+    /* Work card */
+    .work-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 36px 32px; display: flex; flex-direction: column; gap: 16px; }
+    .work-number { font-family: var(--font-display); font-size: 4rem; line-height: 1; letter-spacing: 0.02em; -webkit-text-stroke: 1px var(--orange); color: transparent; }
+    .work-title { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--ink); line-height: 1.2; }
+    .work-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+    /* Slide num */
+    .slide-num { position: absolute; top: 40px; right: 60px; font-family: var(--font-display); font-size: 0.85rem; color: var(--ink-light); letter-spacing: 0.12em; z-index: 1; }
+
+    /* Navigation */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--orange); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--border-orange); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--orange); border-color: var(--orange); transform: scale(1.4); }
+    .slide-counter { position: fixed; bottom: 20px; right: 60px; font-family: var(--font-display); font-size: 0.82rem; color: var(--ink-light); letter-spacing: 0.1em; z-index: 100; }
+
+    /* Style label */
+    .style-label { position: fixed; top: 40px; left: 60px; font-family: var(--font-body); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-mid); z-index: 100; }
+    .style-label span { color: var(--orange); font-weight: 600; }
+
+    /* Animations */
+    [data-animate] { opacity: 0; transform: translateY(20px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    [data-animate="left"] { transform: translateX(-32px); }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    @media (max-width: 640px) {
+      .slide-content.two-col, .slide-content.asymmetric { grid-template-columns: 1fr; gap: 32px; }
+      .stat-row { grid-template-columns: 1fr; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="style-label">Style Preview — <span>Pash Orange</span></div>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Black cover with Bebas Neue display type -->
+  <section class="slide bg-black bg-glow">
+    <span class="slide-num" data-animate="fade">001 / 003</span>
+    <div class="slide-content">
+      <span class="counter" data-animate>001</span>
+      <div class="display" data-animate>PASH<br><span class="o">ORANGE</span></div>
+      <div class="divider-orange" data-animate></div>
+      <p data-animate>Agency editorial — Bebas Neue display type, DM Serif subheads, pure orange on black. Built for creative studios, brand decks, and design pitches.</p>
+      <div data-animate style="display:flex; gap:8px; margin-top:4px;">
+        <span class="tag">Agency</span>
+        <span class="tag">Brand</span>
+        <span class="tag">Editorial</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Stats grid on card background -->
+  <section class="slide bg-mid">
+    <span class="slide-num" data-animate="fade">002 / 003</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Numbers</p>
+      <h2 data-animate>Results that <em>speak</em></h2>
+      <div class="stat-row" data-animate>
+        <div class="stat-block">
+          <span class="stat-value">180+</span>
+          <span class="stat-label">Projects Delivered</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">97%</span>
+          <span class="stat-label">Client Satisfaction</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">12Y</span>
+          <span class="stat-label">Studio Experience</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Orange invert slide -->
+  <section class="slide bg-orange bg-dots">
+    <span class="slide-num" style="color:rgba(255,255,255,0.4);" data-animate="fade">003 / 003</span>
+    <div class="slide-content centered" style="max-width:800px;">
+      <p data-animate style="font-family:var(--font-display); font-size:clamp(0.8rem,1.2vw,1rem); letter-spacing:0.25em; color:rgba(255,255,255,0.6); text-transform:uppercase;">Let's Create Together</p>
+      <div class="display" data-animate style="color:#fff; font-size:clamp(3.5rem,8vw,8rem);">START<br>SOMETHING.</div>
+      <p data-animate style="color:rgba(255,255,255,0.75); max-width:480px; margin:0 auto;">The orange invert slide makes a bold statement — ideal for CTAs, manifesto pages, and closing moments.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0, navigating = false;
+
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.65s cubic-bezier(0.16,1,0.3,1);';
+  });
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'active' : '';
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goToSlide(i);
+    navDots.appendChild(b);
+  });
+
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    if (idx === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)'; });
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    current = idx;
+    document.getElementById('currentSlide').textContent = idx + 1;
+    navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
+    progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  setTimeout(() => { slides[0].querySelectorAll('[data-animate]').forEach((el, i) => { setTimeout(() => el.classList.add('visible'), 200 + i * 120); }); }, 0);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+  });
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+</script>
+</body>
+</html>

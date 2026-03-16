@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<!--
+  template-hhart-red.html — Hhart Red Power
+  ─────────────────────────────────────────────────────────────────────────────
+  Inspired by: hhart.studio — bold geometric minimalism, black canvas, crimson red
+  Style: Pure black + crimson red — wide-tracked uppercase sans-serif, maximum contrast,
+         asymmetric editorial layouts, razor-sharp dividers, confident negative space
+  Best for: creative studio, photography portfolio, brand identity, agency pitch, red-brand decks
+  Slides: 9 (Cover → Manifesto → About → Work 01 → Work 02 → Numbers → Process → Testimonial → CTA)
+
+  HOW TO USE:
+    1. Edit :root {} constants (colors, fonts)
+    2. Replace [PLACEHOLDER] content
+    3. Paste scripts/charts.js before </body> for data slides
+    4. Press [P] for presenter mode
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[Brand Name] — Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=Barlow:wght@300;400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       THEME CONSTANTS — edit here to restyle the entire deck
+       ═══════════════════════════════════════════════════════ */
+    :root {
+      /* Backgrounds */
+      --bg:           #0a0a0a;    /* near-black canvas */
+      --bg-mid:       #111111;    /* slightly lighter surface */
+      --bg-card:      #181818;    /* card / panel background */
+      --bg-white:     #F2F0EE;    /* light slide variant */
+      --bg-white-mid: #E8E6E3;    /* off-white surface */
+
+      /* Brand Red */
+      --red:          #C8102E;    /* primary crimson red (hhart-inspired) */
+      --red-light:    #E5173A;    /* lighter red for hover */
+      --red-dim:      rgba(200,16,46,0.12);   /* subtle tint */
+      --red-glow:     rgba(200,16,46,0.06);   /* very subtle ambient */
+
+      /* Typography — dark slides */
+      --ink:          #F2F0EE;    /* primary text on dark bg */
+      --ink-mid:      #888888;    /* secondary / caption */
+      --ink-light:    #444444;    /* muted / hairline labels */
+
+      /* Typography — light slides */
+      --ink-dark:     #0a0a0a;    /* primary text on light bg */
+      --ink-dark-mid: #555555;    /* secondary on light bg */
+
+      /* Borders */
+      --border:       rgba(255,255,255,0.07);
+      --border-red:   rgba(200,16,46,0.35);
+      --border-light: rgba(0,0,0,0.08);
+
+      /* Fonts — CJK-aware */
+      --font-display: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif; /* condensed bold display */
+      --font-body:    'Barlow', 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-mono:    'Inter', monospace;
+
+      /* Spacing scale */
+      --gap-xs: 8px;
+      --gap-sm: 16px;
+      --gap-md: 32px;
+      --gap-lg: 56px;
+      --gap-xl: 96px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BASE RESET & TYPOGRAPHY
+       ═══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Display — Barlow Condensed uppercase */
+    .display {
+      font-family: var(--font-display);
+      font-size: clamp(5rem, 12vw, 13rem);
+      line-height: 0.88;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .display-sm {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5.5vw, 6rem);
+      line-height: 0.92;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .display-xs {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 3rem);
+      line-height: 0.95;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 5vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-family: var(--font-body);
+      font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    p {
+      font-family: var(--font-body);
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      line-height: 1.8;
+      color: var(--ink-mid);
+      font-weight: 300;
+    }
+
+    strong { color: var(--ink); font-weight: 600; }
+
+    /* ── CJK typography optimizations ── */
+    /* Disable uppercase transform for CJK characters — uppercase makes no sense for Chinese */
+    .slide h1:lang(zh), .slide h2:lang(zh), .slide h1 *:lang(zh), .slide h2 *:lang(zh) { text-transform: none; }
+    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+
+    /* ═══════════════════════════════════════════════════════
+       SLIDE CONTAINER & LAYOUT
+       ═══════════════════════════════════════════════════════ */
+    .slides-container {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      height: 100vh;
+      overflow: hidden;
+      position: absolute;
+      top: 0; left: 0; width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide-content {
+      width: min(88%, 1100px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-md);
+      position: relative;
+      z-index: 1;
+    }
+
+    .slide-content.centered {
+      text-align: center;
+      align-items: center;
+    }
+
+    .slide-content.two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      width: min(92%, 1200px);
+    }
+
+    .slide-content.asymmetric {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 80px;
+      align-items: center;
+      width: min(92%, 1200px);
+    }
+
+    .slide-content.asymmetric-rev {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 80px;
+      align-items: center;
+      width: min(92%, 1200px);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BACKGROUND VARIANTS
+       ═══════════════════════════════════════════════════════ */
+
+    /* Dark black base slides */
+    .bg-dark  { background: var(--bg); }
+    .bg-mid   { background: var(--bg-mid); }
+
+    /* Full red invert slide */
+    .bg-red {
+      background: var(--red);
+    }
+
+    /* Light slides */
+    .bg-light {
+      background: var(--bg-white);
+      color: var(--ink-dark);
+    }
+    .bg-light p  { color: var(--ink-dark-mid); }
+    .bg-light .ink-muted { color: var(--ink-dark-mid); }
+
+    /* Diagonal split: dark left / light right */
+    .bg-split {
+      background: linear-gradient(to right, var(--bg) 52%, var(--bg-white) 52%);
+    }
+
+    /* Red slash accent stripe across bottom */
+    .bg-slash::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--red);
+      pointer-events: none;
+    }
+
+    /* Dot-grid texture overlay (dark version) */
+    .bg-dots::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Fine grid texture (light version) */
+    .bg-grid::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Red ambient glow */
+    .bg-glow::after {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,16,46,0.10) 0%, transparent 65%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TEXT COMPONENTS
+       ═══════════════════════════════════════════════════════ */
+
+    /* Eyebrow — uppercase micro label */
+    .eyebrow {
+      font-family: var(--font-body);
+      font-size: clamp(0.58rem, 0.85vw, 0.7rem);
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* Serif counter: 001 / 009 */
+    .counter {
+      font-family: var(--font-display);
+      font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+      color: var(--ink-light);
+      letter-spacing: 0.1em;
+      font-weight: 400;
+    }
+
+    /* Red accent word inline */
+    .r { color: var(--red); }
+
+    /* White text on colored slides */
+    .on-red { color: #ffffff; }
+
+    /* Hairline divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider-red {
+      width: 40px;
+      height: 2px;
+      background: var(--red);
+    }
+
+    .divider-light {
+      width: 100%;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    /* Tag / badge */
+    .tag {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--red);
+      border: 1px solid var(--border-red);
+      padding: 3px 10px;
+      border-radius: 1px;
+      font-weight: 600;
+    }
+
+    .tag.dark {
+      color: var(--ink);
+      border-color: var(--border);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       COMPONENT STYLES
+       ═══════════════════════════════════════════════════════ */
+
+    /* Work / Project card (dark) */
+    .work-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color 0.2s ease;
+    }
+    .work-card:hover { border-color: var(--border-red); }
+
+    .work-number {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      line-height: 1;
+      -webkit-text-stroke: 1px var(--red);
+      color: transparent;
+    }
+
+    .work-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+      color: var(--ink);
+      line-height: 1.0;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .work-desc {
+      font-size: 0.86rem;
+      color: var(--ink-mid);
+      line-height: 1.75;
+      font-family: var(--font-body);
+      font-weight: 300;
+    }
+
+    .work-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* Image / visual placeholder */
+    .work-visual {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-light);
+      font-size: 0.7rem;
+      font-family: var(--font-body);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .work-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--red-glow) 0%, transparent 55%);
+    }
+
+    /* Red accent bracket on visuals */
+    .work-visual::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 12px;
+      width: 18px; height: 18px;
+      border-top: 2px solid var(--red);
+      border-left: 2px solid var(--red);
+      z-index: 1;
+    }
+
+    /* Stat block */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .stat-row.three-col {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stat-block {
+      background: var(--bg-card);
+      padding: 40px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      color: var(--red);
+      line-height: 1;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+    }
+
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 400;
+    }
+
+    /* Process list */
+    .process-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .process-item {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 24px;
+      align-items: start;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .process-item:last-child { border-bottom: none; }
+
+    .process-num {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--ink-light);
+      letter-spacing: 0.1em;
+      padding-top: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .process-text h3 {
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-family: var(--font-body);
+      font-weight: 600;
+    }
+
+    .process-text p {
+      font-size: 0.82rem;
+      color: var(--ink-mid);
+      line-height: 1.65;
+    }
+
+    /* Pull quote — on dark slides */
+    .pull-quote {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3.2vw, 3rem);
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .pull-quote .attr {
+      display: block;
+      margin-top: 20px;
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-weight: 400;
+    }
+
+    /* Feature / service list */
+    .service-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .service-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-body);
+      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      color: var(--ink-mid);
+      font-weight: 300;
+    }
+
+    .service-item::before {
+      content: '';
+      flex-shrink: 0;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .service-item strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Two-line statement block */
+    .manifesto-text {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 9rem);
+      line-height: 0.9;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .manifesto-text .line-outline {
+      -webkit-text-stroke: 2px var(--ink);
+      color: transparent;
+    }
+
+    .manifesto-text .line-red {
+      color: var(--red);
+    }
+
+    /* CTA Buttons */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--red);
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      padding: 14px 32px;
+      border-radius: 1px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .btn-primary:hover { background: var(--red-light); transform: translateY(-1px); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      padding: 13px 30px;
+      border-radius: 1px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .btn-outline:hover { border-color: var(--red); color: var(--red); }
+
+    /* Corner L-bracket decoration */
+    .corner-mark::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 28px;
+      width: 22px; height: 22px;
+      border-top: 2px solid var(--red);
+      border-left: 2px solid var(--red);
+      pointer-events: none;
+    }
+    .corner-mark::after {
+      content: '';
+      position: absolute;
+      bottom: 28px; right: 28px;
+      width: 22px; height: 22px;
+      border-bottom: 2px solid var(--red);
+      border-right: 2px solid var(--red);
+      pointer-events: none;
+    }
+
+    /* Corner mark light (on white slides) */
+    .corner-mark-light::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 28px;
+      width: 22px; height: 22px;
+      border-top: 2px solid var(--red);
+      border-left: 2px solid var(--red);
+      pointer-events: none;
+    }
+    .corner-mark-light::after {
+      content: '';
+      position: absolute;
+      bottom: 28px; right: 28px;
+      width: 22px; height: 22px;
+      border-bottom: 2px solid rgba(0,0,0,0.15);
+      border-right: 2px solid rgba(0,0,0,0.15);
+      pointer-events: none;
+    }
+
+    /* Red vertical accent bar */
+    .red-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--red);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════════════ */
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    [data-animate="fade"]       { transform: none; }
+    [data-animate="slide-left"] { transform: translateX(-32px); }
+    [data-animate="scale"] {
+      transform: scale(0.95);
+      transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    [data-animate="reveal"] {
+      transform: translateY(16px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    [data-animate].visible { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-animate] { transition: none; opacity: 1; transform: none; }
+      .slide { transition: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       NAVIGATION CHROME
+       ═══════════════════════════════════════════════════════ */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: var(--red);
+      width: 0%;
+      transition: width 0.3s ease;
+      z-index: 200;
+    }
+
+    .nav-dots {
+      position: fixed;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+    }
+
+    .nav-dots button {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      border: none;
+      background: #333;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.25s, height 0.25s;
+      padding: 0;
+    }
+
+    .nav-dots button.active {
+      background: var(--red);
+      transform: scaleY(1);
+      height: 20px;
+      border-radius: 1px;
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      color: var(--ink-light);
+      font-family: var(--font-body);
+      z-index: 200;
+      text-transform: uppercase;
+    }
+
+    #presenterBtn {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink-light);
+      font-family: var(--font-body);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 1px;
+      z-index: 200;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    #presenterBtn:hover { border-color: var(--red); color: var(--red); }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .slide-content.two-col,
+      .slide-content.asymmetric,
+      .slide-content.asymmetric-rev { grid-template-columns: 1fr; gap: 36px; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      :root { --gap-md: 20px; --gap-lg: 32px; }
+      .display { font-size: clamp(3rem, 15vw, 6rem); }
+      .stat-row { grid-template-columns: 1fr; }
+      .manifesto-text { font-size: clamp(2rem, 10vw, 4rem); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PRINT / PDF
+       ═══════════════════════════════════════════════════════ */
+    @media print {
+      html, body { overflow: visible; height: auto; }
+      .slides-container { overflow: visible; height: auto; }
+      .slide {
+        position: relative; height: 100vh; page-break-after: always;
+        transform: none !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+  <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+  <div class="slide-counter" id="slideCounter">01 / 09</div>
+  <button id="presenterBtn" aria-label="Open presenter view">Presenter [P]</button>
+
+  <main class="slides-container" id="slidesContainer" role="main">
+
+    <!-- ── SLIDE 01 · COVER ───────────────────────────────── -->
+    <section class="slide bg-red corner-mark"
+             data-notes="Opening slide. State your studio name and the tagline confidently. Pause for 3 seconds."
+             aria-label="Cover slide">
+      <div class="slide-content">
+        <span class="eyebrow" data-animate="fade">Creative Studio</span>
+        <div class="display" data-animate>
+          [BRAND<br><span style="color:#0a0a0a">NAME</span>]
+        </div>
+        <div class="divider-red" data-animate="fade" style="margin-top:8px"></div>
+        <p style="max-width:440px; margin-top:8px" data-animate>
+          We build <strong>brands that move people</strong> — through strategy, design, and bold visual identity.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 02 · MANIFESTO ──────────────────────────── -->
+    <section class="slide bg-mid bg-dots"
+             data-notes="Manifesto — read it slow. Let the words land."
+             aria-label="Manifesto slide">
+      <div class="slide-content">
+        <div class="manifesto-text" data-animate>
+          <div class="line-outline">Design</div>
+          <div class="line-red">with</div>
+          <div>Purpose.</div>
+        </div>
+        <div class="divider" style="margin-top: 24px" data-animate="fade"></div>
+        <p style="max-width:480px" data-animate>
+          We believe every pixel carries intent. Every composition tells a story. 
+          <strong>We make that story impossible to ignore.</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 03 · ABOUT ──────────────────────────────── -->
+    <section class="slide bg-dark"
+             data-notes="About us — explain the team's expertise. Mention key verticals: branding, photography, web."
+             aria-label="About slide">
+      <div class="slide-content asymmetric">
+        <div>
+          <span class="counter" data-animate="fade">003 / 009</span>
+          <h1 style="margin-top: 16px; color: var(--ink)" data-animate>
+            Who We <span class="r">Are</span>
+          </h1>
+          <div class="divider-red" style="margin-top: 20px; margin-bottom: 20px" data-animate="fade"></div>
+          <p data-animate>
+            [Studio name] is a full-service creative studio specialising in brand identity, 
+            editorial photography, and digital experiences for ambitious brands.
+          </p>
+          <p style="margin-top: 12px" data-animate>
+            Based in [City]. Working globally. <strong>Obsessed with craft.</strong>
+          </p>
+        </div>
+        <div data-animate="slide-left">
+          <ul class="service-list">
+            <li class="service-item"><strong>Brand Identity</strong></li>
+            <li class="service-item"><strong>Art Direction</strong></li>
+            <li class="service-item"><strong>Photography</strong></li>
+            <li class="service-item"><strong>Web Design & Dev</strong></li>
+            <li class="service-item"><strong>Motion & Film</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 04 · WORK 01 ────────────────────────────── -->
+    <section class="slide bg-light corner-mark-light"
+             data-notes="Featured case study. Walk through the visual first, then the project details."
+             aria-label="Work 01 slide">
+      <div class="slide-content asymmetric-rev">
+        <div data-animate="scale">
+          <div class="work-visual" style="border-color: var(--border-light); background: var(--bg-white-mid)">
+            <span style="color: #aaa">[ Project Visual ]</span>
+          </div>
+        </div>
+        <div>
+          <span class="counter" style="color: var(--ink-dark-mid)" data-animate="fade">001</span>
+          <h2 style="color: var(--ink-dark); margin-top: 12px" data-animate>
+            Project [Name]
+          </h2>
+          <div style="width: 36px; height: 2px; background: var(--red); margin: 16px 0" data-animate="fade"></div>
+          <p data-animate>[One-line project descriptor — what it is and for whom.]</p>
+          <div class="work-tags" style="margin-top: 16px" data-animate="fade">
+            <span class="tag dark">Branding</span>
+            <span class="tag dark">Photography</span>
+            <span class="tag dark">Web</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 05 · WORK 02 ────────────────────────────── -->
+    <section class="slide bg-dark"
+             data-notes="Two-card work grid. Give equal time to each project."
+             aria-label="Work 02 slide">
+      <div class="slide-content">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px">
+          <span class="eyebrow" data-animate="fade">Selected Work</span>
+          <span class="counter" data-animate="fade">005 / 009</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px" data-animate>
+          <div class="work-card">
+            <div class="work-number">002</div>
+            <div class="work-title">Project [Alpha]</div>
+            <p class="work-desc">[Brief description of work completed, results achieved, client industry.]</p>
+            <div class="work-tags">
+              <span class="tag">Identity</span>
+              <span class="tag">Print</span>
+            </div>
+          </div>
+          <div class="work-card">
+            <div class="work-number">003</div>
+            <div class="work-title">Project [Beta]</div>
+            <p class="work-desc">[Brief description of work completed, results achieved, client industry.]</p>
+            <div class="work-tags">
+              <span class="tag">Web</span>
+              <span class="tag">Motion</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 06 · NUMBERS ────────────────────────────── -->
+    <section class="slide bg-mid bg-glow"
+             data-notes="Numbers — let each stat breathe. Read the numbers aloud with confidence."
+             aria-label="Numbers slide">
+      <div class="slide-content">
+        <span class="eyebrow" data-animate="fade">By the numbers</span>
+        <div class="stat-row" style="margin-top: 16px" data-animate="scale">
+          <div class="stat-block">
+            <div class="stat-value">140+</div>
+            <div class="stat-label">Clients served</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">08</div>
+            <div class="stat-label">Years operating</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">3×</div>
+            <div class="stat-label">Avg. brand lift</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Awards won</div>
+          </div>
+        </div>
+        <p style="max-width: 500px; margin-top: 8px" data-animate>
+          Numbers tell one part of the story. The real story is in the <strong>work we deliver</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 07 · PROCESS ────────────────────────────── -->
+    <section class="slide bg-dark"
+             data-notes="Walk through each phase clearly. Explain why the process delivers predictable quality."
+             aria-label="Process slide">
+      <div class="slide-content two-col">
+        <div>
+          <span class="eyebrow" data-animate="fade">How we work</span>
+          <h2 style="margin-top: 16px; color: var(--ink)" data-animate>
+            Our <span class="r">Process</span>
+          </h2>
+          <div class="divider-red" style="margin-top: 20px; margin-bottom: 20px" data-animate="fade"></div>
+          <p data-animate>
+            A proven four-step framework that turns complex briefs into 
+            <strong>confident, distinctive outcomes</strong> — every time.
+          </p>
+        </div>
+        <ul class="process-list" data-animate="slide-left">
+          <li class="process-item">
+            <span class="process-num">01</span>
+            <div class="process-text">
+              <h3>Discover</h3>
+              <p>Deep brief, competitor audit, audience mapping.</p>
+            </div>
+          </li>
+          <li class="process-item">
+            <span class="process-num">02</span>
+            <div class="process-text">
+              <h3>Define</h3>
+              <p>Strategy, positioning, and creative territory.</p>
+            </div>
+          </li>
+          <li class="process-item">
+            <span class="process-num">03</span>
+            <div class="process-text">
+              <h3>Design</h3>
+              <p>Visual identity, art direction, digital builds.</p>
+            </div>
+          </li>
+          <li class="process-item">
+            <span class="process-num">04</span>
+            <div class="process-text">
+              <h3>Deliver</h3>
+              <p>Launch, brand guidelines, ongoing support.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 08 · TESTIMONIAL ────────────────────────── -->
+    <section class="slide bg-red corner-mark"
+             style="--red: #fff; --border: rgba(255,255,255,0.2)"
+             data-notes="Read the quote slowly. The full red slide is designed for impact — let it sink in."
+             aria-label="Testimonial slide">
+      <div class="slide-content centered" style="max-width: 820px">
+        <div class="divider" style="background: rgba(255,255,255,0.2)" data-animate="fade"></div>
+        <div class="pull-quote" style="color: #0a0a0a; margin-top: 24px" data-animate>
+          "Working with [Studio] changed how we present our brand to the world. The results were
+          <span style="text-decoration: underline; text-decoration-color: rgba(10,10,10,0.4);">beyond</span>
+          anything we expected."
+          <span class="attr">— [Client Name], [Title] at [Company]</span>
+        </div>
+        <div class="divider" style="background: rgba(255,255,255,0.2); margin-top: 24px" data-animate="fade"></div>
+      </div>
+    </section>
+
+    <!-- ── SLIDE 09 · CTA ────────────────────────────────── -->
+    <section class="slide bg-dark bg-dots corner-mark"
+             data-notes="Closing slide. Make eye contact. Deliver the call to action with confidence."
+             aria-label="CTA slide">
+      <div class="slide-content">
+        <span class="eyebrow" data-animate="fade">Let's make something great</span>
+        <div class="display" data-animate>
+          START A<br><span class="r">PROJECT</span>
+        </div>
+        <div class="divider-red" data-animate="fade" style="margin-top: 12px"></div>
+        <p style="max-width: 400px; margin-top: 12px" data-animate>
+          Ready to build a brand people remember? 
+          <strong>We'd love to hear your brief.</strong>
+        </p>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px" data-animate="fade">
+          <a href="mailto:hello@[studio].com" class="btn-primary">hello@[studio].com →</a>
+          <a href="#" class="btn-outline">View Full Portfolio</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════
+       SLIDE PRESENTATION CONTROLLER
+       ═══════════════════════════════════════════════════════ */
+    class SlidePresentation {
+      constructor() {
+        this.container   = document.getElementById('slidesContainer');
+        this.slides      = [...document.querySelectorAll('.slide')];
+        this.dotsNav     = document.getElementById('navDots');
+        this.progressBar = document.getElementById('progressBar');
+        this.counter     = document.getElementById('slideCounter');
+        this.current     = 0;
+        this.total       = this.slides.length;
+        this.animating   = false;
+        this.channel     = new BroadcastChannel('slide-sync');
+
+        this._buildDots();
+        this._initAnimationObserver();
+        this._bindKeys();
+        this._bindTouch();
+        this._bindWheel();
+        this._bindChannel();
+
+        this.goTo(0, false);
+        document.getElementById('presenterBtn').addEventListener('click', () => this._openPresenter());
+      }
+
+      _buildDots() {
+        this.slides.forEach((_, i) => {
+          const b = document.createElement('button');
+          b.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          b.addEventListener('click', () => this.goTo(i));
+          this.dotsNav.appendChild(b);
+        });
+      }
+
+      _initAnimationObserver() {
+        const obs = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.querySelectorAll('[data-animate]').forEach((el, i) => {
+                setTimeout(() => el.classList.add('visible'), i * 110);
+              });
+            } else {
+              entry.target.querySelectorAll('[data-animate]').forEach(el => el.classList.remove('visible'));
+            }
+          });
+        }, { threshold: 0.35 });
+        this.slides.forEach(s => obs.observe(s));
+      }
+
+      goTo(n, animate = true) {
+        if (n < 0 || n >= this.total) return;
+        if (this.animating && animate) return;
+
+        this.animating = true;
+        this.current   = n;
+
+        this.slides.forEach((s, i) => {
+          s.style.transform = `translateY(${(i - n) * 100}vh)`;
+          s.setAttribute('aria-current', i === n ? 'true' : 'false');
+        });
+
+        const pct = this.total > 1 ? (n / (this.total - 1)) * 100 : 100;
+        this.progressBar.style.width = pct + '%';
+
+        [...this.dotsNav.children].forEach((b, i) => b.classList.toggle('active', i === n));
+
+        const pad = v => String(v + 1).padStart(2, '0');
+        this.counter.textContent = `${pad(n)} / ${pad(this.total - 1)}`;
+
+        this.channel.postMessage({ type: 'slide-change', index: n, total: this.total });
+
+        setTimeout(() => { this.animating = false; }, animate ? 680 : 0);
+      }
+
+      next() { this.goTo(this.current + 1); }
+      prev() { this.goTo(this.current - 1); }
+
+      _bindKeys() {
+        document.addEventListener('keydown', e => {
+          const map = {
+            ArrowRight: () => this.next(), ArrowDown: () => this.next(),
+            ArrowLeft:  () => this.prev(), ArrowUp:   () => this.prev(),
+            ' ':        () => this.next(),
+            Home:       () => this.goTo(0),
+            End:        () => this.goTo(this.total - 1),
+            'p': () => this._openPresenter(), 'P': () => this._openPresenter()
+          };
+          if (map[e.key]) { e.preventDefault(); map[e.key](); }
+          if (e.key === ' ' && e.shiftKey) { e.preventDefault(); this.prev(); }
+        });
+      }
+
+      _bindTouch() {
+        let startY = 0;
+        this.container.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+        this.container.addEventListener('touchend', e => {
+          const d = startY - e.changedTouches[0].clientY;
+          if (Math.abs(d) > 50) d > 0 ? this.next() : this.prev();
+        }, { passive: true });
+      }
+
+      _bindWheel() {
+        let last = 0;
+        this.container.addEventListener('wheel', e => {
+          e.preventDefault();
+          const now = Date.now();
+          if (now - last < 800) return;
+          last = now;
+          e.deltaY > 0 ? this.next() : this.prev();
+        }, { passive: false });
+      }
+
+      _bindChannel() {
+        this.channel.onmessage = e => {
+          if (e.data.type === 'navigate')     this.goTo(e.data.index);
+          if (e.data.type === 'request-init') {
+            this.channel.postMessage({ type: 'init', index: this.current, total: this.total, sourceUrl: location.href });
+          }
+        };
+        this.channel.postMessage({ type: 'init', index: this.current, total: this.total, sourceUrl: location.href });
+      }
+
+      _openPresenter() {
+        const html = document.getElementById('presenter-view-html').textContent;
+        const win  = window.open('', 'presenterView', 'width=1200,height=700');
+        win.document.write(html);
+        win.document.close();
+      }
+    }
+
+    const presentation = new SlidePresentation();
+  </script>
+
+  <!-- ── PRESENTER VIEW TEMPLATE ──────────────────────────── -->
+  <script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Presenter View — Hhart Red</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;color:#f2f0ee;font-family:'Barlow',sans-serif;height:100vh;display:grid;grid-template-columns:3fr 2fr;grid-template-rows:1fr 1fr;overflow:hidden}
+  #cur-frame{grid-row:1/3;background:#111;border-right:1px solid #1f1f1f;position:relative;overflow:hidden}
+  #cur-frame iframe{width:100%;height:100%;border:none;transform-origin:top left;pointer-events:none}
+  #next-frame{background:#111;border-bottom:1px solid #1f1f1f;position:relative;overflow:hidden}
+  #next-frame iframe{width:100%;height:100%;border:none;transform-origin:top left;pointer-events:none}
+  #notes-panel{padding:20px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+  .pv-label{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#555;font-family:'Barlow',sans-serif}
+  #notes-text{font-size:13px;line-height:1.7;color:#ccc;flex:1;overflow-y:auto}
+  #timer{font-size:24px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f2f0ee;cursor:pointer;letter-spacing:.04em}
+  #timer.warn{color:#f59e0b}
+  #timer.danger{color:#C8102E}
+  .ctrl-row{display:flex;gap:8px;flex-wrap:wrap}
+  .pv-btn{flex:1;padding:8px 4px;background:transparent;border:1px solid #222;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;border-radius:1px;transition:all .2s;font-family:'Barlow',sans-serif}
+  .pv-btn:hover{border-color:#C8102E;color:#C8102E}
+  .pv-btn.active{background:#C8102E;border-color:#C8102E;color:#fff}
+  #laser-dot{position:fixed;width:14px;height:14px;border-radius:50%;background:#C8102E;box-shadow:0 0 8px rgba(200,16,46,.8);pointer-events:none;display:none;z-index:9999;transform:translate(-50%,-50%)}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="cur-frame"><iframe id="mainIframe" sandbox="allow-scripts allow-same-origin"></iframe></div>
+<div id="next-frame"><iframe id="nextIframe" sandbox="allow-scripts allow-same-origin"></iframe></div>
+<div id="notes-panel">
+  <div class="pv-label">Speaker Notes</div>
+  <div id="notes-text">—</div>
+  <div class="pv-label">Timer</div>
+  <div id="timer">00:00</div>
+  <div class="ctrl-row">
+    <button class="pv-btn" id="btnPrev">← Prev</button>
+    <button class="pv-btn" id="btnNext">Next →</button>
+  </div>
+  <div class="ctrl-row">
+    <button class="pv-btn" id="btnLaser">Laser</button>
+    <button class="pv-btn" id="btnBlack">Blackout</button>
+  </div>
+</div>
+<div id="laser-dot"></div>
+<script>
+  const ch=new BroadcastChannel('slide-sync');
+  let cur=0,tot=1,src='',started=null,timerInterval=null,laserOn=false,blackOut=false;
+  const main=document.getElementById('mainIframe');
+  const next=document.getElementById('nextIframe');
+  const notes=document.getElementById('notes-text');
+  const timer=document.getElementById('timer');
+  const dot=document.getElementById('laser-dot');
+
+  ch.postMessage({type:'request-init'});
+
+  ch.onmessage=e=>{
+    if(e.data.type==='init'){src=e.data.sourceUrl;tot=e.data.total;setSlide(e.data.index);}
+    if(e.data.type==='slide-change'){setSlide(e.data.index);}
+  };
+
+  function setSlide(n){
+    cur=n;
+    if(src){
+      main.src=src+'#slide-'+(n+1);
+      if(n+1<tot)next.src=src+'#slide-'+(n+2);
+      else next.srcdoc='<body style="background:#0a0a0a;display:flex;align-items:center;justify-content:center;height:100vh;color:#333;font-family:Barlow,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase">End of deck</body>';
+    }
+    if(!started){started=Date.now();timerInterval=setInterval(updateTimer,1000);}
+  }
+
+  function navigate(delta){
+    const n=cur+delta;
+    if(n<0||n>=tot)return;
+    ch.postMessage({type:'navigate',index:n});
+    setSlide(n);
+  }
+
+  function updateTimer(){
+    if(!started)return;
+    const s=Math.floor((Date.now()-started)/1000);
+    const m=Math.floor(s/60),ss=s%60;
+    timer.textContent=(m<10?'0':'')+m+':'+(ss<10?'0':'')+ss;
+    timer.className=s>=1800?'danger':s>=1200?'warn':'';
+  }
+
+  timer.addEventListener('click',()=>{started=Date.now();});
+  document.getElementById('btnPrev').addEventListener('click',()=>navigate(-1));
+  document.getElementById('btnNext').addEventListener('click',()=>navigate(1));
+
+  document.getElementById('btnLaser').addEventListener('click',()=>{
+    laserOn=!laserOn;
+    document.getElementById('btnLaser').classList.toggle('active',laserOn);
+    dot.style.display=laserOn?'block':'none';
+    if(laserOn){
+      main.addEventListener('mousemove',moveLaser);
+      ch.postMessage({type:'laser-on'});
+    } else {
+      main.removeEventListener('mousemove',moveLaser);
+      dot.style.display='none';
+      ch.postMessage({type:'laser-off'});
+    }
+  });
+
+  function moveLaser(e){
+    const r=main.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';
+    ch.postMessage({type:'laser-move',x:x/r.width,y:y/r.height});
+  }
+
+  document.getElementById('btnBlack').addEventListener('click',()=>{
+    blackOut=!blackOut;
+    document.getElementById('btnBlack').classList.toggle('active',blackOut);
+    ch.postMessage({type:blackOut?'blackout-on':'blackout-off'});
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' ')navigate(1);
+    if(e.key==='ArrowLeft')navigate(-1);
+    if(e.key==='l'||e.key==='L')document.getElementById('btnLaser').click();
+    if(e.key==='b'||e.key==='B')document.getElementById('btnBlack').click();
+  });
+<\/script>
+</body>
+</html>
+  </script>
+
+</body>
+</html>

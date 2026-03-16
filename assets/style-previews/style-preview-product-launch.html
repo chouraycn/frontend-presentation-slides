@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<!--
+  style-preview-product-launch.html
+  Previews the visual style of template-product-launch.html (Warm Inspire)
+  ─────────────────────────────────────────────────────────────────────────
+  Shows: bg-teaser / bg-reveal / bg-surface / bg-dark backgrounds,
+         hero-quote, features-grid, testimonial, pricing-card, big-number
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview — Warm Inspire (Product Launch)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Exact :root from template-product-launch.html ── */
+    :root {
+      --bg:             #110800;
+      --surface:        #1c1100;
+      --surface2:       #291800;
+      --accent:         #f59e0b;
+      --accent2:        #fb923c;
+      --accent3:        #ef4444;
+      --text-primary:   #fef3c7;
+      --text-secondary: #a8865c;
+      --font-heading: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'Nunito', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(2.4rem, 5.5vw, 4.5rem); font-weight: 700; line-height: 1.05; font-style: italic; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.6rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.1; font-style: italic; }
+    h3 { font-family: var(--font-heading); font-size: clamp(1.1rem, 2vw, 1.8rem); font-weight: 600; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem); line-height: 1.8; }
+
+    /* ── Slide layout (same as template) ── */
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide {
+      height: 100vh; overflow: hidden;
+      position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide-content { width: min(82%, 940px); display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+
+    /* ── Backgrounds (exact copy from template) ── */
+    .bg-teaser {
+      background:
+        radial-gradient(ellipse at 50% 60%, rgba(245,158,11,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.1) 0%, transparent 40%),
+        var(--bg);
+    }
+    .bg-teaser::after {
+      content: ''; position: absolute;
+      width: 300px; height: 300px; border-radius: 50%;
+      border: 1px solid rgba(245,158,11,0.12);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .bg-dark    { background: var(--bg); }
+    .bg-surface { background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%); }
+    .bg-reveal  {
+      background:
+        radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.25) 0%, transparent 60%),
+        var(--bg);
+    }
+
+    /* ── Text helpers ── */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.78rem);
+      text-transform: uppercase; letter-spacing: 0.2em;
+      color: var(--accent); font-weight: 700;
+    }
+    .subtitle { color: var(--text-secondary); font-family: var(--font-body); }
+    .accent  { color: var(--accent); }
+    .accent2 { color: var(--accent2); }
+
+    /* ── Hero quote ── */
+    .hero-quote {
+      font-family: var(--font-heading); font-style: italic;
+      font-size: clamp(1.2rem, 3vw, 2.2rem); font-weight: 600;
+      color: var(--text-primary); line-height: 1.3;
+      border-left: 3px solid var(--accent); padding-left: 20px;
+    }
+
+    /* ── Feature cards ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feature-card {
+      background: var(--surface); border-radius: 12px; padding: 22px 20px;
+      border: 1px solid rgba(245,158,11,0.12);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .feature-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .feature-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+    .feature-desc  { font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-body); line-height: 1.6; }
+
+    /* ── Testimonial ── */
+    .testimonial {
+      background: var(--surface); border-radius: 12px; padding: 22px 24px;
+      border: 1px solid rgba(245,158,11,0.1);
+    }
+    .testimonial blockquote { font-family: var(--font-heading); font-style: italic; font-size: clamp(1rem,1.8vw,1.3rem); color: var(--text-primary); line-height: 1.45; margin-bottom: 14px; }
+    .testimonial cite { font-size: 0.8rem; color: var(--text-secondary); font-style: normal; font-family: var(--font-body); }
+
+    /* ── Pricing ── */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .pricing-card {
+      background: var(--surface); border-radius: 12px; padding: 24px 20px;
+      border: 1px solid rgba(245,158,11,0.1); text-align: center;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent); background: var(--surface2);
+      transform: scale(1.04);
+      box-shadow: 0 0 30px rgba(245,158,11,0.12);
+    }
+    .pricing-name  { font-family: var(--font-body); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600; }
+    .pricing-price { font-family: var(--font-heading); font-size: clamp(2rem,3.5vw,3rem); color: var(--text-primary); font-weight: 700; }
+    .pricing-price span { font-size: 0.9rem; color: var(--text-secondary); font-family: var(--font-body); font-style: normal; }
+    .pricing-features { list-style: none; font-size: 0.82rem; color: var(--text-secondary); font-family: var(--font-body); display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .pricing-features li::before { content: '✓ '; color: var(--accent); }
+
+    /* ── Big number ── */
+    .big-number { font-family: var(--font-heading); font-size: clamp(3rem,7vw,6rem); font-weight: 700; color: var(--accent); line-height: 1; }
+
+    /* ── Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(20px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    [data-animate="bloom"] { transform: scale(0.9); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.34,1.3,0.64,1); }
+    [data-animate].visible { opacity: 1; transform: none; }
+
+    /* ── Nav chrome ── */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(245,158,11,0.2); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid  { grid-template-columns: 1fr; gap: 12px; }
+      .pricing-card.featured { transform: none; }
+    }
+    @media (max-width: 640px) {
+      .slide-content { width: 90%; }
+      .nav-dots { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">4</span></div>
+
+<main class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Teaser (bg-teaser) -->
+  <section class="slide bg-teaser">
+    <div class="slide-content centered" style="max-width:720px;">
+      <p class="eyebrow" data-animate>WorkBuddy · 2026</p>
+      <h1 data-animate>Introducing<br><span class="accent">Horizon</span></h1>
+      <p data-animate style="font-size:clamp(1rem,2vw,1.25rem); color: var(--text-secondary);">
+        The AI workspace that turns rough ideas into polished deliverables — in seconds.
+      </p>
+      <div data-animate style="margin-top:8px; display:flex; gap:12px; justify-content:center; font-family:var(--font-body); font-size:0.82rem; color:var(--text-secondary);">
+        <span style="color:var(--accent);">✦</span> Dark amber warmth &nbsp;
+        <span style="color:var(--accent);">✦</span> Cormorant Garamond italic heading &nbsp;
+        <span style="color:var(--accent);">✦</span> Nunito body
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Problem / Hero Quote (bg-dark) -->
+  <section class="slide bg-dark">
+    <div class="slide-content" style="max-width:860px;">
+      <p class="eyebrow" data-animate>The Problem</p>
+      <blockquote class="hero-quote" data-animate>
+        "I spend half my day reformatting the same data into three different decks — by the time I'm done, the insights are already stale."
+      </blockquote>
+      <p class="subtitle" data-animate>— Sarah Chen, Head of Product · Meridian Labs · 4 years of this</p>
+      <p data-animate style="margin-top:8px;">
+        Teams waste 6–10 hours a week on presentation busywork. The knowledge is there; the tools to surface it beautifully are not.
+      </p>
+    </div>
+  </section>
+
+  <!-- Slide 3: Features (bg-surface + features-grid) -->
+  <section class="slide bg-surface">
+    <div class="slide-content centered" style="max-width:1050px;">
+      <p class="eyebrow" data-animate>What makes it different</p>
+      <h2 data-animate>Built for storytellers &amp; decision-makers</h2>
+      <div class="features-grid">
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">✦</div>
+          <div class="feature-title">Instant Narrative</div>
+          <p class="feature-desc">Drop in raw data or a doc; Horizon writes the story arc, chooses the chart type, and picks the tone — in under 10 seconds.</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">◈</div>
+          <div class="feature-title">Live Brand Sync</div>
+          <p class="feature-desc">Connect your design system once. Every output respects your fonts, colors, and logo without manual tweaking.</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">⬡</div>
+          <div class="feature-title">One-Click Formats</div>
+          <p class="feature-desc">Export to PDF, HTML slides, Notion, or Figma — all from the same source. No copy-paste, no version drift.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Social Proof + Pricing (bg-dark + testimonial + pricing-card) -->
+  <section class="slide bg-dark">
+    <div class="slide-content" style="max-width:1000px;">
+      <p class="eyebrow" data-animate>Social Proof &amp; Pricing</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px;">
+        <div class="testimonial" data-animate>
+          <blockquote>"Before Horizon, prepping for a board review took a full day. Now I'm done in 45 minutes and it actually looks better."</blockquote>
+          <cite>— Marcus Liu · VP Strategy · Novo Capital</cite>
+        </div>
+        <div class="testimonial" data-animate>
+          <blockquote>"The pricing-card layout alone saved our sales team hours on proposals. The featured tier highlight sealed more deals."</blockquote>
+          <cite>— Priya Nair · Revenue Ops · Fenix SaaS</cite>
+        </div>
+      </div>
+
+      <!-- Big numbers row -->
+      <div data-animate style="display:flex; gap:48px; justify-content:center; flex-wrap:wrap; margin-bottom:28px; text-align:center;">
+        <div>
+          <div class="big-number">4×</div>
+          <p class="subtitle" style="font-size:0.9rem; margin-top:6px;">faster deck creation</p>
+        </div>
+        <div>
+          <div class="big-number">92%</div>
+          <p class="subtitle" style="font-size:0.9rem; margin-top:6px;">reduction in revision rounds</p>
+        </div>
+        <div>
+          <div class="big-number">18K</div>
+          <p class="subtitle" style="font-size:0.9rem; margin-top:6px;">beta users in 3 months</p>
+        </div>
+      </div>
+
+      <!-- Pricing grid -->
+      <div class="pricing-grid" data-animate>
+        <div class="pricing-card">
+          <div class="pricing-name">Starter</div>
+          <div class="pricing-price">Free <span>/ forever</span></div>
+          <ul class="pricing-features">
+            <li>5 exports / month</li>
+            <li>3 brand presets</li>
+            <li>Community support</li>
+          </ul>
+        </div>
+        <div class="pricing-card featured">
+          <div class="pricing-name" style="color:var(--accent);">Pro · Most Popular</div>
+          <div class="pricing-price">¥99 <span>/ month</span></div>
+          <ul class="pricing-features">
+            <li>Unlimited exports</li>
+            <li>Live brand sync</li>
+            <li>One-click formats</li>
+            <li>Priority support</li>
+          </ul>
+        </div>
+        <div class="pricing-card">
+          <div class="pricing-name">Enterprise</div>
+          <div class="pricing-price" style="font-size:1.6rem;">Custom</div>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>SSO / SAML</li>
+            <li>SLA guarantee</li>
+            <li>Dedicated CSM</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(container.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0, navigating = false;
+
+  document.getElementById('totalSlides').textContent = total;
+  slides.forEach((s, i) => { s.style.transform = `translateY(${i * 100}vh)`; });
+
+  const dotsEl = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goTo(i);
+    dotsEl.appendChild(b);
+  });
+
+  function updateChrome(i) {
+    current = i;
+    document.getElementById('currentSlide').textContent = i + 1;
+    const pct = total > 1 ? (i / (total - 1)) * 100 : 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    dotsEl.querySelectorAll('button').forEach((b, j) => b.classList.toggle('active', j === i));
+  }
+
+  function goTo(i) {
+    i = Math.max(0, Math.min(i, total - 1));
+    if (i === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = `translateY(${(j - i) * 100}vh)`; });
+    slides[i].querySelectorAll('[data-animate]').forEach((el, j) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), j * 130);
+    });
+    updateChrome(i);
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  updateChrome(0);
+  setTimeout(() => {
+    slides[0].querySelectorAll('[data-animate]').forEach((el, i) =>
+      setTimeout(() => el.classList.add('visible'), 100 + i * 130));
+  }, 200);
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+    else if (['ArrowLeft', 'ArrowUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End')  { e.preventDefault(); goTo(total - 1); }
+  });
+
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => {
+    const d = touchY - e.changedTouches[0].clientY;
+    if (Math.abs(d) > 50) goTo(current + (d > 0 ? 1 : -1));
+  }, { passive: true });
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (navigating) return;
+    goTo(current + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+</script>
+</body>
+</html>

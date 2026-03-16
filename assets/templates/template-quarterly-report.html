@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<!--
+  template-quarterly-report.html — Quarterly Business Review / Internal Report
+  ─────────────────────────────────────────────────────────────────────────────
+  Best for: QBR, OKR review, leadership update, all-hands, investor update
+  Style: Clean Focus — light mode, corporate blue
+  Slides: 8 (Summary → OKRs → Metrics → Wins → Misses → Initiatives → Risks → Next Quarter)
+
+  HOW TO USE:
+    1. Edit :root {} constants
+    2. Fill in your actual numbers and status
+    3. Paste scripts/charts.js before </body> to enable charts
+    4. Press [P] for presenter mode
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>季度报告 — [Team/Product] Q[X] [Year]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────
+       CONSTANTS — this is a LIGHT mode theme
+       ───────────────────────────────────────────────────── */
+    :root {
+      --bg:             #fafaf8;
+      --surface:        #f0ede6;
+      --surface2:       #e8e4dd;
+      --accent:         #2563eb;   /* blue */
+      --accent2:        #0ea5e9;   /* sky */
+      --accent-green:   #16a34a;
+      --accent-red:     #dc2626;
+      --accent-amber:   #d97706;
+      --text-primary:   #1c1917;
+      --text-secondary: #78716c;
+      --border:         rgba(0,0,0,0.08);
+      --chart3: #10b981; --chart4: #f59e0b; --chart5: #7c3aed; --chart6: #ef4444;
+      --font-heading: 'Plus Jakarta Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-body:    'Plus Jakarta Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; }
+    h3 { font-family: var(--font-heading); font-size: clamp(0.95rem, 1.6vw, 1.2rem); font-weight: 600; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.4vw, 0.95rem); line-height: 1.7; color: var(--text-secondary); }
+    strong { color: var(--text-primary); }
+
+    /* ── CJK typography optimizations ── */
+    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .slide-content { width: min(88%, 1050px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; width: min(92%, 1100px); }
+
+    /* Backgrounds */
+    .slide-cover { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); color: white; }
+    .slide-cover h1, .slide-cover h2, .slide-cover p { color: rgba(255,255,255,0.9); }
+    .slide-cover .subtitle { color: rgba(255,255,255,0.65); }
+    .slide-surface { background: var(--surface); }
+    .slide-white { background: #ffffff; }
+
+    /* ── Text components ── */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.75rem);
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--accent); font-weight: 600;
+    }
+    .slide-cover .eyebrow { color: rgba(255,255,255,0.6); }
+    .subtitle { color: var(--text-secondary); }
+    .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
+
+    /* Status badges */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.72rem; font-weight: 600; font-family: var(--font-body);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .badge-red   { background: #fee2e2; color: #991b1b; }
+    .badge-blue  { background: #dbeafe; color: #1e40af; }
+
+    /* Metric card */
+    .metric-card {
+      background: #fff; border-radius: 10px; padding: 20px 22px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .metric-value { font-family: var(--font-heading); font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+    .metric-delta { font-size: 0.8rem; font-weight: 600; }
+    .metric-delta.up { color: var(--accent-green); }
+    .metric-delta.down { color: var(--accent-red); }
+    .metric-delta.flat { color: var(--text-secondary); }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .metrics-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+    /* OKR table */
+    .okr-list { display: flex; flex-direction: column; gap: 12px; }
+    .okr-item { background: #fff; border-radius: 8px; padding: 14px 16px; border: 1px solid var(--border); }
+    .okr-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .okr-objective { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+    .okr-krs { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+    .okr-kr { display: flex; align-items: center; gap: 10px; }
+    .okr-kr-label { font-size: 0.78rem; color: var(--text-secondary); flex: 1; }
+    .okr-kr-bar { height: 6px; background: var(--surface2); border-radius: 3px; flex: 2; overflow: hidden; }
+    .okr-kr-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .okr-kr-pct { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; min-width: 32px; text-align: right; }
+
+    /* Win/miss items */
+    .item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .item-list li { display: flex; align-items: flex-start; gap: 10px; background: #fff; border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); font-size: 0.9rem; }
+    .item-list li::before { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .item-list.wins li::before { content: '✓'; background: #dcfce7; color: #15803d; }
+    .item-list.misses li::before { content: '△'; background: #fef3c7; color: #92400e; }
+
+    /* Risk table */
+    .risk-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .risk-table th { text-align: left; padding: 9px 12px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
+    .risk-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .risk-table td:first-child { font-weight: 500; color: var(--text-primary); }
+
+    /* ── Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    /* ── Navigation ── */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent); border-color: var(--accent); transform: scale(1.5); }
+    .slide-cover ~ * .nav-dots button { border-color: rgba(255,255,255,0.3); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
+    #presenterBtn { position: fixed; bottom: 16px; left: 18px; background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100; }
+    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
+    .slide-label { position: absolute; top: 20px; right: 24px; font-family: var(--font-body); font-size: 10px; color: var(--text-secondary); opacity: 0.4; z-index: 1; }
+
+    /* ─── Mobile responsive ─────────────────────────────── */
+    @media (max-width: 900px) {
+      .slide-content.two-col {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .metrics-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .risk-table { font-size: 0.78rem; }
+      .risk-table th, .risk-table td { padding: 7px 8px; }
+    }
+    @media (max-width: 640px) {
+      .slide-content { width: 92%; }
+      .nav-dots { display: none; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .metrics-grid-3 { grid-template-columns: 1fr; }
+      h1 { font-size: clamp(1.5rem, 7vw, 2rem); }
+      h2 { font-size: clamp(1.1rem, 5vw, 1.6rem); }
+      .metric-value { font-size: clamp(1.4rem, 6vw, 2rem); }
+      .okr-kr-bar { flex: 1; }
+    }
+
+    /* ─── Print / PDF export ────────────────────────────── */
+    @media print {
+      html, body { height: auto; overflow: visible; }
+      .slides-container { height: auto; overflow: visible; position: static; }
+      .slide {
+        height: 100vh !important;
+        min-height: 100vh;
+        page-break-after: always;
+        page-break-inside: avoid;
+        position: relative !important;
+        transform: none !important;
+        overflow: visible;
+        background: var(--bg) !important;
+      }
+      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      [data-animate] { opacity: 1 !important; transform: none !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">8</span></div>
+<button id="presenterBtn">演讲者视图 [P]</button>
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- Slide 1: Cover -->
+  <section class="slide slide-cover" role="region" aria-label="Cover"
+    data-notes="Quick context: reporting period, audience, what decisions need to be made today.">
+    <span class="slide-label" style="color:rgba(255,255,255,0.3);">01 / 08</span>
+    <div class="slide-content" style="max-width:800px;">
+      <p class="eyebrow" data-animate>[Team / Product Name] · Q[X] [Year]</p>
+      <h1 data-animate>季度业务回顾</h1>
+      <p data-animate style="font-size:clamp(1rem,1.8vw,1.2rem); color:rgba(255,255,255,0.75); margin-top:8px;">
+        [One sentence framing the quarter: the headline result or the central challenge]
+      </p>
+      <div data-animate style="margin-top:24px; display:flex; gap:16px; flex-wrap:wrap;">
+        <span class="badge badge-green">[Overall Status: On Track]</span>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.5); align-self:center;">[Date] · [Audience]</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Executive Summary -->
+  <section class="slide slide-white" role="region" aria-label="Summary"
+    data-notes="The 60-second version. 3 bullets: what happened, what it means, what's next.">
+    <span class="slide-label">02</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>执行摘要</p>
+      <h2 data-animate>[Quarter in one sentence]</h2>
+      <div class="metrics-grid" data-animate>
+        <div class="metric-card">
+          <p class="label">Revenue / GMV</p>
+          <div class="metric-value">¥[X]M</div>
+          <span class="metric-delta up">↑ [X]% vs last quarter</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Active Users</p>
+          <div class="metric-value">[X]K</div>
+          <span class="metric-delta up">↑ [X]% MoM</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Net Retention</p>
+          <div class="metric-value">[X]%</div>
+          <span class="metric-delta flat">→ flat</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Headcount</p>
+          <div class="metric-value">[X]</div>
+          <span class="metric-delta up">+[X] this quarter</span>
+        </div>
+      </div>
+      <!-- Uncomment + add charts.js:
+      <div id="summaryChart" class="chart-container" style="height:180px;" data-animate></div>
+      -->
+    </div>
+  </section>
+
+  <!-- Slide 3: OKR Status -->
+  <section class="slide slide-surface" role="region" aria-label="OKRs"
+    data-notes="OKR status. Be honest about misses. Red is not failure — lack of honest reporting is.">
+    <span class="slide-label">03</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>OKR 进展</p>
+      <h2 data-animate>Q[X] 目标完成情况</h2>
+      <div class="okr-list" data-animate>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-objective">O1: [Objective statement]</span>
+            <span class="badge badge-green">On Track</span>
+          </div>
+          <div class="okr-krs">
+            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:78%"></div></div><span class="okr-kr-pct">78%</span></div>
+            <div class="okr-kr"><span class="okr-kr-label">KR2: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:91%"></div></div><span class="okr-kr-pct">91%</span></div>
+          </div>
+        </div>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-objective">O2: [Objective statement]</span>
+            <span class="badge badge-amber">At Risk</span>
+          </div>
+          <div class="okr-krs">
+            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:45%; background:var(--accent-amber)"></div></div><span class="okr-kr-pct">45%</span></div>
+            <div class="okr-kr"><span class="okr-kr-label">KR2: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:62%"></div></div><span class="okr-kr-pct">62%</span></div>
+          </div>
+        </div>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-objective">O3: [Objective statement]</span>
+            <span class="badge badge-red">Off Track</span>
+          </div>
+          <div class="okr-krs">
+            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:28%; background:var(--accent-red)"></div></div><span class="okr-kr-pct">28%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Key Metrics Deep Dive -->
+  <section class="slide slide-white" role="region" aria-label="Metrics"
+    data-notes="The 3 metrics that matter most for your business this quarter. Explain the why behind the numbers.">
+    <span class="slide-label">04</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>核心指标</p>
+      <h2 data-animate>关键数据解读</h2>
+      <!-- Uncomment + add charts.js for a trend chart:
+      <div id="metricsChart" class="chart-container" style="height:240px;" data-animate></div>
+      -->
+      <div class="metrics-grid-3" data-animate>
+        <div class="metric-card">
+          <p class="label">指标 A</p>
+          <div class="metric-value">[value]</div>
+          <span class="metric-delta up">↑ [X]% vs target</span>
+          <p style="margin-top: 8px; font-size: 0.8rem;">[One sentence explaining why this moved]</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">指标 B</p>
+          <div class="metric-value">[value]</div>
+          <span class="metric-delta down">↓ [X]% vs target</span>
+          <p style="margin-top: 8px; font-size: 0.8rem;">[Root cause and what you're doing about it]</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">指标 C</p>
+          <div class="metric-value">[value]</div>
+          <span class="metric-delta flat">→ On target</span>
+          <p style="margin-top: 8px; font-size: 0.8rem;">[Any nuance worth calling out]</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: Wins & Misses -->
+  <section class="slide slide-surface" role="region" aria-label="Wins and Misses"
+    data-notes="Be balanced. Too many wins looks like spin; too many misses is demoralizing. 3-4 of each is the sweet spot.">
+    <span class="slide-label">05</span>
+    <div class="slide-content two-col">
+      <div>
+        <p class="eyebrow" data-animate>本季亮点</p>
+        <h3 data-animate style="color: var(--accent-green); font-size: 1.1rem;">Wins</h3>
+        <ul class="item-list wins" style="margin-top: 12px;">
+          <li data-animate>[Win 1: specific outcome, not activity]</li>
+          <li data-animate>[Win 2: customer / revenue / product milestone]</li>
+          <li data-animate>[Win 3: team / process improvement]</li>
+        </ul>
+      </div>
+      <div>
+        <p class="eyebrow" data-animate>待改进项</p>
+        <h3 data-animate style="color: var(--accent-amber); font-size: 1.1rem;">Misses</h3>
+        <ul class="item-list misses" style="margin-top: 12px;">
+          <li data-animate>[Miss 1: what happened and root cause]</li>
+          <li data-animate>[Miss 2: what you'll do differently]</li>
+          <li data-animate>[Miss 3: systemic issue or one-time event?]</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: Key Initiatives Status -->
+  <section class="slide slide-white" role="region" aria-label="Initiatives"
+    data-notes="What are the 3-5 big bets? What's their status? What decisions need to be made?">
+    <span class="slide-label">06</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>重点项目进展</p>
+      <h2 data-animate>Q[X] 战略举措</h2>
+      <table class="risk-table" data-animate>
+        <thead><tr><th>Initiative</th><th>Owner</th><th>Status</th><th>Next milestone</th></tr></thead>
+        <tbody>
+          <tr><td>[Initiative 1]</td><td>[Name]</td><td><span class="badge badge-green">On Track</span></td><td>[Next milestone + date]</td></tr>
+          <tr><td>[Initiative 2]</td><td>[Name]</td><td><span class="badge badge-amber">At Risk</span></td><td>[What needs to change]</td></tr>
+          <tr><td>[Initiative 3]</td><td>[Name]</td><td><span class="badge badge-blue">Exploring</span></td><td>[Decision date / go/no-go]</td></tr>
+          <tr><td>[Initiative 4]</td><td>[Name]</td><td><span class="badge badge-green">On Track</span></td><td>[Shipped to X% of users]</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Slide 7: Risks & Blockers -->
+  <section class="slide slide-surface" role="region" aria-label="Risks"
+    data-notes="Escalations and blockers. What do you need from leadership? Be specific about what decision you're asking for.">
+    <span class="slide-label">07</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>风险与依赖</p>
+      <h2 data-animate>需要关注的事项</h2>
+      <table class="risk-table" data-animate>
+        <thead><tr><th>Risk / Blocker</th><th>Impact</th><th>Mitigation</th><th>Ask</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>[Risk description]</td>
+            <td><span class="badge badge-red">High</span></td>
+            <td>[What you're already doing]</td>
+            <td>[Specific ask from leadership]</td>
+          </tr>
+          <tr>
+            <td>[Dependency on another team]</td>
+            <td><span class="badge badge-amber">Medium</span></td>
+            <td>[Workaround in progress]</td>
+            <td>[Escalation needed by date]</td>
+          </tr>
+          <tr>
+            <td>[Technical debt / scalability]</td>
+            <td><span class="badge badge-amber">Medium</span></td>
+            <td>[Monitoring / alerting]</td>
+            <td>[Resource allocation decision]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Slide 8: Next Quarter Plan -->
+  <section class="slide slide-cover" role="region" aria-label="Next Quarter"
+    data-notes="Set expectations for Q[X+1]. Top 3 priorities. What success looks like. Any major assumptions.">
+    <span class="slide-label" style="color:rgba(255,255,255,0.3);">08</span>
+    <div class="slide-content" style="max-width:900px;">
+      <p class="eyebrow" data-animate>Q[X+1] 展望</p>
+      <h2 data-animate>[Next quarter headline]</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:8px;">
+        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
+          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 1</p>
+          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P1 initiative]</p>
+          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+        </div>
+        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
+          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 2</p>
+          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P2 initiative]</p>
+          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+        </div>
+        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
+          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 3</p>
+          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P3 initiative]</p>
+          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+        </div>
+      </div>
+      <p data-animate style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:12px;">
+        Key assumption: [the most important thing that needs to be true for this plan to work]
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const CHANNEL='slides-presenter-sync'; let presenterWin=null,bc=null; try{bc=new BroadcastChannel(CHANNEL);}catch(e){}
+  const container=document.getElementById('slidesContainer'); const slides=Array.from(container.querySelectorAll('.slide')); const total=slides.length; let current=0; let navigating=false;
+  document.getElementById('totalSlides').textContent=total;
+  slides.forEach((s,i)=>{s.style.transform='translateY('+(i*100)+'vh)';});
+  const dotsEl=document.getElementById('navDots'); slides.forEach((_,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',`Slide ${i+1}`);b.onclick=()=>goTo(i);dotsEl.appendChild(b);});
+  function updateChrome(i){current=i;document.getElementById('currentSlide').textContent=i+1;const pct=total>1?(i/(total-1))*100:100;document.getElementById('progressBar').style.width=pct+'%';dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false'));if(bc)bc.postMessage({type:'slide-change',payload:{index:i,total,notes:slides[i]?.dataset?.notes||''}});}
+  function goTo(i){i=Math.max(0,Math.min(i,total-1));if(i===current&&!navigating)return;navigating=true;slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';});slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{el.classList.remove('visible');setTimeout(()=>el.classList.add('visible'),j*100);});updateChrome(i);setTimeout(()=>{navigating=false;},650);}
+  updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*100));},200);
+  document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}else if(e.key==='Home'){e.preventDefault();goTo(0);}else if(e.key==='End'){e.preventDefault();goTo(total-1);}else if(e.key.toLowerCase()==='p')openPresenter();else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}});
+  let touchY=0; container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true}); container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
+  container.addEventListener('wheel',e=>{e.preventDefault();if(navigating)return;goTo(current+(e.deltaY>0?1:-1));},{passive:false});
+  function openPresenter(){
+    if(presenterWin&&!presenterWin.closed){presenterWin.focus();if(bc)bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});return;}
+    const tpl=document.getElementById('presenter-view-html').textContent;
+    presenterWin=window.open('','_blank','width=1100,height=700,menubar=no,toolbar=no,location=no,status=no');
+    if(!presenterWin){alert('请允许弹出窗口以打开演讲者视图。');return;}
+    presenterWin.document.open();presenterWin.document.write(tpl);presenterWin.document.close();
+    setTimeout(()=>{if(bc){bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}},500);
+  }
+  document.getElementById('presenterBtn').addEventListener('click',openPresenter);
+  if(bc)bc.addEventListener('message',e=>{
+    if(e.data?.type==='request-init'){bc.postMessage({type:'init',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}
+    if(e.data?.type==='navigate')goTo(e.data.payload.index);
+    if(e.data?.type==='pointer-pos')relayPointer(e.data.payload);
+    if(e.data?.type==='blackout')toggleBlackout(e.data.payload.active);
+  });
+
+  // ── Laser pointer relay ──────────────────────────────────────
+  let laserDot=null;
+  function relayPointer({x,y}){
+    if(!laserDot){laserDot=document.createElement('div');laserDot.style.cssText='position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,0.85);box-shadow:0 0 12px 4px rgba(220,40,40,0.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';document.body.appendChild(laserDot);}
+    laserDot.style.left=(x*window.innerWidth)+'px';laserDot.style.top=(y*window.innerHeight)+'px';laserDot.style.display='block';
+    clearTimeout(laserDot._hide);laserDot._hide=setTimeout(()=>{if(laserDot)laserDot.style.display='none';},3000);
+  }
+
+  // ── Blackout relay ──────────────────────────────────────────
+  let blackoutEl=null;
+  function toggleBlackout(active){
+    if(active){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.title='点击退出黑屏';blackoutEl.addEventListener('click',()=>toggleBlackout(false));document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}
+    else if(blackoutEl){blackoutEl.style.display='none';}
+  }
+
+  // postMessage bridge — Presenter view iframe drives navigation on this page
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);
+  });
+</script>
+
+<!-- ══ Inline Presenter View Template v2 (bidirectional nav + laser + blackout) ══ -->
+<script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者视图</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d18; color: #e0e0f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+    #topbar { background: #111120; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #7c3aed; cursor: pointer; user-select: none; transition: color 0.2s; }
+    #timer:hover { color: #ec4899; } #timer.warn { color: #f59e0b; } #timer.over { color: #ef4444; }
+    #timer-label { font-size: 10px; color: #555; margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: #888; }
+    #slide-counter strong { color: #fff; font-size: 15px; }
+    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    .nav-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.12); color: #ccc; font-size: 16px; width: 36px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .nav-btn:hover { background: #282840; border-color: rgba(124,58,237,0.5); color: #fff; }
+    .tool-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.1); color: #999; font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .tool-btn:hover { border-color: rgba(124,58,237,0.5); color: #fff; }
+    .tool-btn.active { background: rgba(124,58,237,0.25); border-color: #7c3aed; color: #c4b5fd; }
+    .tool-btn.blackout-active { background: rgba(0,0,0,0.6); border-color: #555; color: #888; }
+    #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
+    #current-pane { grid-row: 1 / 3; background: #1a1a2e; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(124,58,237,0.4); box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #7c3aed; font-weight: 600; background: rgba(124,58,237,0.08); }
+    #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
+    #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
+    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(220,40,40,0.9); box-shadow: 0 0 10px 3px rgba(220,40,40,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
+    #next-pane { background: #111120; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); }
+    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #777; font-weight: 500; }
+    #next-preview { flex: 1; position: relative; overflow: hidden; }
+    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.65; }
+    #notes-pane { background: #111120; border-radius: 10px; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); }
+    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #555; margin-bottom: 8px; font-weight: 500; }
+    #notes-text { font-size: 13px; line-height: 1.7; color: #b8b8d8; }
+    #notes-text.empty { color: #3a3a5a; font-style: italic; }
+    #progress { position: fixed; bottom: 0; left: 0; height: 3px; background: #7c3aed; transition: width 0.3s ease; }
+  </style>
+</head>
+<body>
+<div id="topbar">
+  <div><div id="timer">00:00</div><div id="timer-label">点击重置</div></div>
+  <div class="topbar-divider"></div>
+  <button class="nav-btn" id="prevBtn" title="上一张 (←)">&#8592;</button>
+  <button class="nav-btn" id="nextBtn" title="下一张 (→)">&#8594;</button>
+  <div class="topbar-divider"></div>
+  <button class="tool-btn" id="laserBtn">&#9679; 激光笔</button>
+  <button class="tool-btn" id="blackoutBtn">&#9632; 黑屏</button>
+  <div class="topbar-divider"></div>
+  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
+</div>
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前幻灯片</div>
+    <div id="current-preview">
+      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+      <div id="laser-dot"></div>
+    </div>
+  </div>
+  <div id="next-pane"><div id="next-label">下一张</div><div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div></div>
+  <div id="notes-pane"><div id="notes-label">演讲备注</div><div id="notes-text" class="empty">（此幻灯片无备注）</div></div>
+</div>
+<div id="progress" style="width:0%"></div>
+<script>
+  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null,laserActive=false,blackoutActive=false;
+  const ch=new BroadcastChannel('slides-presenter-sync');
+  ch.addEventListener('message',(e)=>{
+    const{type,payload}=e.data||{};
+    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
+    if(type==='source-url'){const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}}
+  });
+  ch.postMessage({type:'request-init'});
+  function updateUI(p){
+    document.getElementById('pv-current').textContent=currentIndex+1;
+    document.getElementById('pv-total').textContent=totalSlides;
+    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
+    const n=document.getElementById('notes-text'),t=p.notes||'';
+    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
+    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
+    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
+    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
+    if(!timerRunning)startTimer();
+  }
+  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform=`scale(${s})`;f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
+  function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=30*60)el.classList.add('over');else if(timerSeconds>=20*60){el.classList.add('warn');el.classList.remove('over');}},1000);}
+  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
+  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
+  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
+  const laserBtn=document.getElementById('laserBtn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
+  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
+  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
+  const blackoutBtn=document.getElementById('blackoutBtn');
+  blackoutBtn.addEventListener('click',()=>{blackoutActive=!blackoutActive;blackoutBtn.classList.toggle('blackout-active',blackoutActive);blackoutBtn.textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
+  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')laserBtn.click();else if(e.key.toLowerCase()==='b')blackoutBtn.click();});
+  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
+<\/script>
+</body>
+</html>
+</script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview — ForAI White (Minimal Editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    /* ── Synced from template-forai-white.html ── */
+    :root {
+      --bg:           #ffffff;
+      --bg-muted:     #f7f7f5;
+      --bg-invert:    #0a0a0a;
+      --ink:          #0a0a0a;
+      --ink-2:        #3d3d3d;
+      --ink-3:        #8c8c8c;
+      --ink-4:        #c4c4c4;
+      --accent:       #0a0a0a;
+      --accent-warm:  #e85d26;
+      --accent-cool:  #1a56db;
+      --border:       rgba(0,0,0,0.08);
+      --font-head: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+      --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+      --gap-xs: 8px; --gap-sm: 16px; --gap-md: 28px; --gap-lg: 48px; --gap-xl: 72px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+
+    h1 { font-family: var(--font-head); font-size: clamp(2.4rem, 5.5vw, 5rem); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); }
+    h2 { font-family: var(--font-head); font-size: clamp(1.7rem, 3.2vw, 3.2rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.015em; color: var(--ink); }
+    h3 { font-family: var(--font-body); font-size: clamp(0.9rem, 1.5vw, 1.1rem); font-weight: 600; line-height: 1.3; color: var(--ink); }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.4vw, 1rem); line-height: 1.75; color: var(--ink-2); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+    em { font-style: italic; }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .slide-content { width: min(90%, 1080px); display: flex; flex-direction: column; gap: var(--gap-md); position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.narrow { width: min(80%, 760px); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-lg); align-items: center; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-md); }
+
+    /* Slide variants */
+    .slide-invert { background: var(--bg-invert); color: #fff; }
+    .slide-invert h1, .slide-invert h2, .slide-invert h3 { color: #fff; }
+    .slide-invert p { color: rgba(255,255,255,0.6); }
+    .slide-invert .eyebrow { color: rgba(255,255,255,0.45); }
+    .slide-invert .divider { background: rgba(255,255,255,0.12); }
+    .slide-muted { background: var(--bg-muted); }
+
+    /* Dot grid texture */
+    .bg-dots::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+      background-size: 28px 28px; opacity: 0.45; pointer-events: none;
+    }
+    /* Fine line grid */
+    .bg-grid::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none;
+    }
+    /* Corner mark */
+    .corner-mark::after {
+      content: ''; position: absolute; bottom: 48px; right: 60px;
+      width: 40px; height: 40px;
+      border-right: 1.5px solid var(--ink-4);
+      border-bottom: 1.5px solid var(--ink-4);
+    }
+
+    /* Components */
+    .eyebrow { font-family: var(--font-body); font-size: clamp(0.6rem, 0.9vw, 0.7rem); text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-3); font-weight: 500; }
+    .slide-num { position: absolute; top: 40px; right: 60px; font-family: var(--font-body); font-size: 0.7rem; color: var(--ink-4); letter-spacing: 0.08em; font-weight: 400; }
+    .slide-invert .slide-num { color: rgba(255,255,255,0.25); }
+    .divider { width: 100%; height: 1px; background: var(--ink-4); margin: 4px 0; }
+    .divider-short { width: 48px; height: 2px; background: var(--ink); }
+
+    .display-num { font-family: var(--font-head); font-size: clamp(4rem, 10vw, 9rem); font-weight: 400; line-height: 0.9; letter-spacing: -0.04em; color: var(--ink); }
+
+    /* Stat block */
+    .stat-block { display: flex; flex-direction: column; gap: 6px; }
+    .stat-block .num { font-family: var(--font-head); font-size: clamp(3rem,6vw,5.5rem); font-weight: 400; letter-spacing: -0.04em; line-height: 1; color: var(--ink); }
+    .stat-block .lbl { font-family: var(--font-body); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3); font-weight: 500; }
+    .slide-invert .stat-block .num { color: #fff; }
+    .slide-invert .stat-block .lbl { color: rgba(255,255,255,0.4); }
+
+    /* Card */
+    .card-item { padding: var(--gap-md) 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+    .card-item:last-child { border-bottom: 1px solid var(--border); }
+
+    /* Navigation */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--ink); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--ink-4); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--ink); border-color: var(--ink); transform: scale(1.4); }
+    .slide-counter { position: fixed; bottom: 20px; right: 60px; font-family: var(--font-body); font-size: 0.7rem; color: var(--ink-4); letter-spacing: 0.08em; z-index: 100; }
+
+    /* Style label */
+    .style-label { position: fixed; top: 40px; left: 60px; font-family: var(--font-body); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3); z-index: 100; }
+
+    /* Animations */
+    [data-animate] { opacity: 0; transform: translateY(18px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    [data-animate="fade"] { transform: none; }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    @media (max-width: 640px) {
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="style-label">ForAI White — Minimal Editorial</div>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: White cover with dot grid -->
+  <section class="slide slide-muted bg-dots corner-mark">
+    <span class="slide-num" data-animate="fade">01 / 03</span>
+    <div class="slide-content narrow centered">
+      <p class="eyebrow" data-animate>Minimal Editorial · 2026</p>
+      <h1 data-animate>Pure white.<br><em>Editorial</em> clarity.</h1>
+      <div class="divider" data-animate></div>
+      <p data-animate>ForAI White — dot grids, DM Serif Display headlines, and aggressive whitespace. For design agencies, brand portfolios, and creative studio decks.</p>
+    </div>
+  </section>
+
+  <!-- Slide 2: Inverted dark slide with stats -->
+  <section class="slide slide-invert">
+    <span class="slide-num" data-animate="fade">02 / 03</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Numbers</p>
+      <div class="three-col" data-animate>
+        <div class="stat-block">
+          <span class="num">180+</span>
+          <span class="lbl">Projects Delivered</span>
+        </div>
+        <div class="stat-block">
+          <span class="num">4.9</span>
+          <span class="lbl">Average Rating</span>
+        </div>
+        <div class="stat-block">
+          <span class="num">12Y</span>
+          <span class="lbl">Industry Experience</span>
+        </div>
+      </div>
+      <div class="divider" data-animate style="margin-top:8px;"></div>
+      <p data-animate>The inverted slide uses the same DM Serif numerals on pure black — stark, confident, unmistakable.</p>
+    </div>
+  </section>
+
+  <!-- Slide 3: White with grid lines and card list -->
+  <section class="slide bg-grid">
+    <span class="slide-num" data-animate="fade">03 / 03</span>
+    <div class="slide-content narrow">
+      <p class="eyebrow" data-animate>Services</p>
+      <h2 data-animate>What we <em>craft</em></h2>
+      <div data-animate>
+        <div class="card-item">
+          <h3>Brand Identity</h3>
+          <p>Logo, color systems, typography — the complete visual language of your organisation.</p>
+        </div>
+        <div class="card-item">
+          <h3>Design Systems</h3>
+          <p>Component libraries, pattern documentation, and cross-team consistency at scale.</p>
+        </div>
+        <div class="card-item">
+          <h3>Editorial Design</h3>
+          <p>Annual reports, pitch decks, and publications with considered typographic detail.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0, navigating = false;
+
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+  });
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'active' : '';
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goToSlide(i);
+    navDots.appendChild(b);
+  });
+
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    if (idx === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)'; });
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    current = idx;
+    document.getElementById('currentSlide').textContent = idx + 1;
+    navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
+    progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  setTimeout(() => { slides[0].querySelectorAll('[data-animate]').forEach((el, i) => { setTimeout(() => el.classList.add('visible'), 200 + i * 120); }); }, 0);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+  });
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+</script>
+</body>
+</html>

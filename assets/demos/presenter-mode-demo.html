@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<!--
+  presenter-mode-demo.html
+  ─────────────────────────────────────────────────────────────────────────────
+  Demonstrates the Presenter Mode feature for frontend-slides skill.
+
+  HOW TO USE:
+    1. Open this file in a browser → this is the AUDIENCE view (fullscreen)
+    2. Press [P] or click the "演讲者视图" button → opens Presenter View in a new tab
+    3. Both windows stay in sync via BroadcastChannel API
+
+  For production slides, copy the <script id="presenter-mode"> block and the
+  [P] key handler into your own presentation.html.
+
+  Features:
+    ✓ BroadcastChannel real-time sync (no server required)
+    ✓ Presenter view: current slide + next slide preview + speaker notes
+    ✓ Stopwatch / talk timer
+    ✓ Slide counter and progress
+    ✓ Keyboard shortcut [P] to open presenter view
+    ✓ Auto-detects which tab is "presenter" vs "audience"
+    ✓ Works offline (same-origin only for BroadcastChannel)
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者模式 — Frontend Slides Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── 1. CSS Custom Properties ── */
+    :root {
+      --bg:             #0f0f23;
+      --surface:        #1a1030;
+      --accent:         #7c3aed;
+      --accent2:        #ec4899;
+      --text-primary:   #ffffff;
+      --text-secondary: #a1a1c4;
+      --font-heading:   'Space Grotesk', system-ui, sans-serif;
+      --font-body:      'DM Sans', system-ui, sans-serif;
+    }
+
+    /* ── 2. Base Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
+    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; line-height: 1.15; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 600; }
+    p  { font-size: clamp(0.875rem, 1.6vw, 1.1rem); line-height: 1.7; }
+
+    /* ── 3. Slide Container ── */
+    .slides-container {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .slide {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide-content {
+      width: min(82%, 900px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .slide-content.centered { text-align: center; align-items: center; }
+
+    /* Slide backgrounds */
+    .slide-1 { background: radial-gradient(ellipse at 25% 50%, #1a0040 0%, transparent 55%), radial-gradient(ellipse at 75% 20%, #0a002a 0%, transparent 55%), var(--bg); }
+    .slide-2 { background: radial-gradient(ellipse at 80% 60%, #0a001e 0%, transparent 60%), var(--bg); }
+    .slide-3 { background: radial-gradient(ellipse at 30% 70%, #001020 0%, transparent 50%), var(--bg); }
+    .slide-4 { background: radial-gradient(ellipse at 60% 30%, #1a0030 0%, transparent 50%), var(--bg); }
+    .slide-5 { background: radial-gradient(ellipse at 50% 50%, #001518 0%, transparent 55%), var(--bg); }
+
+    /* ── 4. Text styles ── */
+    .eyebrow {
+      font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+    .subtitle { color: var(--text-secondary); }
+    .accent-word { color: var(--accent2); }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 12px; }
+    .feature-list li::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0; margin-top: 0.5em;
+    }
+    .kbd {
+      display: inline-block; padding: 2px 8px;
+      background: var(--surface); border: 1px solid var(--accent);
+      border-radius: 4px; font-size: 0.85em; font-family: monospace;
+      color: var(--accent);
+    }
+
+    /* ── 5. Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    [data-animate].visible { opacity: 1; transform: translateY(0); }
+
+    /* ── 6. Navigation Chrome ── */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: var(--accent2); width: 0%;
+      transition: width 0.3s ease; z-index: 100;
+    }
+    .nav-dots {
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 8px; z-index: 100;
+    }
+    .nav-dots button {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: none; background: rgba(255,255,255,0.25); cursor: pointer;
+      transition: background 0.2s, transform 0.2s; padding: 0;
+    }
+    .nav-dots button.active { background: var(--accent2); transform: scale(1.4); }
+    .slide-counter {
+      position: fixed; bottom: 16px; right: 20px;
+      font-size: 11px; color: var(--text-secondary); z-index: 100;
+    }
+
+    /* ── 7. Presenter Mode Button ── */
+    #presenterBtn {
+      position: fixed; bottom: 16px; left: 20px;
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-secondary); font-size: 11px; font-family: var(--font-body);
+      padding: 5px 10px; border-radius: 6px; cursor: pointer; z-index: 100;
+      display: flex; align-items: center; gap: 5px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
+    #presenterBtn svg { width: 12px; height: 12px; }
+
+    /* ── 8. Accessibility ── */
+    @media (prefers-reduced-motion: reduce) {
+      [data-animate] { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+
+<!-- Navigation dots -->
+<nav class="nav-dots" id="navDots" aria-label="幻灯片导航"></nav>
+
+<!-- Slide counter -->
+<div class="slide-counter" aria-live="polite">
+  <span id="currentSlide">1</span> / <span id="totalSlides">5</span>
+</div>
+
+<!-- Presenter mode button -->
+<button id="presenterBtn" title="打开演讲者视图 (P)">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="1" y="2" width="14" height="9" rx="1.5"/>
+    <path d="M5.5 14.5h5M8 11v3.5"/>
+  </svg>
+  演讲者视图
+</button>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDES
+     ══════════════════════════════════════════════════════════════════════════ -->
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- Slide 1: Title -->
+  <section class="slide slide-1" role="region" aria-label="标题幻灯片"
+    data-notes="欢迎词：感谢大家今天来参加这次分享。本次我们会演示 frontend-slides skill 的演讲者模式功能。按 P 可以打开演讲者视图。">
+    <div class="slide-content centered">
+      <p class="eyebrow" data-animate>Frontend Slides Skill</p>
+      <h1 data-animate>演讲者模式<br><span class="accent-word">Presenter Mode</span></h1>
+      <p class="subtitle" data-animate>按 <span class="kbd">P</span> 打开演讲者视图 — 实时同步备注、预览、计时器</p>
+    </div>
+  </section>
+
+  <!-- Slide 2: How it works -->
+  <section class="slide slide-2" role="region" aria-label="工作原理"
+    data-notes="技术原理：使用 BroadcastChannel API，同一台电脑上的两个浏览器标签可以互相通信。不需要服务器，完全离线可用。演讲者视图会实时收到当前幻灯片的索引和备注内容。">
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>工作原理</p>
+      <h2 data-animate>BroadcastChannel<br>双窗口同步</h2>
+      <ul class="feature-list">
+        <li data-animate>主屏（观众看到的）发送当前幻灯片索引</li>
+        <li data-animate>演讲者视图实时接收 — 零延迟</li>
+        <li data-animate>无需服务器，完全离线可用</li>
+        <li data-animate>同一台电脑，两个标签页之间通信</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 3: Presenter view features -->
+  <section class="slide slide-3" role="region" aria-label="演讲者视图功能"
+    data-notes="演讲者视图包含四个区域：左上是当前幻灯片的缩略图预览，右上是下一张幻灯片预览，下方是本张幻灯片的演讲备注，右下角是计时器。计时器可以点击重置。">
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>演讲者视图功能</p>
+      <h2 data-animate>四个区域，一览全局</h2>
+      <ul class="feature-list">
+        <li data-animate><strong>当前幻灯片预览</strong> — 实时缩略图，确认当前内容</li>
+        <li data-animate><strong>下一张预览</strong> — 提前看到下一页，准备转场</li>
+        <li data-animate><strong>演讲备注</strong> — 从幻灯片 data-notes 属性读取</li>
+        <li data-animate><strong>计时器</strong> — 秒表模式，点击可重置</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 4: How to add notes -->
+  <section class="slide slide-4" role="region" aria-label="如何添加备注"
+    data-notes="在你的幻灯片 HTML 里，给每个 section 添加 data-notes 属性即可。PPT 转换模式下，extract_pptx.py 会自动提取 PPT 里的演讲备注并写入这个属性。">
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>使用方法</p>
+      <h2 data-animate>添加演讲备注</h2>
+      <p data-animate>在 <code>&lt;section&gt;</code> 标签上添加 <code>data-notes</code> 属性：</p>
+      <pre data-animate style="background: var(--surface); padding: 18px 20px; border-radius: 8px; font-size: clamp(0.7rem, 1.3vw, 0.85rem); line-height: 1.6; color: #c4b5fd; overflow-x: auto; border-left: 3px solid var(--accent);"><code>&lt;section class="slide"
+  data-notes="这里写演讲者看到的备注
+  可以是提醒词、数据来源或过渡语"&gt;
+  ...幻灯片内容...
+&lt;/section&gt;</code></pre>
+      <p class="subtitle" data-animate>PPT 转换时，extract_pptx.py v2 会自动读取原始备注</p>
+    </div>
+  </section>
+
+  <!-- Slide 5: Summary -->
+  <section class="slide slide-5" role="region" aria-label="总结"
+    data-notes="总结：演讲者模式是一个零依赖的功能，只需要浏览器支持 BroadcastChannel API（所有现代浏览器均支持）。开发者只需复制 presenter-mode 脚本块到自己的 HTML 文件里即可启用。">
+    <div class="slide-content centered">
+      <p class="eyebrow" data-animate>快捷键速查</p>
+      <h2 data-animate>常用操作</h2>
+      <div data-animate style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 480px; margin: 0 auto; text-align: left;">
+        <div style="background: var(--surface); padding: 16px 18px; border-radius: 8px;">
+          <span class="kbd">←</span> <span class="kbd">→</span> <span class="kbd">Space</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">切换幻灯片</p>
+        </div>
+        <div style="background: var(--surface); padding: 16px 18px; border-radius: 8px;">
+          <span class="kbd">P</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">打开演讲者视图</p>
+        </div>
+        <div style="background: var(--surface); padding: 16px 18px; border-radius: 8px;">
+          <span class="kbd">Home</span> <span class="kbd">End</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">首页 / 末页</p>
+        </div>
+        <div style="background: var(--surface); padding: 16px 18px; border-radius: 8px;">
+          <span class="kbd">F</span>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">全屏切换</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PRESENTER VIEW TEMPLATE (injected into a new window/tab)
+     This is an inline HTML string that gets written to a new window via
+     document.write(). It contains the full presenter UI.
+     ══════════════════════════════════════════════════════════════════════════ -->
+
+<script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者视图</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d18; color: #e0e0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      height: 100vh; overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-template-columns: 1fr;
+    }
+
+    /* ── Top bar: timer + slide counter ── */
+    #topbar {
+      background: #111120; border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 20px; display: flex; align-items: center; gap: 20px;
+    }
+    #timer {
+      font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;
+      color: #7c3aed; cursor: pointer; user-select: none;
+      transition: color 0.2s;
+    }
+    #timer:hover { color: #ec4899; }
+    #timer.warn { color: #f59e0b; }
+    #timer.over  { color: #ef4444; }
+    #timer-label { font-size: 11px; color: #666; margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: #888; }
+    #slide-counter strong { color: #fff; font-size: 16px; }
+    .topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.1); }
+
+    /* ── Main layout ── */
+    #main {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+      padding: 12px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ── Current slide preview ── */
+    #current-pane {
+      grid-row: 1 / 3; background: #1a1a2e;
+      border-radius: 10px; overflow: hidden;
+      display: flex; flex-direction: column;
+      border: 2px solid rgba(124, 58, 237, 0.4);
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+    }
+    #current-label {
+      padding: 8px 14px; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: #7c3aed; font-weight: 600;
+      background: rgba(124, 58, 237, 0.08);
+    }
+    #current-preview {
+      flex: 1; position: relative; overflow: hidden;
+    }
+    #current-iframe {
+      width: 100%; height: 100%;
+      border: none; pointer-events: none;
+      transform-origin: top left;
+    }
+
+    /* ── Next slide preview ── */
+    #next-pane {
+      background: #111120; border-radius: 10px; overflow: hidden;
+      display: flex; flex-direction: column;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    #next-label {
+      padding: 8px 14px; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: #888; font-weight: 500;
+    }
+    #next-preview {
+      flex: 1; position: relative; overflow: hidden;
+    }
+    #next-iframe {
+      width: 100%; height: 100%;
+      border: none; pointer-events: none;
+      transform-origin: top left; opacity: 0.7;
+    }
+
+    /* ── Speaker notes ── */
+    #notes-pane {
+      background: #111120; border-radius: 10px;
+      padding: 16px 18px; overflow-y: auto;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    #notes-label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.12em; color: #666;
+      margin-bottom: 10px; font-weight: 500;
+    }
+    #notes-text {
+      font-size: 14px; line-height: 1.7; color: #c8c8e8;
+    }
+    #notes-text.empty { color: #444; font-style: italic; }
+
+    /* ── Progress bar ── */
+    #progress {
+      position: fixed; bottom: 0; left: 0; height: 3px;
+      background: #7c3aed; transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <div>
+    <div id="timer">00:00</div>
+    <div id="timer-label">点击重置计时器</div>
+  </div>
+  <div class="topbar-divider"></div>
+  <div id="slide-counter">
+    幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong>
+  </div>
+</div>
+
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前幻灯片</div>
+    <div id="current-preview">
+      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+    </div>
+  </div>
+
+  <div id="next-pane">
+    <div id="next-label">下一张</div>
+    <div id="next-preview">
+      <iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+    </div>
+  </div>
+
+  <div id="notes-pane">
+    <div id="notes-label">演讲备注</div>
+    <div id="notes-text" class="empty">（此幻灯片无备注）</div>
+  </div>
+</div>
+
+<div id="progress" style="width:0%"></div>
+
+<script>
+  // ── State ──
+  let currentIndex = 0;
+  let totalSlides = 0;
+  let timerInterval = null;
+  let timerSeconds = 0;
+  let timerRunning = false;
+  const CHANNEL_NAME = 'slides-presenter-sync';
+
+  // ── BroadcastChannel listener ──
+  const channel = new BroadcastChannel(CHANNEL_NAME);
+  channel.addEventListener('message', (e) => {
+    const { type, payload } = e.data || {};
+    if (type === 'slide-change') {
+      currentIndex = payload.index;
+      totalSlides = payload.total;
+      updateUI(payload);
+    }
+    if (type === 'init') {
+      currentIndex = payload.index;
+      totalSlides = payload.total;
+      updateUI(payload);
+    }
+  });
+
+  // Request current state from audience window
+  channel.postMessage({ type: 'request-init' });
+
+  // ── UI update ──
+  function updateUI(payload) {
+    // Slide counter
+    document.getElementById('pv-current').textContent = currentIndex + 1;
+    document.getElementById('pv-total').textContent = totalSlides;
+
+    // Progress
+    const pct = totalSlides > 1 ? (currentIndex / (totalSlides - 1)) * 100 : 100;
+    document.getElementById('progress').style.width = pct + '%';
+
+    // Notes
+    const notesEl = document.getElementById('notes-text');
+    const notes = payload.notes || '';
+    if (notes) {
+      notesEl.textContent = notes;
+      notesEl.classList.remove('empty');
+    } else {
+      notesEl.textContent = '（此幻灯片无备注）';
+      notesEl.classList.add('empty');
+    }
+
+    // Current slide iframe — navigate to slide
+    scaleIframe('current-iframe', 'current-preview');
+    scaleIframe('next-iframe', 'next-preview');
+
+    // Tell the iframe which slide to show (if it's the same file loaded in iframe)
+    const currentFrame = document.getElementById('current-iframe');
+    const nextFrame = document.getElementById('next-iframe');
+    if (currentFrame.contentWindow) {
+      try { currentFrame.contentWindow.postMessage({ type: 'goto-slide', index: currentIndex }, '*'); } catch(e) {}
+    }
+    if (nextFrame.contentWindow) {
+      try { nextFrame.contentWindow.postMessage({ type: 'goto-slide', index: Math.min(currentIndex + 1, totalSlides - 1) }, '*'); } catch(e) {}
+    }
+
+    // Start timer on first slide change
+    if (!timerRunning) startTimer();
+  }
+
+  // ── Iframe scaling ──
+  function scaleIframe(iframeId, containerId) {
+    const container = document.getElementById(containerId);
+    const iframe = document.getElementById(iframeId);
+    if (!container || !iframe) return;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    const scaleX = w / 1280;
+    const scaleY = h / 720;
+    const scale = Math.min(scaleX, scaleY);
+    iframe.style.width = '1280px';
+    iframe.style.height = '720px';
+    iframe.style.transform = `scale(${scale})`;
+    iframe.style.transformOrigin = 'top left';
+    // Center
+    const offsetX = (w - 1280 * scale) / 2;
+    const offsetY = (h - 720 * scale) / 2;
+    iframe.style.marginLeft = offsetX + 'px';
+    iframe.style.marginTop = offsetY + 'px';
+  }
+
+  // ── Timer ──
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+
+  function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      const el = document.getElementById('timer');
+      el.textContent = formatTime(timerSeconds);
+      if (timerSeconds >= 30 * 60) el.classList.add('over');
+      else if (timerSeconds >= 20 * 60) el.classList.add('warn');
+    }, 1000);
+  }
+
+  document.getElementById('timer').addEventListener('click', () => {
+    timerSeconds = 0;
+    document.getElementById('timer').textContent = '00:00';
+    document.getElementById('timer').classList.remove('warn', 'over');
+  });
+
+  // ── Resize handling ──
+  window.addEventListener('resize', () => {
+    scaleIframe('current-iframe', 'current-preview');
+    scaleIframe('next-iframe', 'next-preview');
+  });
+
+  // ── Load audience file into iframes ──
+  // The iframes load the same presentation file so we can show a visual preview.
+  // We receive the src URL from the main window via BroadcastChannel or postMessage.
+  channel.addEventListener('message', (e) => {
+    const { type, payload } = e.data || {};
+    if (type === 'source-url') {
+      const cf = document.getElementById('current-iframe');
+      const nf = document.getElementById('next-iframe');
+      if (cf.src !== payload.url) {
+        cf.src = payload.url;
+        nf.src = payload.url;
+      }
+    }
+  });
+<\/script>
+</body>
+</html>
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MAIN PRESENTATION SCRIPT
+     ══════════════════════════════════════════════════════════════════════════ -->
+
+<script>
+  'use strict';
+
+  // ── Presentation controller ──────────────────────────────────────────────
+  const CHANNEL_NAME = 'slides-presenter-sync';
+  let presenterWindow = null;
+  let presenterChannel = null;
+
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(container.querySelectorAll('.slide'));
+  const totalSlides = slides.length;
+  let currentIndex = 0;
+  let navigating = false; // hard lock — prevents multi-slide jumps
+
+  document.getElementById('totalSlides').textContent = totalSlides;
+
+  // ── Layout: stack slides absolutely, container clips overflow ──
+  container.style.position = 'relative';
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+  });
+
+  // Build nav dots
+  const navDots = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.setAttribute('aria-label', `跳转到第 ${i + 1} 张`);
+    btn.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(btn);
+  });
+
+  function updateChrome(idx) {
+    document.getElementById('currentSlide').textContent = idx + 1;
+    const pct = totalSlides > 1 ? (idx / (totalSlides - 1)) * 100 : 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressBar').setAttribute('aria-valuenow', Math.round(pct));
+    navDots.querySelectorAll('button').forEach((btn, i) => {
+      btn.classList.toggle('active', i === idx);
+      btn.setAttribute('aria-current', i === idx ? 'true' : 'false');
+    });
+    // Accessibility
+    slides.forEach((s, i) => s.setAttribute('aria-current', i === idx ? 'true' : 'false'));
+  }
+
+  // ── Scroll-based index tracking (replaced by translateY goTo) ───────────
+
+  // ── Navigation ───────────────────────────────────────────────────────────
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(idx, totalSlides - 1));
+    if (idx === currentIndex && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => {
+      s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)';
+    });
+    // Trigger entrance animations on new slide
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    currentIndex = idx;
+    updateChrome(idx);
+    broadcastSlideChange(idx);
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  // Initial state
+  updateChrome(0);
+  setTimeout(() => {
+    slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), 200 + i * 120);
+    });
+  }, 0);
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ':
+        e.preventDefault(); goToSlide(currentIndex + 1); break;
+      case 'ArrowLeft': case 'ArrowUp':
+        e.preventDefault(); goToSlide(currentIndex - 1); break;
+      case 'Home': e.preventDefault(); goToSlide(0); break;
+      case 'End': e.preventDefault(); goToSlide(totalSlides - 1); break;
+      case 'p': case 'P': e.preventDefault(); openPresenterView(); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+    }
+  });
+
+  // Touch / swipe
+  let touchStartY = 0;
+  container.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => {
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 50) goToSlide(currentIndex + (dy > 0 ? 1 : -1));
+  }, { passive: true });
+
+  // Wheel: one slide per gesture, hard lock prevents multi-slide jumps
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (navigating) return;
+    goToSlide(currentIndex + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+
+  // Fullscreen
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+
+  // ── BroadcastChannel: presenter sync ────────────────────────────────────
+  let broadcastChannel = null;
+  try {
+    broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+    broadcastChannel.addEventListener('message', (e) => {
+      const { type } = e.data || {};
+      // Presenter view is requesting initial state
+      if (type === 'request-init') {
+        sendSlideState(currentIndex);
+        // Also send source URL so presenter iframes can load this file
+        broadcastChannel.postMessage({
+          type: 'source-url',
+          payload: { url: window.location.href }
+        });
+      }
+      // Presenter view navigated (forward/back keys in presenter window)
+      if (type === 'navigate') {
+        goToSlide(e.data.payload.index);
+      }
+    });
+  } catch (err) {
+    console.warn('BroadcastChannel not available:', err);
+  }
+
+  function getSlideNotes(idx) {
+    return (slides[idx] && slides[idx].dataset.notes) || '';
+  }
+
+  function sendSlideState(idx) {
+    if (!broadcastChannel) return;
+    broadcastChannel.postMessage({
+      type: 'slide-change',
+      payload: {
+        index: idx,
+        total: totalSlides,
+        notes: getSlideNotes(idx),
+      }
+    });
+  }
+
+  function broadcastSlideChange(idx) {
+    sendSlideState(idx);
+  }
+
+  // ── Open Presenter View ──────────────────────────────────────────────────
+  function openPresenterView() {
+    // Build the presenter HTML from the template
+    const template = document.getElementById('presenter-view-html').textContent;
+
+    if (presenterWindow && !presenterWindow.closed) {
+      presenterWindow.focus();
+      sendSlideState(currentIndex);
+      return;
+    }
+
+    presenterWindow = window.open('', '_blank',
+      'width=1100,height=700,menubar=no,toolbar=no,location=no,status=no');
+
+    if (!presenterWindow) {
+      alert('请允许弹出窗口以打开演讲者视图。\n或者点击地址栏的弹出窗口拦截图标。');
+      return;
+    }
+
+    presenterWindow.document.open();
+    presenterWindow.document.write(template);
+    presenterWindow.document.close();
+
+    // Send current state after a short delay (let presenter view initialize)
+    setTimeout(() => {
+      sendSlideState(currentIndex);
+      broadcastChannel && broadcastChannel.postMessage({
+        type: 'source-url',
+        payload: { url: window.location.href }
+      });
+    }, 500);
+  }
+
+  // Presenter View button
+  document.getElementById('presenterBtn').addEventListener('click', openPresenterView);
+
+  // ── Handle messages from presenter iframes ───────────────────────────────
+  // When the presenter view's iframes load this same file, they'll try to
+  // auto-navigate. We detect the goto-slide postMessage and scroll the iframe.
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'goto-slide') {
+      goToSlide(e.data.index);
+    }
+    // If this window is loaded inside an iframe (for preview), listen for goto
+    if (e.data && e.data.type === 'goto-slide' && window !== window.top) {
+      goToSlide(e.data.index);
+    }
+  });
+
+  // Also handle when this file is loaded in an iframe: expose navigation
+  if (window !== window.top) {
+    // We're in the presenter view iframe — suppress normal BroadcastChannel
+    // and instead respond to postMessage navigation commands
+  }
+
+  // ── Initialize ───────────────────────────────────────────────────────────
+  updateChrome(0);
+  // Trigger first slide animations
+  setTimeout(() => {
+    slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), 100 + i * 120);
+    });
+  }, 200);
+</script>
+
+</body>
+</html>

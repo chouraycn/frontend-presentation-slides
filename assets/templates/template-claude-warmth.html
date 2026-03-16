@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<!--
+  template-claude-warmth.html — Brand Story / Product Deck (Claude Warmth Style)
+  ─────────────────────────────────────────────────────────────────────────────
+  Best for: brand introduction, AI product story, design system showcase, calm product decks
+  Style: Claude Warmth — warm cream light slides ↔ rich brown-black contrast slides
+  Slides: 9 (Cover → Story → Problem → Solution → Features → Stats → Vision → Quote → CTA)
+  Rhythm: light → dark → light → dark → light → dark → light → dark → light
+
+  HOW TO USE:
+    1. Edit :root {} constants (especially --brand-name, colors if needed)
+    2. Replace all [Placeholder] text
+    3. Paste scripts/charts.js before </body> for charts
+    4. Press [P] for presenter mode, [F] for fullscreen
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[Brand Name] — Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ──────────────────────────────────────────────────────
+       CONSTANTS — edit these to customise the whole deck
+       ────────────────────────────────────────────────────── */
+    :root {
+      /* Claude Warmth palette */
+      --bg:            #F6F0E8;   /* warm cream — light slides base */
+      --bg-card:       #FDFAF5;   /* near-white card surface */
+      --bg-dark:       #1C1917;   /* rich brown-black — contrast slides */
+      --bg-mid:        #EDE5D8;   /* warm sand — secondary surface */
+
+      /* Brand accents */
+      --accent:        #DA7756;   /* terracotta-orange — primary CTA, highlights */
+      --accent2:       #C9A96E;   /* warm gold — secondary */
+      --accent3:       #7A9E7E;   /* muted sage — positive / success */
+      --accent4:       #7B6EA0;   /* soft plum — variety accent */
+
+      /* Typography */
+      --text-primary:  #1C1917;
+      --text-secondary:#57534E;
+      --text-tertiary: #A8A29E;
+      --text-on-dark:  #F5F0E8;
+      --text-sec-dark: #A8A29E;
+
+      /* Card / surface (light context) */
+      --surface:       #FDFAF5;
+      --surface-border:rgba(218,119,86,0.12);
+
+      /* Chart colours (inherit CSS vars) */
+      --chart3: #7A9E7E; --chart4: #7B6EA0; --chart5: #C9A96E; --chart6: #DA7756;
+
+      /* Typography — CJK-aware font stack */
+      --font-heading: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+      --font-body:    'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    /* Typography — tight tracking, clamp everywhere */
+    h1 { font-family: var(--font-heading); font-size: clamp(2.4rem,5.5vw,4.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.7rem,3.5vw,3.2rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+    h3 { font-family: var(--font-heading); font-size: clamp(1.05rem,2vw,1.5rem); font-weight: 600; letter-spacing: -0.015em; }
+    p  { font-family: var(--font-body); font-size: clamp(0.9rem,1.5vw,1.05rem); line-height: 1.75; }
+
+    /* ── CJK typography optimizations ── */
+    :lang(zh), :lang(zh-CN), :lang(zh-TW) {
+      font-feature-settings: 'kern' 1, 'liga' 1;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    :lang(zh) h1, :lang(zh) h2, :lang(zh) h3,
+    h1:lang(zh), h2:lang(zh), h3:lang(zh),
+    .slide h1, .slide h2, .slide h3 {
+      /* Tighten CJK heading spacing — Chinese glyphs look better slightly tighter */
+      letter-spacing: 0.02em;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+    .slide p, .slide li {
+      word-break: break-all;      /* allow Chinese text to wrap naturally */
+      overflow-wrap: break-word;
+      line-height: 1.85;          /* CJK needs more line height than Latin */
+    }
+
+    /* Slide scroll engine */
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .slide-content { width: min(84%, 960px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; width: min(92%, 1100px); }
+
+    /* ── LIGHT SLIDE BACKGROUNDS ── */
+    .bg-light {
+      background: var(--bg);
+      background-image: radial-gradient(ellipse at 15% 15%, rgba(218,119,86,0.07) 0%, transparent 50%),
+                        radial-gradient(ellipse at 85% 85%, rgba(201,169,110,0.06) 0%, transparent 50%);
+    }
+    .bg-light-sand { background: var(--bg-mid); }
+    .bg-card { background: var(--bg-card); }
+
+    /* ── DARK SLIDE BACKGROUNDS ── */
+    .bg-dark {
+      background: var(--bg-dark);
+    }
+    .bg-dark-warm {
+      background: var(--bg-dark);
+      background-image: radial-gradient(ellipse at 50% 60%, rgba(218,119,86,0.12) 0%, transparent 55%),
+                        radial-gradient(ellipse at 20% 20%, rgba(201,169,110,0.07) 0%, transparent 40%);
+    }
+
+    /* Concentric circle decoration (hero / CTA slides) */
+    .circle-deco {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      border: 1px solid rgba(218,119,86,0.12);
+    }
+    .circle-deco-1 { width: 520px; height: 520px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .circle-deco-2 { width: 360px; height: 360px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-color: rgba(218,119,86,0.08); }
+    .circle-deco-3 { width: 200px; height: 200px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-color: rgba(218,119,86,0.06); }
+
+    /* Large orb blobs (light slides) */
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.25;
+    }
+    .orb-terracotta { background: #DA7756; width: 340px; height: 340px; top: -80px; right: -80px; }
+    .orb-gold       { background: #C9A96E; width: 260px; height: 260px; bottom: -60px; left: 10%; opacity: 0.18; }
+
+    /* ── Text helpers ── */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.62rem,0.95vw,0.75rem);
+      text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600;
+    }
+    .eyebrow-light { color: var(--accent); }
+    .eyebrow-dark  { color: var(--accent2); }
+
+    .subtitle-light { color: var(--text-secondary); }
+    .subtitle-dark  { color: var(--text-sec-dark); }
+
+    .accent-text   { color: var(--accent); }
+    .accent2-text  { color: var(--accent2); }
+    .on-dark       { color: var(--text-on-dark); }
+
+    /* ── Feature cards (light context) ── */
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feature-card {
+      background: var(--surface); border-radius: 14px; padding: 24px 20px;
+      border: 1px solid var(--surface-border);
+      box-shadow: 0 2px 12px rgba(28,25,23,0.06);
+      display: flex; flex-direction: column; gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(218,119,86,0.1); }
+    .feature-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: rgba(218,119,86,0.1); border: 1px solid rgba(218,119,86,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .feature-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+    .feature-desc  { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ── Frosted cards (dark context) ── */
+    .frost-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 28px 24px;
+      backdrop-filter: blur(12px);
+    }
+    .frost-card-accent {
+      border-color: rgba(218,119,86,0.35);
+      background: rgba(218,119,86,0.08);
+      box-shadow: 0 0 28px rgba(218,119,86,0.1);
+    }
+
+    /* ── Stats / Big numbers ── */
+    .stats-row { display: flex; gap: 48px; flex-wrap: wrap; }
+    .stat-item { display: flex; flex-direction: column; gap: 4px; }
+    .stat-number { font-family: var(--font-heading); font-size: clamp(2.8rem,6vw,5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .stat-label  { font-size: 0.82rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat-number.light { color: var(--accent); }
+    .stat-number.dark  { color: var(--accent2); }
+    .stat-label.light  { color: var(--text-secondary); }
+    .stat-label.dark   { color: var(--text-sec-dark); }
+
+    /* ── Oversized quote mark (dark quote slides) ── */
+    .quote-mark {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 12rem; line-height: 0.7; color: rgba(218,119,86,0.15);
+      position: absolute; top: 40px; left: 40px; pointer-events: none;
+      font-weight: 700; user-select: none;
+    }
+    .quote-text {
+      font-family: var(--font-heading); font-size: clamp(1.35rem,2.8vw,2rem);
+      font-weight: 600; letter-spacing: -0.02em; line-height: 1.4;
+      color: var(--text-on-dark);
+    }
+    .quote-cite { font-size: 0.82rem; color: var(--text-sec-dark); font-family: var(--font-body); margin-top: 8px; }
+
+    /* ── Feature list ── */
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-family: var(--font-body); font-size: clamp(0.88rem,1.4vw,1rem); line-height: 1.6;
+    }
+    .feature-list li::before {
+      content: ''; flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); margin-top: 8px;
+    }
+    .feature-list.dark li { color: var(--text-on-dark); }
+    .feature-list.dark li::before { background: var(--accent2); }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px; height: 3px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* ── Tag pill ── */
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(218,119,86,0.1); border: 1px solid rgba(218,119,86,0.2);
+      border-radius: 100px; padding: 4px 12px;
+      font-size: 0.75rem; font-weight: 500; color: var(--accent);
+      font-family: var(--font-body);
+    }
+
+    /* ── Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(22px); transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1); }
+    [data-animate="scale"] { transform: scale(0.88); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.34,1.3,0.64,1); }
+    [data-animate="slide-left"] { opacity: 0; transform: translateX(-32px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    [data-animate="blur"] { opacity: 0; filter: blur(10px); transition: opacity 0.75s ease, filter 0.75s ease; transform: none; }
+    [data-animate].visible { opacity: 1; transform: none; filter: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none !important; } }
+
+    /* ── Navigation chrome ── */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%; transition: width 0.3s ease; z-index: 100;
+    }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(218,119,86,0.2); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent); transform: scale(1.6); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-tertiary); z-index: 100; font-family: var(--font-body); }
+    #presenterBtn { position: fixed; bottom: 16px; left: 18px; background: rgba(253,250,245,0.9); border: 1px solid rgba(218,119,86,0.2); color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100; backdrop-filter: blur(8px); }
+    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .slide-content.two-col { grid-template-columns: 1fr; gap: 28px; }
+      .stats-row { gap: 28px; }
+      .quote-mark { font-size: 7rem; }
+    }
+    @media (max-width: 900px) {
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Print / PDF ── */
+    @media print {
+      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      .slides-container { overflow: visible; height: auto; position: static; }
+      .slide { height: 100vh; page-break-after: always; position: relative !important; transform: none !important; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">9</span></div>
+<button id="presenterBtn">演讲者视图 [P]</button>
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 1 — COVER (Light)
+       Large orbs + concentric rings + clean brand title
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-light" role="region" aria-label="封面"
+    data-notes="开场，建立品牌基调。保持安静，让视觉先说话。1–2 句介绍背景即可。">
+    <div class="orb orb-terracotta"></div>
+    <div class="orb orb-gold"></div>
+    <div class="circle-deco circle-deco-1"></div>
+    <div class="circle-deco circle-deco-2"></div>
+    <div class="slide-content centered">
+      <span class="tag" data-animate>
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+        [Company] · [Date]
+      </span>
+      <h1 data-animate style="color:var(--text-primary); margin-top: 8px;">
+        [Brand / Product<br><span class="accent-text">Name]</span>
+      </h1>
+      <p data-animate class="subtitle-light" style="max-width:540px; font-size:clamp(1rem,1.8vw,1.2rem);">
+        [One sentence that positions your brand or product with conviction]
+      </p>
+      <div class="divider" data-animate style="margin-top: 8px;"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 2 — OUR STORY (Dark)
+       Brand origin / why we exist
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-dark-warm" role="region" aria-label="品牌故事"
+    data-notes="讲公司/产品诞生的故事。要有人情味，要具体，避免空洞的使命宣言。">
+    <div class="slide-content two-col">
+      <div>
+        <p class="eyebrow eyebrow-dark" data-animate>Our Story</p>
+        <h2 class="on-dark" data-animate style="margin-top:12px;">
+          We started because<br><span class="accent2-text">[the world needed X]</span>
+        </h2>
+        <p class="subtitle-dark" data-animate style="margin-top:16px;">
+          [2–3 sentences about the founding insight. Be specific: what did you see that others missed? What was the moment that made this feel inevitable?]
+        </p>
+        <p class="subtitle-dark" data-animate style="margin-top: 10px;">
+          [Second paragraph — what's different about how you think about this space.]
+        </p>
+      </div>
+      <div data-animate="scale" style="display:flex; flex-direction:column; gap:14px;">
+        <div class="frost-card frost-card-accent">
+          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent2); font-weight:600; margin-bottom:8px;">Founded</p>
+          <p style="font-size:2.2rem; font-weight:800; color:var(--text-on-dark); letter-spacing:-0.03em;">[Year]</p>
+        </div>
+        <div class="frost-card">
+          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-sec-dark); font-weight:600; margin-bottom:8px;">Headquartered</p>
+          <p style="font-size:1.1rem; font-weight:600; color:var(--text-on-dark);">[City, Country]</p>
+        </div>
+        <div class="frost-card">
+          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-sec-dark); font-weight:600; margin-bottom:8px;">Team</p>
+          <p style="font-size:1.1rem; font-weight:600; color:var(--text-on-dark);">[N] people across [N] countries</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 3 — THE PROBLEM (Light)
+       Crisp problem statement with supporting evidence
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-light-sand" role="region" aria-label="问题"
+    data-notes="问题越真实越好。用数据锚定规模，用故事增加情感重量。避免过度技术化。">
+    <div class="slide-content">
+      <p class="eyebrow eyebrow-light" data-animate>The Problem</p>
+      <h2 data-animate style="max-width: 720px;">
+        [The core problem in one crisp, human sentence]
+      </h2>
+      <div class="divider" data-animate></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" data-animate>
+        <div class="feature-card">
+          <div class="feature-icon">①</div>
+          <div class="feature-title">[Problem Dimension 1]</div>
+          <p class="feature-desc">[Supporting evidence or statistic. Be specific — cite a number or real example.]</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">②</div>
+          <div class="feature-title">[Problem Dimension 2]</div>
+          <p class="feature-desc">[Second angle on the problem — the hidden cost, the workaround people use today.]</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">③</div>
+          <div class="feature-title">[Problem Dimension 3]</div>
+          <p class="feature-desc">[Why existing solutions fail — what gap or frustration persists despite alternatives.]</p>
+        </div>
+        <div class="feature-card" style="background: rgba(218,119,86,0.06); border-color: rgba(218,119,86,0.2);">
+          <div class="feature-icon" style="background: rgba(218,119,86,0.15);">→</div>
+          <div class="feature-title" style="color: var(--accent);">The Opportunity</div>
+          <p class="feature-desc">[The market gap that your approach addresses — sets up the solution reveal.]</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 4 — THE SOLUTION (Dark)
+       Clean reveal with key differentiators
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-dark" role="region" aria-label="解决方案"
+    data-notes="解决方案幻灯片要简洁有力。一句话定义你做什么，然后用三点说明为什么它有效。">
+    <div class="slide-content centered" style="max-width: 780px;">
+      <p class="eyebrow eyebrow-dark" data-animate>The Solution</p>
+      <h2 class="on-dark" data-animate style="margin-top: 10px;">
+        Introducing <span class="accent-text">[Product / Solution Name]</span>
+      </h2>
+      <p class="subtitle-dark" data-animate style="max-width: 560px; font-size: clamp(1rem,1.8vw,1.15rem); margin-top: 8px;">
+        [One sentence: what it is, who it's for, and what it changes]
+      </p>
+      <!-- Product visual / mockup placeholder -->
+      <div data-animate="scale" style="width:100%; max-width:620px; height:220px; border-radius:16px; border:1px solid rgba(218,119,86,0.25); background:rgba(255,255,255,0.04); margin-top:8px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+        <p style="color:var(--text-sec-dark); font-size:0.85rem;">[Product screenshot / demo visual / diagram]</p>
+      </div>
+      <ul class="feature-list dark" style="text-align:left; max-width:520px; margin-top: 8px;">
+        <li data-animate>[Key differentiator 1 — the thing no one else does]</li>
+        <li data-animate>[Key differentiator 2 — the design choice that surprised users]</li>
+        <li data-animate>[Key differentiator 3 — the integration or workflow that saves time]</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 5 — FEATURES (Light)
+       Three-column feature grid
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-light" role="region" aria-label="核心功能"
+    data-notes="每个功能卡片对应解决一个痛点。功能名称要动词开头（'Automate', 'Connect', 'Visualize'）。">
+    <div class="orb orb-gold" style="opacity:0.15; top:auto; bottom:-60px; right:-40px; left:auto;"></div>
+    <div class="slide-content centered" style="max-width: 1060px;">
+      <p class="eyebrow eyebrow-light" data-animate>Core Capabilities</p>
+      <h2 data-animate style="margin-top: 6px;">Built for <span class="accent-text">[customer type]</span></h2>
+      <div class="feature-grid" style="margin-top: 8px;">
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">✦</div>
+          <div class="feature-title">[Feature 1]</div>
+          <p class="feature-desc">[What it does and why it matters. One or two sentences — be concrete, not abstract.]</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">◈</div>
+          <div class="feature-title">[Feature 2]</div>
+          <p class="feature-desc">[The unique insight or technique. Mention the result the user gets, not just the method.]</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">⬡</div>
+          <div class="feature-title">[Feature 3]</div>
+          <p class="feature-desc">[The "wait, it does that too?" moment. The delightful unexpected capability.]</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">◎</div>
+          <div class="feature-title">[Feature 4]</div>
+          <p class="feature-desc">[An integration or ecosystem play — how it fits into the customer's existing workflow.]</p>
+        </div>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">⊕</div>
+          <div class="feature-title">[Feature 5]</div>
+          <p class="feature-desc">[A reliability or trust-building feature — security, uptime, compliance, support.]</p>
+        </div>
+        <div class="feature-card" data-animate style="background: rgba(218,119,86,0.04); border-color: rgba(218,119,86,0.15); justify-content: center; text-align:center;">
+          <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">And <span class="accent-text" style="font-weight:700;">[N]+ more</span><br>capabilities in the platform</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 6 — TRACTION / STATS (Dark)
+       Big numbers with supporting context
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-dark-warm" role="region" aria-label="数据成果"
+    data-notes="用最具冲击力的数字开场。每个数字后面要有一行解释为什么它重要，不只是展示数字。">
+    <div class="slide-content">
+      <p class="eyebrow eyebrow-dark" data-animate>Traction</p>
+      <h2 class="on-dark" data-animate style="max-width: 640px; margin-top: 8px;">
+        The numbers that<br><span class="accent2-text">tell our story</span>
+      </h2>
+      <div class="stats-row" data-animate style="margin-top: 12px; flex-wrap: wrap;">
+        <div class="stat-item">
+          <div class="stat-number dark">[X]M</div>
+          <div class="stat-label dark">[users / tasks / events]</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number dark">[X]×</div>
+          <div class="stat-label dark">[efficiency / speed gain]</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number dark">[X]%</div>
+          <div class="stat-label dark">[retention / satisfaction / NPS]</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number dark">[X]K</div>
+          <div class="stat-label dark">[teams / customers / installs]</div>
+        </div>
+      </div>
+      <!-- Optional chart — uncomment after pasting charts.js -->
+      <!--
+      <div id="tractionChart" class="chart-container" style="height:220px; max-width:700px;" data-animate></div>
+      -->
+      <p class="subtitle-dark" data-animate style="font-size:0.85rem; margin-top: 4px; max-width: 560px;">
+        [Optional: 1–2 sentences on methodology or time frame — gives the numbers credibility]
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 7 — VISION (Light)
+       Where we're taking this / the bigger mission
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-card" role="region" aria-label="愿景"
+    data-notes="愿景幻灯片要抬头望远，但不要空泛。什么样的世界是你们在建设的？具体说出两三件今天还不存在、但你们在努力实现的事情。">
+    <div class="slide-content two-col">
+      <div>
+        <p class="eyebrow eyebrow-light" data-animate>Vision</p>
+        <h2 data-animate style="margin-top: 12px;">
+          The world we're<br><span class="accent-text">building toward</span>
+        </h2>
+        <div class="divider" data-animate style="margin-top:16px;"></div>
+        <p class="subtitle-light" data-animate style="margin-top: 16px;">
+          [Big picture: what does the world look like when you've succeeded? Be evocative but grounded — reference a specific change in how people work, create, or connect.]
+        </p>
+        <p class="subtitle-light" data-animate style="margin-top: 10px;">
+          [What's on the roadmap — 1–2 bold bets that show you're not just executing, you're inventing.]
+        </p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px;" data-animate="slide-left">
+        <div class="feature-card" style="gap: 8px;">
+          <div class="feature-icon" style="background:rgba(122,158,126,0.12); border-color:rgba(122,158,126,0.2);">◐</div>
+          <div class="feature-title">[Near-term milestone — 6 months]</div>
+          <p class="feature-desc">[Specific capability or outcome. Something concrete and testable.]</p>
+        </div>
+        <div class="feature-card" style="gap: 8px;">
+          <div class="feature-icon" style="background:rgba(201,169,110,0.12); border-color:rgba(201,169,110,0.2);">◑</div>
+          <div class="feature-title">[Mid-term vision — 1–2 years]</div>
+          <p class="feature-desc">[The platform expansion or ecosystem play that 10× the impact.]</p>
+        </div>
+        <div class="feature-card" style="gap: 8px;">
+          <div class="feature-icon" style="background:rgba(123,110,160,0.12); border-color:rgba(123,110,160,0.2);">◕</div>
+          <div class="feature-title">[Long-term moonshot]</div>
+          <p class="feature-desc">[The audacious bet — the thing that makes people lean forward when you say it.]</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 8 — QUOTE / TRANSITION (Dark)
+       Oversized quote mark — pure typographic impact
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-dark" role="region" aria-label="引用"
+    data-notes="这是一个呼吸的幻灯片。读引言，停顿，让它沉淀。接着说'这是 [客户名字] 告诉我们的'。">
+    <div class="quote-mark">"</div>
+    <div class="slide-content centered" style="max-width: 740px;">
+      <p class="quote-text" data-animate>
+        "[A powerful customer quote that captures the transformation in their own words — before/after format works best here]"
+      </p>
+      <p class="quote-cite" data-animate style="margin-top:12px;">
+        — [Name] · [Role] · [Company]
+      </p>
+      <div data-animate style="margin-top: 24px; display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:1.8rem; font-weight:800; color:var(--accent); letter-spacing:-0.03em;">[Stat]</div>
+          <div style="font-size:0.75rem; color:var(--text-sec-dark); text-transform:uppercase; letter-spacing:0.1em;">[what it measures]</div>
+        </div>
+        <div style="width:1px; background:rgba(255,255,255,0.1);"></div>
+        <div style="text-align:center;">
+          <div style="font-size:1.8rem; font-weight:800; color:var(--accent2); letter-spacing:-0.03em;">[Stat]</div>
+          <div style="font-size:0.75rem; color:var(--text-sec-dark); text-transform:uppercase; letter-spacing:0.1em;">[what it measures]</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 9 — CTA / CLOSE (Light)
+       Single action, circle geometry, warmth & invitation
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide bg-light" role="region" aria-label="行动召唤"
+    data-notes="结尾要有单一、清晰的行动号召。URL 要足够简短可以记住。提供一个立即行动的理由（早鸟优惠、有限名额、限时活动）。">
+    <div class="orb orb-terracotta" style="opacity:0.2; top: auto; bottom: -60px; left: 50%; transform: translateX(-50%);"></div>
+    <div class="circle-deco circle-deco-1"></div>
+    <div class="circle-deco circle-deco-2"></div>
+    <div class="circle-deco circle-deco-3"></div>
+    <div class="slide-content centered" style="max-width: 700px;">
+      <p class="eyebrow eyebrow-light" data-animate>Get Started</p>
+      <h1 data-animate style="margin-top: 8px;">
+        Ready to try<br><span class="accent-text">[Product Name]?</span>
+      </h1>
+      <p class="subtitle-light" data-animate style="max-width: 480px; font-size:clamp(1rem,1.8vw,1.15rem);">
+        [What happens when they sign up — be specific: "Set up in 5 minutes. No credit card required."]
+      </p>
+      <div data-animate style="margin-top: 12px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+        <div style="background:var(--accent); color:#fff; border-radius:10px; padding:12px 28px; font-size:0.92rem; font-weight:600; font-family:var(--font-body); letter-spacing:-0.01em;">
+          [Primary CTA — e.g. "Start for Free"]
+        </div>
+        <div style="background:transparent; color:var(--text-primary); border:1.5px solid rgba(28,25,23,0.15); border-radius:10px; padding:12px 28px; font-size:0.92rem; font-weight:500; font-family:var(--font-body);">
+          [Secondary CTA — e.g. "Book a Demo"]
+        </div>
+      </div>
+      <div data-animate style="margin-top: 18px; background: rgba(218,119,86,0.08); border: 1px solid rgba(218,119,86,0.2); border-radius: 10px; padding: 12px 20px; max-width: 440px;">
+        <p style="font-size:0.82rem; color:var(--accent);">
+          [Launch offer or special note — "Early access: first 3 months free · Offer ends [date]"]
+        </p>
+      </div>
+      <p data-animate class="subtitle-light" style="font-size:0.78rem; margin-top: 12px; color: var(--text-tertiary);">
+        [URL] · [contact email or social handle]
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const CHANNEL='slides-presenter-sync'; let presenterWin=null,bc=null;
+  try{bc=new BroadcastChannel(CHANNEL);}catch(e){}
+  const container=document.getElementById('slidesContainer');
+  const slides=Array.from(container.querySelectorAll('.slide'));
+  const total=slides.length; let current=0; let navigating=false;
+  document.getElementById('totalSlides').textContent=total;
+  // Init positions
+  slides.forEach((s,i)=>{s.style.transform='translateY('+(i*100)+'vh)';});
+
+  const dotsEl=document.getElementById('navDots');
+  slides.forEach((_,i)=>{
+    const b=document.createElement('button');
+    b.setAttribute('aria-label',`Slide ${i+1}`);
+    b.onclick=()=>goTo(i);
+    dotsEl.appendChild(b);
+  });
+
+  function updateChrome(i){
+    current=i;
+    document.getElementById('currentSlide').textContent=i+1;
+    const pct=total>1?(i/(total-1))*100:100;
+    document.getElementById('progressBar').style.width=pct+'%';
+    dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));
+    slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false'));
+    if(bc)bc.postMessage({type:'slide-change',payload:{index:i,total,notes:slides[i]?.dataset?.notes||''}});
+  }
+
+  function goTo(i){
+    i=Math.max(0,Math.min(i,total-1));
+    if(i===current&&!navigating)return;
+    navigating=true;
+    slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';});
+    slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{
+      el.classList.remove('visible');
+      setTimeout(()=>el.classList.add('visible'),j*130);
+    });
+    updateChrome(i);
+    setTimeout(()=>{navigating=false;},650);
+  }
+
+  updateChrome(0);
+  setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*130));},200);
+
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;
+    if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}
+    else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}
+    else if(e.key==='Home'){e.preventDefault();goTo(0);}
+    else if(e.key==='End'){e.preventDefault();goTo(total-1);}
+    else if(e.key.toLowerCase()==='p')openPresenter();
+    else if(e.key.toLowerCase()==='f'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+  });
+
+  let touchY=0;
+  container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true});
+  container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
+
+  container.addEventListener('wheel',e=>{
+    e.preventDefault();
+    if(navigating)return;
+    goTo(current+(e.deltaY>0?1:-1));
+  },{passive:false});
+
+  // ── Window message: allow iframe to jump to a specific slide ──
+  window.addEventListener('message',e=>{
+    if(e.data?.type==='goto-slide')goTo(e.data.index);
+  });
+
+  function openPresenter(){
+    if(presenterWin&&!presenterWin.closed){
+      presenterWin.focus();
+      if(bc)bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});
+      return;
+    }
+    const tpl=document.getElementById('presenter-view-html').textContent;
+    presenterWin=window.open('','_blank','width=1200,height=760,menubar=no,toolbar=no,location=no,status=no');
+    if(!presenterWin){alert('请允许弹出窗口以打开演讲者视图。');return;}
+    presenterWin.document.open();presenterWin.document.write(tpl);presenterWin.document.close();
+    setTimeout(()=>{
+      if(bc){
+        bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});
+        bc.postMessage({type:'source-url',payload:{url:window.location.href}});
+      }
+    },500);
+  }
+
+  document.getElementById('presenterBtn').addEventListener('click',openPresenter);
+
+  if(bc)bc.addEventListener('message',e=>{
+    if(e.data?.type==='request-init'){
+      bc.postMessage({type:'init',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});
+      bc.postMessage({type:'source-url',payload:{url:window.location.href}});
+    }
+    if(e.data?.type==='navigate')goTo(e.data.payload.index);
+    // Laser pointer relay
+    if(e.data?.type==='pointer-pos')relayPointer(e.data.payload);
+    if(e.data?.type==='pointer-hide')hidePointer();
+    if(e.data?.type==='blackout')toggleBlackout(e.data.payload.active);
+  });
+
+  // ── Laser pointer overlay ──
+  let laserDot=null;
+  function ensureLaser(){
+    if(laserDot)return;
+    laserDot=document.createElement('div');
+    laserDot.style.cssText='position:fixed;width:14px;height:14px;border-radius:50%;background:rgba(218,90,56,0.9);border:2px solid rgba(255,255,255,0.6);box-shadow:0 0 10px rgba(218,90,56,0.6);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s linear,top 0.04s linear;display:none;';
+    document.body.appendChild(laserDot);
+  }
+  function relayPointer(pos){
+    ensureLaser();
+    laserDot.style.display='block';
+    laserDot.style.left=(pos.x*100)+'%';
+    laserDot.style.top=(pos.y*100)+'%';
+  }
+  function hidePointer(){if(laserDot)laserDot.style.display='none';}
+
+  // ── Blackout ──
+  let blackoutEl=null;
+  function toggleBlackout(active){
+    if(!blackoutEl){
+      blackoutEl=document.createElement('div');
+      blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;display:none;';
+      document.body.appendChild(blackoutEl);
+    }
+    blackoutEl.style.display=active?'block':'none';
+  }
+
+</script>
+
+<!-- ══ Inline Presenter View — Enhanced with nav controls + laser + blackout ══ -->
+<script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者视图 — Claude Warmth</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #1a1410; color: #e8ddd0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+    #topbar { background: #120f0d; border-bottom: 1px solid rgba(218,119,86,0.15); padding: 10px 20px; display: flex; align-items: center; gap: 16px; }
+    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #DA7756; cursor: pointer; user-select: none; transition: color 0.2s; }
+    #timer:hover { color: #C9A96E; } #timer.warn { color: #f59e0b; } #timer.over { color: #ef4444; }
+    #timer-label { font-size: 10px; color: #6b5a4e; margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: #7a6a5e; }
+    #slide-counter strong { color: #e8ddd0; font-size: 16px; }
+    .topbar-divider { width: 1px; height: 28px; background: rgba(218,119,86,0.15); }
+
+    /* Nav controls */
+    #nav-controls { display: flex; gap: 8px; }
+    .nav-btn {
+      background: rgba(218,119,86,0.15); border: 1px solid rgba(218,119,86,0.25); color: #DA7756;
+      border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.2s, border-color 0.2s;
+    }
+    .nav-btn:hover { background: rgba(218,119,86,0.25); border-color: rgba(218,119,86,0.5); }
+
+    /* Tool buttons */
+    #tool-controls { display: flex; gap: 8px; }
+    .tool-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #a8a29e;
+      border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; font-family: inherit;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .tool-btn:hover { background: rgba(255,255,255,0.1); color: #e8ddd0; }
+    .tool-btn.active { background: rgba(218,119,86,0.2); color: #DA7756; border-color: rgba(218,119,86,0.4); }
+    .tool-btn.blackout-on { background: #111; color: #ef4444; border-color: rgba(239,68,68,0.4); }
+
+    #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
+    #current-pane { grid-row: 1 / 3; background: #120f0d; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(218,119,86,0.35); box-shadow: 0 0 24px rgba(218,119,86,0.12); }
+    #current-label { padding: 7px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #DA7756; font-weight: 600; background: rgba(218,119,86,0.08); }
+    #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
+    #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
+
+    /* Laser dot on preview */
+    #laser-preview { position:absolute; width:12px; height:12px; border-radius:50%; background:rgba(218,90,56,0.9); border:2px solid rgba(255,255,255,0.6); pointer-events:none; transform:translate(-50%,-50%); display:none; z-index:10; box-shadow:0 0 8px rgba(218,90,56,0.7); }
+
+    #next-pane { background: #120f0d; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(218,119,86,0.1); }
+    #next-label { padding: 7px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #7a6a5e; font-weight: 500; }
+    #next-preview { flex: 1; position: relative; overflow: hidden; }
+    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.65; }
+    #notes-pane { background: #120f0d; border-radius: 10px; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(218,119,86,0.08); }
+    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6b5a4e; margin-bottom: 8px; font-weight: 500; }
+    #notes-text { font-size: 13px; line-height: 1.7; color: #c4b5a8; white-space: pre-wrap; }
+    #notes-text.empty { color: #4a3d36; font-style: italic; }
+    #progress { position: fixed; bottom: 0; left: 0; height: 2px; background: linear-gradient(90deg, #DA7756, #C9A96E); transition: width 0.3s ease; }
+  </style>
+</head>
+<body>
+<div id="topbar">
+  <div>
+    <div id="timer">00:00</div>
+    <div id="timer-label">点击重置计时器</div>
+  </div>
+  <div class="topbar-divider"></div>
+  <div id="nav-controls">
+    <button class="nav-btn" id="btn-prev" title="上一张 (←)">← 上一张</button>
+    <button class="nav-btn" id="btn-next" title="下一张 (→)">下一张 →</button>
+  </div>
+  <div class="topbar-divider"></div>
+  <div id="tool-controls">
+    <button class="tool-btn" id="btn-laser" title="激光笔 (L)">激光笔</button>
+    <button class="tool-btn" id="btn-blackout" title="黑屏 (B)">黑屏</button>
+  </div>
+  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
+</div>
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前幻灯片</div>
+    <div id="current-preview">
+      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+      <div id="laser-preview"></div>
+    </div>
+  </div>
+  <div id="next-pane">
+    <div id="next-label">下一张</div>
+    <div id="next-preview">
+      <iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+    </div>
+  </div>
+  <div id="notes-pane">
+    <div id="notes-label">演讲备注</div>
+    <div id="notes-text" class="empty">（此幻灯片无备注）</div>
+  </div>
+</div>
+<div id="progress" style="width:0%"></div>
+<script>
+  let currentIndex=0,totalSlides=0,timerInterval=null,timerSeconds=0,timerRunning=false;
+  let laserActive=false, blackoutActive=false;
+  const CHANNEL_NAME='slides-presenter-sync';
+  const channel=new BroadcastChannel(CHANNEL_NAME);
+
+  channel.addEventListener('message',(e)=>{
+    const{type,payload}=e.data||{};
+    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
+    if(type==='source-url'){
+      const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+      if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}
+    }
+  });
+  channel.postMessage({type:'request-init'});
+
+  function updateUI(payload){
+    document.getElementById('pv-current').textContent=currentIndex+1;
+    document.getElementById('pv-total').textContent=totalSlides;
+    const pct=totalSlides>1?(currentIndex/(totalSlides-1))*100:100;
+    document.getElementById('progress').style.width=pct+'%';
+    const notesEl=document.getElementById('notes-text'),notes=payload.notes||'';
+    if(notes){notesEl.textContent=notes;notesEl.classList.remove('empty');}
+    else{notesEl.textContent='（此幻灯片无备注）';notesEl.classList.add('empty');}
+    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
+    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(e2){}
+    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(e2){}
+    if(!timerRunning)startTimer();
+  }
+
+  function scaleIframe(iframeId,containerId){
+    const c=document.getElementById(containerId),f=document.getElementById(iframeId);if(!c||!f)return;
+    const w=c.clientWidth,h=c.clientHeight,scale=Math.min(w/1280,h/720);
+    f.style.width='1280px';f.style.height='720px';f.style.transform=`scale(${scale})`;
+    f.style.marginLeft=((w-1280*scale)/2)+'px';f.style.marginTop=((h-720*scale)/2)+'px';
+  }
+
+  function formatTime(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=formatTime(timerSeconds);el.classList.toggle('over',timerSeconds>=30*60);el.classList.toggle('warn',timerSeconds>=20*60&&timerSeconds<30*60);},1000);}
+
+  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
+
+  // ── Navigation buttons ──
+  document.getElementById('btn-prev').addEventListener('click',()=>channel.postMessage({type:'navigate',payload:{index:Math.max(0,currentIndex-1)}}));
+  document.getElementById('btn-next').addEventListener('click',()=>channel.postMessage({type:'navigate',payload:{index:Math.min(currentIndex+1,totalSlides-1)}}));
+
+  // ── Laser pointer ──
+  const laserBtn=document.getElementById('btn-laser');
+  const laserPreview=document.getElementById('laser-preview');
+  const previewPane=document.getElementById('current-preview');
+
+  laserBtn.addEventListener('click',()=>{
+    laserActive=!laserActive;
+    laserBtn.classList.toggle('active',laserActive);
+    laserBtn.textContent=laserActive?'激光笔 ✦':'激光笔';
+    if(!laserActive){laserPreview.style.display='none';channel.postMessage({type:'pointer-hide'});}
+  });
+
+  previewPane.addEventListener('mousemove',(e)=>{
+    if(!laserActive)return;
+    const rect=previewPane.getBoundingClientRect();
+    const x=(e.clientX-rect.left)/rect.width;
+    const y=(e.clientY-rect.top)/rect.height;
+    laserPreview.style.display='block';
+    laserPreview.style.left=(x*100)+'%';
+    laserPreview.style.top=(y*100)+'%';
+    channel.postMessage({type:'pointer-pos',payload:{x,y}});
+  });
+  previewPane.addEventListener('mouseleave',()=>{
+    if(!laserActive)return;
+    laserPreview.style.display='none';
+    channel.postMessage({type:'pointer-hide'});
+  });
+
+  // ── Blackout ──
+  const blackoutBtn=document.getElementById('btn-blackout');
+  blackoutBtn.addEventListener('click',()=>{
+    blackoutActive=!blackoutActive;
+    blackoutBtn.classList.toggle('blackout-on',blackoutActive);
+    blackoutBtn.textContent=blackoutActive?'恢复画面':'黑屏';
+    channel.postMessage({type:'blackout',payload:{active:blackoutActive}});
+  });
+
+  // ── Keyboard shortcuts ──
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')channel.postMessage({type:'navigate',payload:{index:Math.min(currentIndex+1,totalSlides-1)}});
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp')channel.postMessage({type:'navigate',payload:{index:Math.max(0,currentIndex-1)}});
+    else if(e.key.toLowerCase()==='l'){laserBtn.click();}
+    else if(e.key.toLowerCase()==='b'){blackoutBtn.click();}
+  });
+
+  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
+<\/script>
+</body>
+</html>
+</script>
+
+</body>
+</html>

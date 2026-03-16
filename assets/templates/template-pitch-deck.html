@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<!--
+  template-pitch-deck.html — Pitch Deck Template
+  ─────────────────────────────────────────────────────────────────────────────
+  Best for: investor pitch, product launch, fundraising
+  Style: Dark Elegance — deep navy + gold
+  Slides: 8 (Problem → Solution → Market → Product → Traction → Team → Ask → Close)
+
+  HOW TO USE:
+    1. Edit the constants in the :root {} block (colors, fonts)
+    2. Replace placeholder text in each <section>
+    3. Add data-notes attributes for your speaking notes
+    4. Open in browser — press [P] for presenter mode
+
+  CUSTOMIZATION:
+    All design tokens are in the <style> block near :root
+    Text content is in the <section class="slide"> elements
+    Charts: uncomment SlideCharts.* calls and paste scripts/charts.js before </body>
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitch Deck — [Company Name]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────
+       CONSTANTS — edit these to reskin the entire deck
+       ───────────────────────────────────────────────────── */
+    :root {
+      /* Colors */
+      --bg:             #0d0d1a;
+      --surface:        #161626;
+      --accent:         #c9a84c;   /* gold */
+      --accent2:        #e8c97a;   /* light gold */
+      --text-primary:   #f0ece0;
+      --text-secondary: #9b8f7a;
+
+      /* Chart colors */
+      --chart3: #10b981;
+      --chart4: #f59e0b;
+      --chart5: #3b82f6;
+      --chart6: #ef4444;
+
+      /* Typography — CJK-aware */
+      --font-heading: 'Playfair Display', 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC', Georgia, serif;
+      --font-body:    'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+
+      /* Spacing rhythm */
+      --slide-padding: clamp(48px, 8vw, 96px);
+    }
+
+    /* ─── Reset & base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(2rem, 4.5vw, 3.5rem); font-weight: 700; line-height: 1.1; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.4rem, 3vw, 2.5rem); font-weight: 700; line-height: 1.2; }
+    h3 { font-family: var(--font-heading); font-size: clamp(1.1rem, 2vw, 1.6rem); font-weight: 700; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem); line-height: 1.75; }
+
+    /* ── CJK typography optimizations ── */
+    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+
+    /* ─── Slide container ──────────────────────────────── */
+    .slides-container {
+      height: 100vh; overflow: hidden;
+      position: relative;
+    }
+    .slide {
+      height: 100vh;
+      overflow: hidden; position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide-content {
+      width: min(84%, 960px);
+      display: flex; flex-direction: column; gap: 24px;
+      position: relative; z-index: 1;
+    }
+    .slide-content.centered { text-align: center; align-items: center; }
+    .slide-content.two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center; width: min(92%, 1100px);
+    }
+
+    /* ─── Slide backgrounds ─────────────────────────────── */
+    .slide-cover {
+      background:
+        radial-gradient(ellipse at 15% 45%, rgba(201,168,76,0.12) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 25%, rgba(201,168,76,0.06) 0%, transparent 40%),
+        linear-gradient(160deg, #0d0d1a 0%, #16161e 100%);
+    }
+    .slide-dark { background: var(--bg); }
+    .slide-surface {
+      background: linear-gradient(160deg, var(--surface) 0%, var(--bg) 100%);
+    }
+
+    /* Gold accent line (decorative) */
+    .slide-cover::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    /* ─── Text components ───────────────────────────────── */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.8rem);
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent); font-weight: 600;
+    }
+    .subtitle { color: var(--text-secondary); }
+    .accent { color: var(--accent); }
+    .accent2 { color: var(--accent2); }
+
+    .big-stat {
+      font-family: var(--font-heading); font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 700; color: var(--accent); line-height: 1;
+    }
+    .big-stat-label {
+      font-family: var(--font-body); font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+      color: var(--text-secondary); margin-top: 6px;
+    }
+
+    /* ─── Layout helpers ────────────────────────────────── */
+    .stats-row {
+      display: flex; gap: 40px; flex-wrap: wrap;
+    }
+    .stat-item { display: flex; flex-direction: column; }
+
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 14px;
+      font-family: var(--font-body); font-size: clamp(0.875rem, 1.5vw, 1rem);
+    }
+    .feature-list li::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0; margin-top: 0.6em;
+    }
+
+    .card {
+      background: var(--surface); border-radius: 12px;
+      padding: 24px 26px; border: 1px solid rgba(201,168,76,0.15);
+    }
+    .card-title { font-family: var(--font-heading); font-size: 1.2rem; color: var(--accent2); margin-bottom: 10px; }
+
+    .divider {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      border: none;
+    }
+
+    .team-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .team-member { text-align: center; }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+      background: var(--surface); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-heading); font-size: 1.4rem; color: var(--accent);
+    }
+    .team-name { font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; }
+    .team-role { font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px; }
+
+    /* ─── Animations ────────────────────────────────────── */
+    [data-animate] { opacity: 0; transform: translateY(20px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    [data-animate="fade"] { transform: none; }
+    [data-animate="scale"] { transform: scale(0.88); }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    /* ─── Navigation chrome ─────────────────────────────── */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: var(--accent); width: 0%; transition: width 0.3s ease; z-index: 100;
+    }
+    .nav-dots {
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 9px; z-index: 100;
+    }
+    .nav-dots button {
+      width: 6px; height: 6px; border-radius: 50%;
+      border: none; background: rgba(201,168,76,0.2); cursor: pointer;
+      transition: background 0.2s, transform 0.2s; padding: 0;
+    }
+    .nav-dots button.active { background: var(--accent); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 16px; right: 20px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
+    #presenterBtn {
+      position: fixed; bottom: 16px; left: 20px;
+      background: var(--surface); border: 1px solid rgba(201,168,76,0.2);
+      color: var(--text-secondary); font-size: 11px; font-family: var(--font-body);
+      padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100;
+    }
+    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
+
+    /* ─── Slide number label (top-left) ─────────────────── */
+    .slide-label {
+      position: absolute; top: 24px; left: var(--slide-padding);
+      font-family: var(--font-body); font-size: 11px; color: rgba(201,168,76,0.4);
+      letter-spacing: 0.1em; text-transform: uppercase; z-index: 1;
+    }
+
+    /* ─── Mobile responsive ─────────────────────────────── */
+    @media (max-width: 900px) {
+      .slide-content.two-col {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stats-row {
+        gap: 24px;
+      }
+    }
+    @media (max-width: 640px) {
+      :root { --slide-padding: 28px; }
+      .slide-content { width: 90%; }
+      .nav-dots { display: none; }
+      .team-grid { grid-template-columns: 1fr; }
+      .stats-row { flex-direction: column; gap: 16px; }
+      .big-stat { font-size: clamp(2rem, 10vw, 3rem); }
+      h1 { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+      h2 { font-size: clamp(1.2rem, 5vw, 1.8rem); }
+    }
+
+    /* ─── Print / PDF export ────────────────────────────── */
+    @media print {
+      html, body { height: auto; overflow: visible; }
+      .slides-container { height: auto; overflow: visible; position: static; }
+      .slide {
+        height: 100vh !important;
+        min-height: 100vh;
+        page-break-after: always;
+        page-break-inside: avoid;
+        position: relative !important;
+        transform: none !important;
+        overflow: visible;
+      }
+      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      [data-animate] { opacity: 1 !important; transform: none !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">8</span></div>
+<button id="presenterBtn" title="Presenter view (P)">演讲者视图 [P]</button>
+
+<main class="slides-container" id="slidesContainer" role="main">
+
+  <!-- ── Slide 1: Cover ─────────────────────────────────────────────────── -->
+  <section class="slide slide-cover" role="region" aria-label="Cover"
+    data-notes="[Opening hook] Start with the problem statement. Make the audience feel the pain before introducing the solution.">
+    <span class="slide-label">01 / 08</span>
+    <div class="slide-content centered" style="max-width:700px;">
+      <p class="eyebrow" data-animate>Series A · 2025</p>
+      <h1 data-animate>[Company Name]</h1>
+      <hr class="divider" data-animate style="margin: 4px auto;">
+      <p class="subtitle" data-animate style="font-size:clamp(1rem,2vw,1.25rem);">One sentence that captures exactly what you do and why it matters.</p>
+      <p data-animate style="font-size: 12px; color: rgba(201,168,76,0.5); margin-top: 16px; letter-spacing: 0.08em;">
+        FOUNDER NAME · FOUNDER NAME · CITY, YEAR
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Slide 2: Problem ───────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="Problem"
+    data-notes="The problem: make it visceral. 3 specific pain points with concrete examples. Reference a person or scenario the audience knows.">
+    <span class="slide-label">02 / 08</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>The Problem</p>
+      <h2 data-animate>[Describe the core problem in 8 words or fewer]</h2>
+      <hr class="divider" data-animate>
+      <ul class="feature-list">
+        <li data-animate><strong>Pain point 1</strong> — Specific description of the first problem.</li>
+        <li data-animate><strong>Pain point 2</strong> — Specific description of the second problem.</li>
+        <li data-animate><strong>Pain point 3</strong> — Why existing solutions fall short.</li>
+      </ul>
+      <p class="subtitle" data-animate style="font-size: 0.9rem; margin-top: 8px;">
+        "[Quote from a real customer describing the problem]"
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Slide 3: Solution ──────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="Solution"
+    data-notes="The aha moment. Show the solution in 3 bullet points. If you have a demo, this is where you'd do it.">
+    <span class="slide-label">03 / 08</span>
+    <div class="slide-content two-col">
+      <div>
+        <p class="eyebrow" data-animate>Our Solution</p>
+        <h2 data-animate>[Solution in one headline]</h2>
+        <p class="subtitle" data-animate style="margin-top: 12px;">[2-3 sentence explanation of how it works and why it's better]</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card" data-animate>
+          <div class="card-title">Feature One</div>
+          <p class="subtitle">How this feature solves pain point 1.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Feature Two</div>
+          <p class="subtitle">How this feature solves pain point 2.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Feature Three</div>
+          <p class="subtitle">The key differentiator vs. competitors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 4: Market ────────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="Market"
+    data-notes="TAM/SAM/SOM. Be specific about your initial wedge (SOM). Show you understand the market structure.">
+    <span class="slide-label">04 / 08</span>
+    <div class="slide-content centered">
+      <p class="eyebrow" data-animate>Market Opportunity</p>
+      <h2 data-animate>A $[X]B market growing at [Y]% annually</h2>
+      <div class="stats-row" data-animate style="justify-content:center; gap:48px; margin-top: 16px;">
+        <div class="stat-item" style="align-items:center;">
+          <span class="big-stat">$[X]B</span>
+          <span class="big-stat-label">TAM — Total Addressable Market</span>
+        </div>
+        <div class="stat-item" style="align-items:center;">
+          <span class="big-stat">$[X]B</span>
+          <span class="big-stat-label">SAM — Serviceable Market</span>
+        </div>
+        <div class="stat-item" style="align-items:center;">
+          <span class="big-stat">$[X]M</span>
+          <span class="big-stat-label">SOM — Our Initial Target</span>
+        </div>
+      </div>
+      <p class="subtitle" data-animate>[Source: Gartner/IDC/your research, Year]</p>
+    </div>
+  </section>
+
+  <!-- ── Slide 5: Traction ──────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="Traction"
+    data-notes="Show momentum. If you have charts, even better. MoM growth rate matters more than absolute numbers at early stage.">
+    <span class="slide-label">05 / 08</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>Traction</p>
+      <h2 data-animate>Growing [X]% month-over-month</h2>
+      <div class="stats-row" data-animate>
+        <div class="stat-item">
+          <span class="big-stat">[X]K</span>
+          <span class="big-stat-label">Monthly Active Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="big-stat">$[X]K</span>
+          <span class="big-stat-label">MRR</span>
+        </div>
+        <div class="stat-item">
+          <span class="big-stat">[X]%</span>
+          <span class="big-stat-label">Net Revenue Retention</span>
+        </div>
+      </div>
+      <!-- Uncomment and paste charts.js to add a growth chart:
+      <div id="tractionChart" class="chart-container" style="height:220px;" data-animate></div>
+      -->
+    </div>
+  </section>
+
+  <!-- ── Slide 6: Team ──────────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="Team"
+    data-notes="Investors invest in people. Highlight domain expertise and past outcomes. 'We've done this before' is the most powerful signal.">
+    <span class="slide-label">06 / 08</span>
+    <div class="slide-content centered">
+      <p class="eyebrow" data-animate>Team</p>
+      <h2 data-animate>Built by people who've done this before</h2>
+      <div class="team-grid" data-animate>
+        <div class="team-member">
+          <div class="team-avatar">A</div>
+          <div class="team-name">Founder Name</div>
+          <div class="team-role">CEO · Ex-Google · 10yr domain exp</div>
+        </div>
+        <div class="team-member">
+          <div class="team-avatar">B</div>
+          <div class="team-name">Founder Name</div>
+          <div class="team-role">CTO · Ex-Stripe · ML specialist</div>
+        </div>
+        <div class="team-member">
+          <div class="team-avatar">C</div>
+          <div class="team-name">Advisor Name</div>
+          <div class="team-role">Advisor · 2x founder · $200M exits</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 7: The Ask ───────────────────────────────────────────────── -->
+  <section class="slide slide-dark" role="region" aria-label="The Ask"
+    data-notes="Be specific: how much, what you'll do with it, and what milestones it gets you to. Tie the milestones to the next fundraise trigger.">
+    <span class="slide-label">07 / 08</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>The Ask</p>
+      <h2 data-animate>Raising $[X]M Series A</h2>
+      <ul class="feature-list">
+        <li data-animate><strong>Product</strong> — [X]% of funds: roadmap items A, B, C</li>
+        <li data-animate><strong>GTM</strong> — [X]% of funds: sales team expansion into [market]</li>
+        <li data-animate><strong>Infrastructure</strong> — [X]% of funds: scale to support [X]M users</li>
+      </ul>
+      <div class="card" data-animate style="margin-top: 8px; border-color: rgba(201,168,76,0.3);">
+        <p style="font-family: var(--font-body); color: var(--text-secondary); font-size: 0.9rem;">
+          Target milestone: <strong style="color: var(--accent2);">[X]K customers / $[X]M ARR by [month, year]</strong>
+          — positioning for Series B at [X]× revenue.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 8: Close / Contact ───────────────────────────────────────── -->
+  <section class="slide slide-cover" role="region" aria-label="Close"
+    data-notes="End on confidence. Leave them with your single most compelling reason to act now.">
+    <span class="slide-label">08 / 08</span>
+    <div class="slide-content centered" style="max-width:640px;">
+      <p class="eyebrow" data-animate>Let's build the future</p>
+      <h1 data-animate>[Company Name]</h1>
+      <hr class="divider" data-animate style="margin: 8px auto;">
+      <p data-animate style="color: var(--accent2); font-size: clamp(1rem,1.8vw,1.2rem);">
+        "[Single most compelling line — the thing you want them to remember]"
+      </p>
+      <p class="subtitle" data-animate style="margin-top: 20px;">
+        founder@company.com · company.com/deck
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  /* ── SlidePresentation controller ── */
+  const CHANNEL = 'slides-presenter-sync';
+  let presenterWin = null;
+  let bc = null;
+  try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(container.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let navigating = false; // prevents multi-slide jumps during transition
+
+  document.getElementById('totalSlides').textContent = total;
+
+  // ── Layout: stack slides absolutely, container clips overflow ──
+  container.style.position = 'relative';
+  slides.forEach((s, i) => {
+    s.style.transform = 'translateY(' + (i * 100) + 'vh)';
+  });
+
+  const dotsEl = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goTo(i);
+    dotsEl.appendChild(b);
+  });
+
+  function updateChrome(i) {
+    current = i;
+    document.getElementById('currentSlide').textContent = i + 1;
+    const pct = total > 1 ? (i / (total - 1)) * 100 : 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    dotsEl.querySelectorAll('button').forEach((b, j) => b.classList.toggle('active', j === i));
+    slides.forEach((s, j) => s.setAttribute('aria-current', j === i ? 'true' : 'false'));
+    if (bc) bc.postMessage({ type: 'slide-change', payload: { index: i, total, notes: slides[i]?.dataset?.notes || '' } });
+  }
+
+  function goTo(i) {
+    i = Math.max(0, Math.min(i, total - 1));
+    if (i === current && !navigating) return;
+    navigating = true;
+    // Shift every slide relative to target index
+    slides.forEach((s, j) => {
+      s.style.transform = 'translateY(' + ((j - i) * 100) + 'vh)';
+    });
+    // Trigger enter animations on new slide
+    slides[i].querySelectorAll('[data-animate]').forEach((el, j) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), j * 130);
+    });
+    updateChrome(i);
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  // Initial state
+  updateChrome(0);
+  slides[0].querySelectorAll('[data-animate]').forEach((el, j) => {
+    setTimeout(() => el.classList.add('visible'), j * 130 + 200);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+    else if (['ArrowLeft','ArrowUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+    else if (e.key.toLowerCase() === 'p') openPresenter();
+    else if (e.key.toLowerCase() === 'f') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+  });
+
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => {
+    const d = touchY - e.changedTouches[0].clientY;
+    if (Math.abs(d) > 50) goTo(current + (d > 0 ? 1 : -1));
+  }, { passive: true });
+
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (navigating) return;
+    goTo(current + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+
+  function openPresenter() {
+    if (presenterWin && !presenterWin.closed) { presenterWin.focus(); if (bc) bc.postMessage({ type: 'slide-change', payload: { index: current, total, notes: slides[current]?.dataset?.notes || '' } }); return; }
+    const tpl = document.getElementById('presenter-view-html').textContent;
+    presenterWin = window.open('', '_blank', 'width=1100,height=700,menubar=no,toolbar=no,location=no,status=no');
+    if (!presenterWin) { alert('请允许弹出窗口以打开演讲者视图。\n或者点击地址栏的弹出窗口拦截图标。'); return; }
+    presenterWin.document.open();
+    presenterWin.document.write(tpl);
+    presenterWin.document.close();
+    setTimeout(() => { if (bc) { bc.postMessage({ type: 'slide-change', payload: { index: current, total, notes: slides[current]?.dataset?.notes || '' } }); bc.postMessage({ type: 'source-url', payload: { url: window.location.href } }); } }, 500);
+  }
+
+  document.getElementById('presenterBtn').addEventListener('click', openPresenter);
+  if (bc) bc.addEventListener('message', e => {
+    if (e.data?.type === 'request-init') { bc.postMessage({ type: 'init', payload: { index: current, total, notes: slides[current]?.dataset?.notes || '' } }); bc.postMessage({ type: 'source-url', payload: { url: window.location.href } }); }
+    if (e.data?.type === 'navigate') { goTo(e.data.payload.index); }
+    if (e.data?.type === 'pointer-pos') { relayPointer(e.data.payload); }
+    if (e.data?.type === 'blackout') { toggleBlackout(e.data.payload.active); }
+  });
+
+  // ── Laser pointer relay ──────────────────────────────────────
+  let laserDot = null;
+  function relayPointer({ x, y }) {
+    if (!laserDot) {
+      laserDot = document.createElement('div');
+      laserDot.style.cssText = 'position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,0.85);box-shadow:0 0 12px 4px rgba(220,40,40,0.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';
+      document.body.appendChild(laserDot);
+    }
+    laserDot.style.left = (x * window.innerWidth) + 'px';
+    laserDot.style.top  = (y * window.innerHeight) + 'px';
+    laserDot.style.display = 'block';
+    clearTimeout(laserDot._hide);
+    laserDot._hide = setTimeout(() => { if (laserDot) laserDot.style.display = 'none'; }, 3000);
+  }
+
+  // ── Blackout relay ──────────────────────────────────────────
+  let blackoutEl = null;
+  function toggleBlackout(active) {
+    if (active) {
+      if (!blackoutEl) {
+        blackoutEl = document.createElement('div');
+        blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';
+        blackoutEl.title = '点击退出黑屏';
+        blackoutEl.addEventListener('click', () => toggleBlackout(false));
+        document.body.appendChild(blackoutEl);
+      }
+      blackoutEl.style.display = 'block';
+    } else if (blackoutEl) {
+      blackoutEl.style.display = 'none';
+    }
+  }
+
+  /* ── Uncomment to add traction chart ──
+  SlideCharts.area('#tractionChart', {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'],
+    datasets: [{ label: 'MRR ($K)', values: [12,18,24,31,42,58,74,96] }]
+  }, { smooth: true, dots: true });
+  */
+
+  // postMessage bridge — Presenter view iframe drives navigation on this page
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);
+  });
+</script>
+
+<!-- ══ Inline Presenter View Template v2 (bidirectional nav + laser + blackout) ══ -->
+<script id="presenter-view-html" type="text/plain">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲者视图</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d18; color: #e0e0f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+    #topbar { background: #111120; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #7c3aed; cursor: pointer; user-select: none; transition: color 0.2s; }
+    #timer:hover { color: #ec4899; } #timer.warn { color: #f59e0b; } #timer.over { color: #ef4444; }
+    #timer-label { font-size: 10px; color: #555; margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: #888; }
+    #slide-counter strong { color: #fff; font-size: 15px; }
+    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    /* Nav buttons */
+    .nav-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.12); color: #ccc; font-size: 16px; width: 36px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .nav-btn:hover { background: #282840; border-color: rgba(124,58,237,0.5); color: #fff; }
+    /* Tool buttons */
+    .tool-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.1); color: #999; font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .tool-btn:hover { border-color: rgba(124,58,237,0.5); color: #fff; }
+    .tool-btn.active { background: rgba(124,58,237,0.25); border-color: #7c3aed; color: #c4b5fd; }
+    .tool-btn.blackout-active { background: rgba(0,0,0,0.6); border-color: #555; color: #888; }
+    /* Main layout */
+    #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
+    #current-pane { grid-row: 1 / 3; background: #1a1a2e; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(124,58,237,0.4); box-shadow: 0 0 20px rgba(124,58,237,0.15); position: relative; }
+    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #7c3aed; font-weight: 600; background: rgba(124,58,237,0.08); }
+    #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
+    #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
+    /* Laser dot in presenter pane */
+    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(220,40,40,0.9); box-shadow: 0 0 10px 3px rgba(220,40,40,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
+    #next-pane { background: #111120; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); }
+    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #777; font-weight: 500; }
+    #next-preview { flex: 1; position: relative; overflow: hidden; }
+    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.65; }
+    #notes-pane { background: #111120; border-radius: 10px; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); }
+    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #555; margin-bottom: 8px; font-weight: 500; }
+    #notes-text { font-size: 13px; line-height: 1.7; color: #b8b8d8; }
+    #notes-text.empty { color: #3a3a5a; font-style: italic; }
+    #progress { position: fixed; bottom: 0; left: 0; height: 3px; background: #7c3aed; transition: width 0.3s ease; }
+  </style>
+</head>
+<body>
+<div id="topbar">
+  <div><div id="timer">00:00</div><div id="timer-label">点击重置</div></div>
+  <div class="topbar-divider"></div>
+  <button class="nav-btn" id="prevBtn" title="上一张 (←)">&#8592;</button>
+  <button class="nav-btn" id="nextBtn" title="下一张 (→)">&#8594;</button>
+  <div class="topbar-divider"></div>
+  <button class="tool-btn" id="laserBtn" title="激光笔 (L)">&#9679; 激光笔</button>
+  <button class="tool-btn" id="blackoutBtn" title="黑屏 (B)">&#9632; 黑屏</button>
+  <div class="topbar-divider"></div>
+  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
+</div>
+<div id="main">
+  <div id="current-pane">
+    <div id="current-label">当前幻灯片</div>
+    <div id="current-preview">
+      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+      <div id="laser-dot"></div>
+    </div>
+  </div>
+  <div id="next-pane"><div id="next-label">下一张</div><div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div></div>
+  <div id="notes-pane"><div id="notes-label">演讲备注</div><div id="notes-text" class="empty">（此幻灯片无备注）</div></div>
+</div>
+<div id="progress" style="width:0%"></div>
+<script>
+  let currentIndex=0, totalSlides=0, timerSeconds=0, timerRunning=false, timerInterval=null;
+  let laserActive=false, blackoutActive=false;
+  const CHANNEL_NAME='slides-presenter-sync';
+  const channel=new BroadcastChannel(CHANNEL_NAME);
+
+  channel.addEventListener('message',(e)=>{
+    const{type,payload}=e.data||{};
+    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
+    if(type==='source-url'){
+      const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+      if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}
+    }
+  });
+  channel.postMessage({type:'request-init'});
+
+  function updateUI(payload){
+    document.getElementById('pv-current').textContent=currentIndex+1;
+    document.getElementById('pv-total').textContent=totalSlides;
+    const pct=totalSlides>1?(currentIndex/(totalSlides-1))*100:100;
+    document.getElementById('progress').style.width=pct+'%';
+    const notesEl=document.getElementById('notes-text'),notes=payload.notes||'';
+    if(notes){notesEl.textContent=notes;notesEl.classList.remove('empty');}
+    else{notesEl.textContent='（此幻灯片无备注）';notesEl.classList.add('empty');}
+    scaleIframe('current-iframe','current-preview');
+    scaleIframe('next-iframe','next-preview');
+    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
+    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
+    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
+    if(!timerRunning)startTimer();
+  }
+
+  function scaleIframe(iframeId,containerId){
+    const c=document.getElementById(containerId),f=document.getElementById(iframeId);
+    if(!c||!f)return;
+    const w=c.clientWidth,h=c.clientHeight,scale=Math.min(w/1280,h/720);
+    f.style.width='1280px';f.style.height='720px';
+    f.style.transform=`scale(${scale})`;f.style.transformOrigin='top left';
+    f.style.marginLeft=((w-1280*scale)/2)+'px';
+    f.style.marginTop=((h-720*scale)/2)+'px';
+  }
+
+  // Timer
+  function formatTime(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+  function startTimer(){
+    if(timerRunning)return;timerRunning=true;
+    timerInterval=setInterval(()=>{
+      timerSeconds++;
+      const el=document.getElementById('timer');
+      el.textContent=formatTime(timerSeconds);
+      if(timerSeconds>=30*60)el.classList.add('over');
+      else if(timerSeconds>=20*60){el.classList.add('warn');el.classList.remove('over');}
+    },1000);
+  }
+  document.getElementById('timer').addEventListener('click',()=>{
+    timerSeconds=0;
+    const el=document.getElementById('timer');
+    el.textContent='00:00';el.classList.remove('warn','over');
+  });
+
+  // Nav buttons
+  document.getElementById('prevBtn').addEventListener('click',()=>{
+    if(currentIndex>0)channel.postMessage({type:'navigate',payload:{index:currentIndex-1}});
+  });
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    if(currentIndex<totalSlides-1)channel.postMessage({type:'navigate',payload:{index:currentIndex+1}});
+  });
+
+  // Laser pointer
+  const laserBtn=document.getElementById('laserBtn');
+  const laserDotEl=document.getElementById('laser-dot');
+  const previewPane=document.getElementById('current-preview');
+
+  laserBtn.addEventListener('click',()=>{
+    laserActive=!laserActive;
+    laserBtn.classList.toggle('active',laserActive);
+    laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';
+    previewPane.style.cursor=laserActive?'crosshair':'default';
+    if(!laserActive){laserDotEl.style.display='none';channel.postMessage({type:'pointer-hide'});}
+  });
+
+  previewPane.addEventListener('mousemove',(e)=>{
+    if(!laserActive)return;
+    const rect=previewPane.getBoundingClientRect();
+    const x=(e.clientX-rect.left)/rect.width;
+    const y=(e.clientY-rect.top)/rect.height;
+    // move local dot
+    const iframeScale=parseFloat(document.getElementById('current-iframe').style.transform?.replace('scale(',''))||1;
+    const iframeX=parseFloat(document.getElementById('current-iframe').style.marginLeft)||0;
+    const iframeY=parseFloat(document.getElementById('current-iframe').style.marginTop)||0;
+    laserDotEl.style.left=e.clientX-rect.left+'px';
+    laserDotEl.style.top=e.clientY-rect.top+'px';
+    laserDotEl.style.display='block';
+    channel.postMessage({type:'pointer-pos',payload:{x,y}});
+  });
+
+  previewPane.addEventListener('mouseleave',()=>{
+    if(laserActive){laserDotEl.style.display='none';channel.postMessage({type:'pointer-hide'});}
+  });
+
+  // Blackout
+  const blackoutBtn=document.getElementById('blackoutBtn');
+  blackoutBtn.addEventListener('click',()=>{
+    blackoutActive=!blackoutActive;
+    blackoutBtn.classList.toggle('blackout-active',blackoutActive);
+    blackoutBtn.textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';
+    channel.postMessage({type:'blackout',payload:{active:blackoutActive}});
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown',(e)=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}
+    else if(e.key.toLowerCase()==='l'){laserBtn.click();}
+    else if(e.key.toLowerCase()==='b'){blackoutBtn.click();}
+  });
+
+  window.addEventListener('resize',()=>{
+    scaleIframe('current-iframe','current-preview');
+    scaleIframe('next-iframe','next-preview');
+  });
+<\/script>
+</body>
+</html>
+</script>
+
+</body>
+</html>

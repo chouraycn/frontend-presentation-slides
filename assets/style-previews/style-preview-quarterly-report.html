@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Preview C — Clean Minimal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Synced from template-quarterly-report.html ── */
+    :root {
+      --bg:             #fafaf8;
+      --surface:        #f0ede6;
+      --surface2:       #e8e4dd;
+      --accent:         #2563eb;
+      --accent2:        #0ea5e9;
+      --accent-green:   #16a34a;
+      --accent-red:     #dc2626;
+      --accent-amber:   #d97706;
+      --text-primary:   #1c1917;
+      --text-secondary: #78716c;
+      --border:         rgba(0,0,0,0.08);
+      --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+
+    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; }
+    h2 { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; }
+    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.4vw, 0.95rem); line-height: 1.7; color: var(--text-secondary); }
+    strong { color: var(--text-primary); }
+
+    .slides-container { height: 100vh; overflow: hidden; position: relative; }
+    .slide {
+      height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide-content { width: min(88%, 1050px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .slide-content.centered { text-align: center; align-items: center; }
+
+    /* Slide backgrounds */
+    .slide-cover { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); color: white; }
+    .slide-cover h1, .slide-cover h2, .slide-cover p { color: rgba(255,255,255,0.9); }
+    .slide-cover .subtitle { color: rgba(255,255,255,0.65); }
+    .slide-surface { background: var(--surface); }
+    .slide-white { background: #ffffff; }
+
+    /* Text components */
+    .eyebrow {
+      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.75rem);
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--accent); font-weight: 600;
+    }
+    .slide-cover .eyebrow { color: rgba(255,255,255,0.6); }
+    .subtitle { color: var(--text-secondary); }
+    .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
+
+    /* Status badges */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; font-family: var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .badge-red   { background: #fee2e2; color: #991b1b; }
+    .badge-blue  { background: #dbeafe; color: #1e40af; }
+
+    /* Metric cards */
+    .metric-card {
+      background: #fff; border-radius: 10px; padding: 20px 22px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .metric-value { font-family: var(--font-heading); font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+    .metric-delta { font-size: 0.8rem; font-weight: 600; }
+    .metric-delta.up   { color: var(--accent-green); }
+    .metric-delta.down { color: var(--accent-red); }
+    .metric-delta.flat { color: var(--text-secondary); }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    /* Win/miss item list */
+    .item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .item-list li { display: flex; align-items: flex-start; gap: 10px; background: #fff; border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); font-size: 0.9rem; font-family: var(--font-body); }
+    .item-list li::before { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .item-list.wins   li::before { content: '✓'; background: #dcfce7; color: #15803d; }
+    .item-list.misses li::before { content: '△'; background: #fef3c7; color: #92400e; }
+
+    /* Slide label */
+    .slide-label { position: absolute; top: 20px; right: 24px; font-family: var(--font-body); font-size: 10px; color: var(--text-secondary); opacity: 0.4; z-index: 1; }
+
+    /* Navigation */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--accent); border-color: var(--accent); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
+
+    /* Style label */
+    .style-label { position: fixed; top: 20px; left: 24px; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--text-secondary); z-index: 100; }
+    .style-label span { color: var(--accent); font-weight: 600; }
+
+    /* Animations */
+    [data-animate] { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    [data-animate].visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    @media (max-width: 640px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="style-label">Style Preview — <span>C: Clean Minimal</span></div>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Cover -->
+  <section class="slide slide-cover">
+    <span class="slide-label" style="color:rgba(255,255,255,0.3);">01 / 03</span>
+    <div class="slide-content" style="max-width:800px;">
+      <p class="eyebrow" data-animate>Product Team · Q1 2026</p>
+      <h1 data-animate>季度业务回顾</h1>
+      <p data-animate style="font-size:clamp(1rem,1.8vw,1.2rem); color:rgba(255,255,255,0.75); margin-top:8px;">
+        Clean Minimal — light mode, corporate blue. Best for QBRs, OKR reviews, and leadership updates.
+      </p>
+      <div data-animate style="margin-top:24px; display:flex; gap:16px; flex-wrap:wrap;">
+        <span class="badge badge-green">On Track</span>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.5); align-self:center;">Mar 2026 · Leadership All-Hands</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Key Metrics -->
+  <section class="slide slide-white">
+    <span class="slide-label">02</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>执行摘要</p>
+      <h2 data-animate>Q1 at a Glance</h2>
+      <div class="metrics-grid" data-animate>
+        <div class="metric-card">
+          <p class="label">Revenue</p>
+          <div class="metric-value">¥8.4M</div>
+          <span class="metric-delta up">↑ 23% vs Q4</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Active Users</p>
+          <div class="metric-value">142K</div>
+          <span class="metric-delta up">↑ 18% MoM</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Net Retention</p>
+          <div class="metric-value">107%</div>
+          <span class="metric-delta flat">→ stable</span>
+        </div>
+        <div class="metric-card">
+          <p class="label">Headcount</p>
+          <div class="metric-value">38</div>
+          <span class="metric-delta up">+4 this quarter</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Wins & Misses -->
+  <section class="slide slide-surface">
+    <span class="slide-label">03</span>
+    <div class="slide-content">
+      <p class="eyebrow" data-animate>回顾</p>
+      <h2 data-animate>What Went Well / What Didn't</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;" data-animate>
+        <div>
+          <p class="label" style="margin-bottom:8px; color:var(--accent-green);">✓ Wins</p>
+          <ul class="item-list wins">
+            <li>Shipped new dashboard on time</li>
+            <li>Closed 3 enterprise deals above target</li>
+            <li>NPS improved from 42 → 61</li>
+          </ul>
+        </div>
+        <div>
+          <p class="label" style="margin-bottom:8px; color:var(--accent-amber);">△ Misses</p>
+          <ul class="item-list misses">
+            <li>Mobile app launch slipped 2 weeks</li>
+            <li>Support ticket volume exceeded capacity</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const container = document.getElementById('slidesContainer');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0, navigating = false;
+
+  slides.forEach((s, i) => {
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+  });
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'active' : '';
+    b.setAttribute('aria-label', `Slide ${i + 1}`);
+    b.onclick = () => goToSlide(i);
+    navDots.appendChild(b);
+  });
+
+  function goToSlide(idx) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    if (idx === current && !navigating) return;
+    navigating = true;
+    slides.forEach((s, j) => { s.style.transform = 'translateY(' + ((j - idx) * 100) + 'vh)'; });
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    });
+    current = idx;
+    document.getElementById('currentSlide').textContent = idx + 1;
+    navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
+    progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    setTimeout(() => { navigating = false; }, 650);
+  }
+
+  setTimeout(() => { slides[0].querySelectorAll('[data-animate]').forEach((el, i) => { setTimeout(() => el.classList.add('visible'), 200 + i * 120); }); }, 0);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+  });
+  let touchY = 0;
+  container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+</script>
+</body>
+</html>

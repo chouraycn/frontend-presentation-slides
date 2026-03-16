@@ -176,16 +176,24 @@ Eight named previews are available in `assets/style-previews/`. Each is a faithf
 
 Point the user at 2–3 that match their mood, ask them to pick one, then proceed to Phase 0D.
 
-**Option 2 — Generate new previews from scratch** (when no existing preview fits):
+**Option 2 — Show all 8 previews side-by-side** (when the user hasn't narrowed down a vibe):
 
-Create three distinct mini HTML files in `assets/style-previews/`:
-- `style-a.html`
-- `style-b.html`
-- `style-c.html`
+All eight preview files are available in `assets/style-previews/`. Present the full table so the user can make a direct comparison:
 
-Each preview must demonstrate **different** typography, color palette, animation style, and overall aesthetic. Reference `references/style-guide.md` for style-mood mappings and CSS patterns.
+| # | File | Style Name | Mood | Best For |
+|---|------|-----------|------|---------|
+| 1 | `style-preview-pitch-deck.html` | Dark Elegance | Sleek / Premium | Investor decks, premium brand |
+| 2 | `style-preview-tech-talk.html` | Vibrant Energy | Bold / Dynamic | Tech talks, startup pitches |
+| 3 | `style-preview-quarterly-report.html` | Clean Minimal | Calm / Focused | Business reviews, OKR reports |
+| 4 | `style-preview-claude-warmth.html` | Claude Warmth | Inspiring / Warm | Brand storytelling, culture decks |
+| 5 | `style-preview-product-launch.html` | Warm Inspire | Bold / Dramatic | Product launches, feature reveals |
+| 6 | `style-preview-forai-white.html` | ForAI White | Editorial / Minimal | Design portfolios, agency pitches |
+| 7 | `style-preview-pash-orange.html` | Pash Orange | Confident / Agency | Agency/studio pitches, orange brand |
+| 8 | `style-preview-hhart-red.html` | Hhart Red Power | Bold / Studio / Red | Creative studio, photography, red brand |
 
-Rules for previews:
+Ask the user to open 2–3 that look appealing and pick one. If none fits and a fully custom aesthetic is needed, generate new preview HTML inline and present it directly via `preview_url` (do **not** create new files in `assets/style-previews/`).
+
+Rules for any custom-generated previews:
 - Each preview shows 2–3 sample slides with real-looking content
 - Use completely different visual identities (not just color swaps)
 - Include actual entrance animations so the user can see motion

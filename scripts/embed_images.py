@@ -70,12 +70,24 @@ def get_mime(path):
 
 
 def is_local(src):
-    """Return True if src is a local file path (not a URL or data URI)."""
+    """Return True if src is a local file path (not a URL, data URI, SVG ref, or JS template)."""
     if not src:
         return False
     src = src.strip()
-    return not (src.startswith("http://") or src.startswith("https://")
-                or src.startswith("data:") or src.startswith("//"))
+    # Exclude absolute URLs, data URIs, protocol-relative URLs
+    if src.startswith("http://") or src.startswith("https://") \
+            or src.startswith("data:") or src.startswith("//"):
+        return False
+    # Exclude SVG internal references (e.g. url(#gradId))
+    if src.startswith("#"):
+        return False
+    # Exclude JS template literal expressions (e.g. url(${varName}), url, transform)
+    if "${" in src or "$(" in src:
+        return False
+    # Exclude bare CSS value tokens that contain spaces or commas (not file paths)
+    if " " in src or "," in src:
+        return False
+    return True
 
 
 def resolve_path(src, base_dir):

@@ -15,10 +15,10 @@ Each template has a matching style-preview file in `assets/style-previews/`. Use
 
 | Template file | Preview file | Style name | Palette | Mood |
 |---|---|---|---|---|
-| `template-pitch-deck.html` | `style-preview-a.html` | Dark Elegance | Deep navy + gold | Impressive / Premium |
-| `template-tech-talk.html` | `style-preview-b.html` | Vibrant Energy | Purple-black + pink/violet | Exciting / Electric |
-| `template-quarterly-report.html` | `style-preview-c.html` | Clean Minimal | Off-white + blue | Calm / Focused |
-| `template-claude-warmth.html` | `style-preview-claude.html` | Claude Warmth | Cream + terracotta | Inspiring / Warm |
+| `template-pitch-deck.html` | `style-preview-pitch-deck.html` | Dark Elegance | Deep navy + gold | Impressive / Premium |
+| `template-tech-talk.html` | `style-preview-tech-talk.html` | Vibrant Energy | Purple-black + pink/violet | Exciting / Electric |
+| `template-quarterly-report.html` | `style-preview-quarterly-report.html` | Clean Minimal | Off-white + blue | Calm / Focused |
+| `template-claude-warmth.html` | `style-preview-claude-warmth.html` | Claude Warmth | Cream + terracotta | Inspiring / Warm |
 | `template-product-launch.html` | `style-preview-product-launch.html` | Warm Inspire | Dark amber + orange | Bold / Dramatic |
 | `template-forai-white.html` | `style-preview-forai-white.html` | ForAI White | Pure white + ink black | Editorial / Minimal |
 | `template-pash-orange.html` | `style-preview-pash-orange.html` | Pash Orange | White + pure orange `#FF5C00` | Confident / Agency |

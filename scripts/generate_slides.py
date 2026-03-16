@@ -1426,6 +1426,23 @@ def main():
                         f'expected {source_total}, got {len(content["slides"])}. Aborting.'
                     )
 
+                # Inject theme colours from PPTX into slides so detect_template
+                # can use them (Fix-6 in detect_template already scans 'theme_color').
+                # We propagate the accent1 colour (primary brand colour) to every
+                # slide; if accent1 is absent, fall back to dk1.
+                pptx_theme = content.get('theme_colors') or {}
+                _theme_hex = (
+                    pptx_theme.get('accent1') or
+                    pptx_theme.get('dk1') or
+                    pptx_theme.get('dk2')
+                )
+                if _theme_hex:
+                    if args.verbose:
+                        print(f'  ↳ PPTX theme colour: {_theme_hex} (injected into slides)')
+                    for _s in content['slides']:
+                        if not _s.get('theme_color'):   # don't overwrite if user set it
+                            _s['theme_color'] = _theme_hex
+
         input_stem = input_path.stem
 
     if args.verbose:
@@ -1821,7 +1838,7 @@ def _normalise_pptx(raw_slides: list) -> list:
         'statement':    'text',
         'image-text':   'image',
         'content-list': 'bullets',
-        'table':        'bullets',
+        'table':        'table',   # preserve table structure (was incorrectly 'bullets')
         'chart':        'chart',
         'content':      'bullets',
         'two-col':      'two-col',
@@ -1907,20 +1924,45 @@ def _normalise_pptx(raw_slides: list) -> list:
             entry['caption']   = ' '.join(caption_parts)[:120] if caption_parts else ''
 
         elif slide_type == 'stats':
-            # Try to parse "value label" pairs from items
+            # Parse "value label" pairs, where value is a numeric token.
+            # Fix: find the numeric token first (right side), rest is label.
+            import re as _re2
+            _num_pat = _re2.compile(
+                r'(?<!\w)(\d[\d,\.]*(?:[KMBTkmbt%×xX]|\s*[KMBTkmbt%×xX])?(?:\+|\-)?)\b'
+            )
             parsed_stats = []
             for it in all_items:
-                parts = it.strip().rsplit(None, 1)
-                if len(parts) == 2:
-                    parsed_stats.append({'value': parts[0], 'label': parts[1]})
+                it_s = it.strip()
+                m = _num_pat.search(it_s)
+                if m:
+                    value = m.group(0).strip()
+                    label = (it_s[:m.start()] + it_s[m.end():]).strip()
+                    parsed_stats.append({'value': value, 'label': label or it_s})
                 else:
-                    parsed_stats.append({'value': it.strip(), 'label': ''})
+                    # No numeric part found — put entire text as value
+                    parsed_stats.append({'value': it_s, 'label': ''})
             entry['stats'] = parsed_stats
 
         elif slide_type == 'two-col':
             mid = len(all_items) // 2 or 1
             entry['left']  = {'title': '', 'body': ' '.join(all_items[:mid])}
             entry['right'] = {'title': '', 'body': ' '.join(all_items[mid:])}
+
+        elif slide_type == 'table':
+            # Preserve structured table data from the PPTX extraction.
+            # Use the first table on the slide; fall back to bullet list if none.
+            raw_tables = s.get('tables') or []
+            if raw_tables:
+                first = raw_tables[0]
+                entry['headers'] = first.get('headers') or []
+                entry['rows']    = first.get('rows') or []
+                # Include remaining body text as a caption
+                if body_texts:
+                    entry['caption'] = ' '.join(body_texts)[:200]
+            else:
+                # No structured table data — fall back to bullets
+                entry['type']  = 'bullets'
+                entry['items'] = all_items
 
         else:
             # bullets / text

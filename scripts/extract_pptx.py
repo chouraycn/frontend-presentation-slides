@@ -381,6 +381,86 @@ def identify_title_shape(all_text_blocks_with_shapes):
     return scored[0][1] if scored else 0
 
 
+# ── Theme colour extraction ──────────────────────────────────────────────────
+
+def _extract_theme_colors(prs) -> dict:
+    """
+    Extract the theme colour scheme from the first slide master.
+
+    Returns a dict mapping role names to hex strings:
+        {'dk1': '#1a1a1a', 'lt1': '#ffffff', 'accent1': '#4472c4', ...}
+
+    Roles extracted: dk1, dk2, lt1, lt2, accent1–accent6.
+    Returns an empty dict if extraction fails or no master exists.
+    """
+    _THEME_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+    _SYSMAP   = {
+        'windowText':   '#000000',
+        'window':       '#ffffff',
+        'background1':  '#ffffff',
+        'text1':        '#000000',
+        'background2':  '#eeece1',
+        'text2':        '#1f497d',
+    }
+
+    try:
+        masters = prs.slide_masters
+        if not masters:
+            return {}
+        master = masters[0]
+        theme_elem = master.element.find(
+            './/{%s}theme' % _THEME_NS
+        )
+        if theme_elem is None:
+            # Try via the theme part if the element isn't embedded
+            try:
+                from pptx.oxml.ns import qn
+                theme_part = master.part.part_related_by(
+                    'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme'
+                )
+                theme_elem = theme_part._element
+            except Exception:
+                pass
+
+        if theme_elem is None:
+            return {}
+
+        # Walk <a:clrScheme> children
+        clr_scheme = theme_elem.find(
+            './/{%s}clrScheme' % _THEME_NS
+        )
+        if clr_scheme is None:
+            return {}
+
+        colors: dict[str, str] = {}
+        for child in clr_scheme:
+            role = child.tag.split('}')[-1]   # strip namespace
+            # Each child has one sub-element: <a:srgbClr> or <a:sysClr>
+            for sub in child:
+                sub_tag = sub.tag.split('}')[-1]
+                if sub_tag == 'srgbClr':
+                    val = sub.get('val', '')
+                    if val and len(val) == 6:
+                        colors[role] = '#' + val.upper()
+                elif sub_tag == 'sysClr':
+                    # Prefer lastClr attribute (the resolved colour)
+                    last = sub.get('lastClr', '')
+                    if last and len(last) == 6:
+                        colors[role] = '#' + last.upper()
+                    else:
+                        # Fall back to well-known system colour map
+                        sys_name = sub.get('val', '')
+                        fallback = _SYSMAP.get(sys_name)
+                        if fallback:
+                            colors[role] = fallback
+                break  # only one sub-element expected per role
+
+        return colors
+
+    except Exception:
+        return {}
+
+
 # ── Main extraction ──────────────────────────────────────────────────────────
 
 def extract_pptx(input_path: str, output_dir: str):
@@ -402,6 +482,11 @@ def extract_pptx(input_path: str, output_dir: str):
     except Exception as e:
         print(f"❌ Failed to open PPTX: {e}")
         sys.exit(1)
+
+    # ── Extract theme colours from slide master ───────────────────────────────
+    theme_colors = _extract_theme_colors(prs)
+    if theme_colors:
+        print(f"  🎨 Theme colours: {', '.join(f'{k}={v}' for k, v in list(theme_colors.items())[:4])}")
 
     slides_data = []
 
@@ -504,6 +589,7 @@ def extract_pptx(input_path: str, output_dir: str):
         json.dump({
             "source_file": input_path.name,
             "total_slides": len(slides_data),
+            "theme_colors": theme_colors,
             "slides": slides_data,
         }, f, ensure_ascii=False, indent=2)
 

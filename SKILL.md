@@ -82,6 +82,67 @@ Ask the user three questions (can be combined into one message):
 
 Adapt the workflow based on answers. If the user only has a topic, help them structure it first.
 
+### Phase 1.5: Narrative Structure (if user has only a topic or rough notes)
+
+When the user lacks a full outline, **do not free-form generate slides**. Instead, match their use case to one of these proven narrative skeletons, then fill in their specific content:
+
+---
+
+**Skeleton A — Investor / Fundraising Pitch** (10–14 slides)
+> Cover → Problem → Market Size → Solution → Why Now → Product Demo / Screenshots → Business Model → Traction & Metrics → Go-to-Market → Competition → Team → Ask / Use of Funds → Thank You
+
+_Best for: Series A/B, angel round, Demo Day. Key rule: lead with pain, not product._
+
+---
+
+**Skeleton B — Technical Talk / Conference** (8–12 slides)
+> Cover → The Problem Everyone Recognizes → Why Existing Solutions Fail → Our Approach / Key Insight → Architecture / How It Works → Live Demo / Code Walkthrough → Results & Benchmarks → Lessons Learned / Gotchas → What's Next → Q&A / Repo Link
+
+_Best for: developer conferences, internal tech sharing, open source announcements. Key rule: one concrete insight per slide._
+
+---
+
+**Skeleton C — Quarterly / OKR Business Review** (10–16 slides)
+> Cover → Quarter Summary (3 numbers) → OKR Scorecard → Key Achievement Deep-Dive → Miss Analysis + Root Cause → Competitive Landscape Update → Customer / Revenue Metrics → Team Health → Risks & Mitigations → Next Quarter Priorities → Resource Ask (if any) → Appendix
+
+_Best for: leadership all-hands, board updates, cross-team reviews. Key rule: bad news before good news builds credibility._
+
+---
+
+**Skeleton D — Product Launch / Feature Reveal** (8–12 slides)
+> Cover (tension / mystery) → The Pain (user story) → The Old Way → The New World (product reveal) → Feature 1 Hero → Feature 2 Hero → Feature 3 Hero → Pricing / Availability → Social Proof / Beta Feedback → Call to Action → Thank You
+
+_Best for: internal launches, press events, sales enablement. Key rule: show before tell — screenshots/video first, explanation second._
+
+---
+
+**Skeleton E — Brand Story / Culture Deck** (10–15 slides)
+> Cover → Mission Statement → The World We Want to Change → Our Origin Story → Core Values (one per slide or grid) → How We Work → People / Team → Impact So Far → Community / Partners → Join Us / CTA
+
+_Best for: recruiting, investor relations, partner onboarding. Key rule: every slide should answer "why does this matter to a human."_
+
+---
+
+**Skeleton F — Internal Demo / Stakeholder Update** (6–10 slides)
+> Cover → Context / Why We Built This → What We Built (3-sentence summary) → Demo Walkthrough → Key Metrics / Success Criteria → Risks & Open Questions → Next Steps + Timeline → Ask / Decision Needed
+
+_Best for: sprint reviews, internal showcases, approval gates. Key rule: always end with a concrete ask or decision._
+
+---
+
+**Skeleton G — Educational / Tutorial** (8–15 slides)
+> Cover → Learning Objectives → Pre-requisites / Who This Is For → Concept 1 (with visual) → Concept 2 → Concept 3 → Hands-on Exercise / Example → Common Mistakes → Summary → Further Reading / Resources
+
+_Best for: workshops, onboarding, documentation-as-slides. Key rule: one concept per slide, always include a visual or code example._
+
+---
+
+**How to use skeletons:**
+1. Identify which skeleton best matches the user's purpose
+2. Present the skeleton to the user and confirm it fits
+3. Ask the user to fill in each slot with their real content (one sentence per slot is enough)
+4. Use the filled skeleton as the outline for Phase 3 generation — not free-form AI improvisation
+
 ---
 
 ## Phase 2: Style Discovery (Visual Exploration)
@@ -268,7 +329,87 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 }
 ```
 
-### Animation: Intersection Observer
+### Slide Transition Upgrade (View Transitions API)
+
+When building a new presentation or enhancing an existing one, upgrade the slide navigation to use **CSS View Transitions** for cinematic slide-to-slide transitions. This creates a smooth cross-fade + directional shift between slides instead of an abrupt jump.
+
+**Add this CSS to the generated presentation:**
+```css
+/* ── View Transitions API — cinematic slide transitions ── */
+/* Supported in Chrome 111+, Safari 18+, Edge 111+. Falls back gracefully. */
+::view-transition-old(slide-content) {
+  animation: vt-slide-out 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(slide-content) {
+  animation: vt-slide-in 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+/* Forward (next slide): old slides out left, new slides in from right */
+[data-direction="forward"]::view-transition-old(slide-content) {
+  animation-name: vt-slide-out-left;
+}
+[data-direction="forward"]::view-transition-new(slide-content) {
+  animation-name: vt-slide-in-right;
+}
+/* Backward (prev slide): reverse */
+[data-direction="backward"]::view-transition-old(slide-content) {
+  animation-name: vt-slide-out-right;
+}
+[data-direction="backward"]::view-transition-new(slide-content) {
+  animation-name: vt-slide-in-left;
+}
+@keyframes vt-slide-out-left  { to   { opacity: 0; transform: translateX(-5%) scale(0.97); } }
+@keyframes vt-slide-in-right  { from { opacity: 0; transform: translateX(5%) scale(0.97);  } }
+@keyframes vt-slide-out-right { to   { opacity: 0; transform: translateX(5%) scale(0.97);  } }
+@keyframes vt-slide-in-left   { from { opacity: 0; transform: translateX(-5%) scale(0.97); } }
+/* Fallback for browsers without View Transitions */
+@keyframes vt-slide-out { to   { opacity: 0; transform: translateY(6px);  } }
+@keyframes vt-slide-in  { from { opacity: 0; transform: translateY(-6px); } }
+
+/* view-transition-name must be set on the active slide content */
+.slide.active .slide-content { view-transition-name: slide-content; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(slide-content),
+  ::view-transition-new(slide-content) {
+    animation: none;
+  }
+}
+```
+
+**Update the `goTo()` function to use View Transitions:**
+```js
+function goTo(targetIdx) {
+  const idx = Math.max(0, Math.min(targetIdx, total - 1));
+  if (idx === current) return;
+  const direction = idx > current ? 'forward' : 'backward';
+  document.documentElement.dataset.direction = direction;
+
+  const doTransition = () => {
+    // Remove active class from old slide
+    slides[current]?.classList.remove('active');
+    // Perform the slide switch (your existing translateY logic)
+    slides.forEach((s, j) => { s.style.transform = `translateY(${(j - idx) * 100}vh)`; });
+    // Add active class to new slide
+    slides[idx].classList.add('active');
+    // Trigger element animations
+    slides[idx].querySelectorAll('[data-animate]').forEach((el, j) => {
+      el.classList.remove('visible');
+      setTimeout(() => el.classList.add('visible'), j * 130);
+    });
+    updateChrome(idx);
+  };
+
+  // Use View Transitions API if available
+  if (document.startViewTransition) {
+    document.startViewTransition(doTransition);
+  } else {
+    doTransition();
+  }
+}
+// Initialize: mark first slide as active
+slides[0]?.classList.add('active');
+```
 
 ```js
 const observer = new IntersectionObserver((entries) => {
@@ -510,15 +651,92 @@ The presenter view reads `slide.dataset.notes` and displays it in the notes pane
 
 ---
 
-## Proactive Quality Checks
+## Proactive Quality Checks (Auto-Heal)
 
-After ANY modification, always verify:
-- `.slide` has `overflow: hidden`
-- New elements use `clamp()` for sizing
-- Images have viewport-relative `max-height`
-- Content fits at 1280×720 viewport
+After ANY modification or generation, **automatically run all checks below** — do not wait for the user to report issues. Fix detected problems silently before delivery.
 
-If modifications risk overflow, proactively reorganize slide content before being asked.
+### Check 1 — Overflow Audit
+Run this in browser console (or generate it as an inline self-check script):
+```js
+(function overflowAudit() {
+  const results = [];
+  document.querySelectorAll('.slide').forEach((slide, i) => {
+    if (slide.scrollHeight > slide.clientHeight + 4) {
+      results.push(`Slide ${i+1}: scrollHeight=${slide.scrollHeight} > clientHeight=${slide.clientHeight}`);
+    }
+    slide.querySelectorAll('*').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > slide.getBoundingClientRect().bottom + 8) {
+        results.push(`  └ ${el.tagName}.${el.className.split(' ')[0]} overflows bottom`);
+      }
+    });
+  });
+  if (results.length) {
+    console.warn('⚠ Overflow detected:\n' + results.join('\n'));
+  } else {
+    console.log('✅ No overflow detected');
+  }
+  return results;
+})();
+```
+
+**Auto-fix rules when overflow is detected:**
+- Long body text: reduce `max-width` to 680px and add `font-size: clamp(0.85rem, 1.3vw, 0.95rem)`
+- Too many bullet items (>6): split into two slides automatically
+- Image too tall: add `max-height: 40vh; object-fit: contain`
+- Stats row with 4+ items: switch to `grid-template-columns: repeat(2, 1fr)` on mobile
+
+### Check 2 — Contrast Audit
+Verify text contrast meets WCAG AA (4.5:1 for body, 3:1 for large headings):
+```js
+// Known risky combinations to check manually:
+const riskPairs = [
+  { bg: '#FF5C00', text: 'subtitle/body', minRatio: 3.1 },  // Pash Orange cover
+  { bg: '#C8102E', text: 'attr/eyebrow',  minRatio: 3.0 },  // Hhart Red bg-red
+  { bg: '#f59e0b', text: 'body text',     minRatio: 4.5 },  // Product Launch accent
+];
+// If any risky slide type is present, add explicit color overrides:
+// .bg-orange .subtitle { color: #fff; }
+// .bg-red .attr { color: rgba(255,255,255,0.88); }
+```
+
+**Auto-fix rule:** When a dark-theme template has subtitle/body text on a colored background, always add an explicit `color: #fff` or `color: rgba(255,255,255,0.88)` override.
+
+### Check 3 — Slide Count Verification
+Before delivery, confirm the generated HTML contains the expected number of slides:
+```js
+const count = document.querySelectorAll('.slide').length;
+console.log(`Slide count: ${count}`);
+// For Mode B (PPT conversion): compare against total_slides from slides.json
+// For Mode A/D: compare against the outline array length
+```
+
+If counts don't match: **do not deliver**. Debug and fix before sending.
+
+### Check 4 — Animation Integrity
+Ensure `.visible` CSS rules exist for all `data-animate` variants used:
+```js
+const variants = new Set();
+document.querySelectorAll('[data-animate]').forEach(el => {
+  variants.add(el.getAttribute('data-animate') || 'default');
+});
+// Verify these CSS classes are defined: [data-animate].visible, [data-animate="scale"].visible, etc.
+console.log('Animation variants used:', [...variants]);
+```
+
+**Auto-fix:** If a `data-animate="X"` variant is used but has no `.visible` rule, add the missing CSS.
+
+### Check 5 — CJK Font Stack
+If the deck contains Chinese/Japanese/Korean text (detected via `\u4e00–\u9fff` range), verify:
+- `<html lang="zh-CN">` (or `ja`, `ko`) is set
+- Font stack includes `'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei'` fallbacks
+- `line-height: 1.8` is applied to `.slide p, .slide li`
+
+**Auto-fix:** If CJK text is present but font stack lacks CJK fallbacks, inject the correct fallbacks into `:root`.
+
+---
+
+> **Delivery gate:** All 5 checks must pass (or be auto-fixed) before the file is presented to the user. Never deliver a deck with known overflow, contrast, or count issues.
 
 ---
 
@@ -531,6 +749,39 @@ If modifications risk overflow, proactively reorganize slide content before bein
 - `scripts/generate_slides.py` — AI content generation pipeline. Accepts a JSON outline **or a topic description via `--expand`** and outputs a complete single-file HTML presentation. Two usage modes: (1) outline mode: `python3 scripts/generate_slides.py outline.json --template claude-warmth --output out.html`; (2) expand mode: `python3 scripts/generate_slides.py --expand "主题描述" --slides 10 --template claude-warmth --output out.html` — automatically calls an LLM (Anthropic → OpenAI → codebuddy CLI fallback chain) to generate a full outline from the topic, then renders the HTML. `--slides N` controls the number of slides (default 10, max 20). Supported `--template` choices: `claude-warmth`, `pitch-deck`, `product-launch`, `quarterly-report`, `tech-talk`, `forai-white`, `pash-orange`, `hhart-red`.
 - `scripts/export_pdf.py` — PDF export tool. Supports three backends (Playwright, Puppeteer, WeasyPrint) with auto-detection. Supports 16x9, 4x3, A4, Letter page sizes. Usage: `python3 scripts/export_pdf.py my_deck.html --page-size 16x9`
 - `scripts/inline_fonts.py` — Font offline tool. Detects Google Fonts CDN links, downloads WOFF2 files, Base64-encodes them, and outputs a self-contained HTML. Run: `python3 scripts/inline_fonts.py input.html`. Use `--list` to inspect detected fonts without modifying the file (no network access required for `--list` mode).
+- `scripts/parse_html.py` — **Reverse-edit tool** (new). Parses a finished HTML presentation back into the JSON outline format consumed by `generate_slides.py`. Enables a two-way editing workflow: HTML → JSON → edit → regenerate. Usage: `python3 scripts/parse_html.py deck.html --pretty` → produces `deck.json`. Flags: `--output` (custom path), `--pretty` (indent JSON), `--stats` (slide-count summary only), `--verbose` (print each slide as parsed). Requires: `pip3 install beautifulsoup4`.
+- `scripts/embed_images.py` — **Image inlining tool** (new). Converts all local `<img src="...">` and CSS `background-image: url(...)` references into base64 data URIs, making the HTML fully self-contained for sharing/archiving. Usage: `python3 scripts/embed_images.py deck.html`. Flags: `--output` (custom path), `--list` (list images only), `--resize W` (max-width resize; requires Pillow), `--quality Q` (JPEG quality 1–95, default 88), `--skip-missing`, `--verbose`. Requires: `pip3 install beautifulsoup4`; optional: `pip3 install Pillow` for resize.
+- `setup.html` — **Interactive config wizard** (new). Open in any browser for a 3-step visual configurator: choose visual style → fill in content details → copy the generated CLI command. No install required. Located at the project root.
 - `assets/demos/presenter-mode-demo.html` — Full Presenter Mode demo and reference implementation. Press `[P]` to see the two-window sync in action.
 - `assets/templates/` — Template library with **8** ready-to-customize presentations (pitch-deck, tech-talk, quarterly-report, product-launch, claude-warmth, forai-white, pash-orange, hhart-red). All templates include v2 Presenter Mode (bidirectional navigation, laser pointer, blackout), mobile responsive CSS, and print/PDF styles. See `assets/templates/README.md` for catalog.
+
+### Two-Way Editing Workflow
+
+When a user wants to edit an existing HTML presentation, offer this workflow:
+
+```bash
+# Step 1: Parse HTML back to editable JSON
+python3 scripts/parse_html.py my_deck.html --pretty
+# → Produces my_deck.json with all slide content
+
+# Step 2: User edits my_deck.json in any text editor
+# (change text, reorder slides, add/remove items)
+
+# Step 3: Regenerate HTML from the edited JSON
+python3 scripts/generate_slides.py my_deck.json --template claude-warmth --output my_deck.html --open
+
+# Step 4 (optional): Make fully self-contained for sharing
+python3 scripts/embed_images.py my_deck.html
+python3 scripts/inline_fonts.py my_deck-embedded.html --output my_deck-final.html
+```
+
+### When to suggest each post-processing tool
+
+| Scenario | Tool |
+|---|---|
+| User wants to share the deck via email / Slack | `embed_images.py` + `inline_fonts.py` |
+| User wants to edit slide text without AI | `parse_html.py` → edit JSON → `generate_slides.py` |
+| Presentation will be shown offline (no Wi-Fi) | `inline_fonts.py --cjk` (if CJK text) |
+| User wants a PDF for printing / email attachment | `export_pdf.py` |
+| User is new and unsure how to start | Open `setup.html` in browser |
 

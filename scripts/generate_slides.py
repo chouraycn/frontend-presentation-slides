@@ -1098,6 +1098,9 @@ RENDERERS = {
     'image':    render_image,
     'cta':      render_cta,
     'divider':  render_divider,
+    # 'end' is produced by parse_html.py for thank-you/closing slides;
+    # map it to render_cta so it renders as a proper closing slide.
+    'end':      render_cta,
 }
 
 

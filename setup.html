@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<!--
+  setup.html — Interactive Presentation Builder
+  ─────────────────────────────────────────────
+  Visual configurator for the frontend-slides skill.
+  Guides you through: template selection → content input → command generation.
+  No install required — open in any browser.
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slide Setup — Frontend Presentation Slides</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #F7F6F3;
+      --surface:  #FFFFFF;
+      --border:   #E5E3DE;
+      --text:     #1C1916;
+      --muted:    #6B6560;
+      --accent:   #C96A2B;
+      --accent2:  #2B5CC9;
+      --success:  #1A8A4A;
+      --radius:   12px;
+      --shadow:   0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 48px; }
+    .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; }
+    .header p  { color: var(--muted); margin-top: 8px; font-size: 0.95rem; }
+
+    /* ── Step indicator ── */
+    .steps {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin-bottom: 40px;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; font-weight: 500; color: var(--muted);
+      transition: color 0.2s;
+    }
+    .step-item.active { color: var(--accent); }
+    .step-item.done   { color: var(--success); }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+      background: var(--border); color: var(--muted);
+      transition: all 0.2s;
+    }
+    .step-item.active .step-num { background: var(--accent); color: white; }
+    .step-item.done   .step-num { background: var(--success); color: white; }
+    .step-connector { width: 48px; height: 2px; background: var(--border); margin: 0 8px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 32px; margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 1.05rem; font-weight: 600; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title .badge {
+      background: var(--accent); color: white; font-size: 0.7rem;
+      padding: 2px 8px; border-radius: 20px; font-weight: 700;
+    }
+    .section-hidden { display: none !important; }
+
+    /* ── Template grid ── */
+    .template-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .template-card {
+      border: 2px solid var(--border); border-radius: 10px; padding: 16px 14px;
+      cursor: pointer; transition: all 0.18s; position: relative;
+      overflow: hidden;
+    }
+    .template-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .template-card.selected {
+      border-color: var(--accent); background: #FFF6EF;
+      box-shadow: 0 0 0 3px rgba(201,106,43,0.15);
+    }
+    .template-card .swatch {
+      width: 100%; height: 64px; border-radius: 6px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em; color: white;
+    }
+    .template-card .t-name { font-size: 0.85rem; font-weight: 600; }
+    .template-card .t-desc { font-size: 0.74rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .template-card .t-best { font-size: 0.7rem; color: var(--accent); margin-top: 6px; font-weight: 500; }
+    .check-mark {
+      position: absolute; top: 10px; right: 10px;
+      width: 20px; height: 20px; background: var(--accent); border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+      color: white; font-size: 11px;
+    }
+    .template-card.selected .check-mark { display: flex; }
+
+    /* ── Form fields ── */
+    .form-row { margin-bottom: 18px; }
+    .form-row label {
+      display: block; font-size: 0.85rem; font-weight: 600;
+      margin-bottom: 6px; color: var(--text);
+    }
+    .form-row .hint { font-size: 0.77rem; color: var(--muted); margin-bottom: 6px; }
+    .form-row input, .form-row textarea, .form-row select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.9rem; font-family: inherit;
+      background: var(--bg); color: var(--text);
+      transition: border-color 0.18s;
+      outline: none;
+    }
+    .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+      border-color: var(--accent);
+    }
+    .form-row textarea { resize: vertical; min-height: 90px; }
+
+    /* ── Skeleton picker ── */
+    .skeleton-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px; margin-top: 10px;
+    }
+    .skeleton-card {
+      border: 1.5px solid var(--border); border-radius: 8px; padding: 14px;
+      cursor: pointer; transition: all 0.18s; background: var(--bg);
+    }
+    .skeleton-card:hover { border-color: var(--accent2); background: #F0F4FF; }
+    .skeleton-card.selected { border-color: var(--accent2); background: #EEF3FF; box-shadow: 0 0 0 3px rgba(43,92,201,0.12); }
+    .skeleton-card .sk-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    .skeleton-card .sk-slides { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+    .skeleton-card .sk-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+
+    /* ── Content input mode ── */
+    .mode-tabs {
+      display: flex; gap: 0; border: 1.5px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin-bottom: 20px;
+      width: fit-content;
+    }
+    .mode-tab {
+      padding: 8px 20px; font-size: 0.85rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; background: var(--bg);
+      border: none; font-family: inherit; color: var(--muted);
+    }
+    .mode-tab.active { background: var(--accent); color: white; }
+
+    /* ── Slide count slider ── */
+    .range-row { display: flex; align-items: center; gap: 14px; }
+    .range-row input[type=range] {
+      flex: 1; padding: 0; height: 4px; accent-color: var(--accent);
+    }
+    .range-val {
+      min-width: 36px; text-align: center; font-weight: 700; color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    /* ── Command output ── */
+    .cmd-block {
+      background: #1C1916; border-radius: 10px; padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.87rem; color: #F6F0E8; line-height: 1.6;
+      position: relative; overflow-x: auto;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .cmd-block .comment { color: #8E8480; }
+    .cmd-block .cmd-main { color: #E8A870; }
+    .cmd-block .flag { color: #88C4FF; }
+    .cmd-block .value { color: #A8E6A0; }
+    .copy-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: rgba(255,255,255,0.12); border: none; border-radius: 6px;
+      color: #F6F0E8; font-size: 0.78rem; padding: 5px 12px;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.22); }
+
+    /* ── Action buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 22px; border-radius: 8px; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+      transition: all 0.18s; text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #B05A20; transform: translateY(-1px); }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-secondary:hover { background: #D8D5CE; }
+    .btn-accent2 { background: var(--accent2); color: white; }
+    .btn-accent2:hover { background: #1E4CB0; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+    /* ── Footer ── */
+    .footer-note {
+      margin-top: 32px; padding: 16px 20px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.82rem; color: var(--muted); line-height: 1.6;
+    }
+    .footer-note strong { color: var(--text); }
+
+    /* ── Util ── */
+    .tag {
+      display: inline-block; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; color: var(--muted);
+      margin: 3px 3px 0 0;
+    }
+    .row { display: flex; gap: 16px; }
+    .row > * { flex: 1; }
+    @media (max-width: 600px) { .row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🎴 Slide Setup</h1>
+    <p>Configure your presentation in 3 steps, then copy the generated command</p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step-item active" id="step-ind-1">
+      <div class="step-num">1</div>
+      <span>Choose Style</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-ind-2">
+      <div class="step-num">2</div>
+      <span>Content Setup</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-ind-3">
+      <div class="step-num">3</div>
+      <span>Get Command</span>
+    </div>
+  </div>
+
+  <!-- ── Step 1: Template Selection ── -->
+  <div id="section-1" class="card">
+    <div class="card-title">
+      <span>🎨</span> Choose a Visual Style
+      <span class="badge">Step 1</span>
+    </div>
+
+    <div class="template-grid" id="template-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(2)" id="btn-step2" disabled>
+        Next: Content Setup →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Content Input ── -->
+  <div id="section-2" class="card section-hidden">
+    <div class="card-title">
+      <span>📝</span> Content Setup
+      <span class="badge">Step 2</span>
+    </div>
+
+    <!-- Basic info -->
+    <div class="row">
+      <div class="form-row">
+        <label>Deck Title <span style="color:var(--accent)">*</span></label>
+        <input type="text" id="deck-title" placeholder="e.g. 2025 Q3 产品复盘" oninput="updateCommand()">
+      </div>
+      <div class="form-row">
+        <label>Author</label>
+        <input type="text" id="deck-author" placeholder="e.g. 张伟 · PM" oninput="updateCommand()">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-row">
+        <label>Output filename</label>
+        <input type="text" id="deck-output" placeholder="e.g. q3-review.html" oninput="updateCommand()">
+      </div>
+      <div class="form-row">
+        <label>Language</label>
+        <select id="deck-lang" onchange="updateCommand()">
+          <option value="zh-CN">中文 (zh-CN)</option>
+          <option value="en">English (en)</option>
+          <option value="ja">日本語 (ja)</option>
+          <option value="ko">한국어 (ko)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Content mode -->
+    <div class="form-row" style="margin-top:8px">
+      <label>Content Mode</label>
+      <div class="mode-tabs">
+        <button class="mode-tab active" onclick="setMode('topic')" id="tab-topic">Topic → AI Expand</button>
+        <button class="mode-tab" onclick="setMode('outline')" id="tab-outline">I have a JSON outline</button>
+      </div>
+    </div>
+
+    <!-- Topic mode -->
+    <div id="mode-topic">
+      <div class="form-row">
+        <label>Topic / Brief</label>
+        <div class="hint">Describe your presentation in one sentence. AI will expand it into a full deck.</div>
+        <textarea id="topic-text" placeholder="e.g. 介绍我们的 AI 驱动供应链优化平台，面向大型制造企业的 Series A 融资路演" oninput="updateCommand()"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>Number of slides</label>
+        <div class="range-row">
+          <input type="range" id="slide-count" min="5" max="20" value="10" oninput="updateSlideCount()">
+          <span class="range-val" id="slide-count-val">10</span>
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top:12px">
+        <label>Narrative skeleton (optional)</label>
+        <div class="hint">Pick a proven slide structure to guide the AI</div>
+        <div class="skeleton-grid" id="skeleton-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Outline mode -->
+    <div id="mode-outline" class="section-hidden">
+      <div class="form-row">
+        <label>JSON outline file path</label>
+        <div class="hint">Path to your outline.json relative to the project root</div>
+        <input type="text" id="outline-path" placeholder="e.g. outline.json" oninput="updateCommand()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next: Get Command →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Generated Command ── -->
+  <div id="section-3" class="card section-hidden">
+    <div class="card-title">
+      <span>⚡</span> Generated Command
+      <span class="badge">Step 3</span>
+    </div>
+
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:16px">
+      Run this command in your terminal from the project root:
+    </p>
+
+    <div class="cmd-block" id="cmd-output">
+      <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+      <span id="cmd-text"></span>
+    </div>
+
+    <!-- Extra tools -->
+    <div style="margin-top:28px">
+      <div class="card-title" style="font-size:0.95rem">🛠️ Optional post-processing</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+        <div class="cmd-block" style="font-size:0.8rem;padding:12px 16px">
+          <button class="copy-btn" onclick="copyExtra('cmd-embed')">Copy</button>
+          <span id="cmd-embed"></span>
+        </div>
+        <div class="cmd-block" style="font-size:0.8rem;padding:12px 16px">
+          <button class="copy-btn" onclick="copyExtra('cmd-fonts')">Copy</button>
+          <span id="cmd-fonts"></span>
+        </div>
+        <div class="cmd-block" style="font-size:0.8rem;padding:12px 16px">
+          <button class="copy-btn" onclick="copyExtra('cmd-parse')">Copy</button>
+          <span id="cmd-parse"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-accent2" onclick="copyCmd(this)">📋 Copy Main Command</button>
+    </div>
+  </div>
+
+  <!-- Footer notes -->
+  <div class="footer-note">
+    <strong>Requirements:</strong>
+    Python 3.8+ · <code>pip3 install beautifulsoup4</code> ·
+    Optional: <code>pip3 install Pillow</code> (for image resizing) ·
+    <code>pip3 install requests</code> (for font inlining)
+    <br><br>
+    <strong>Quick start:</strong>
+    Open <code>scripts/</code> to find <code>generate_slides.py</code> (build),
+    <code>parse_html.py</code> (reverse-edit), <code>embed_images.py</code> (offline images),
+    <code>inline_fonts.py</code> (offline fonts), <code>export_pdf.py</code> (PDF export).
+    <br><br>
+    <strong>Templates:</strong> See <code>assets/templates/</code> · 8 built-in visual styles · Press <kbd>P</kbd> for presenter mode, <kbd>F</kbd> for fullscreen
+  </div>
+
+</div><!-- .container -->
+
+<script>
+// ── Template definitions ──────────────────────────────────────────────────────
+const TEMPLATES = [
+  {
+    id: "claude-warmth",
+    name: "Claude Warmth",
+    desc: "Warm cream ↔ rich brown, calm + editorial",
+    best: "Brand story, AI products",
+    bg: "linear-gradient(135deg, #F6F0E8 50%, #1C1411 50%)",
+    fg: "#1C1411",
+  },
+  {
+    id: "pitch-deck",
+    name: "Pitch Deck",
+    desc: "Deep navy + electric blue, data-forward",
+    best: "Investor pitches, Series A/B",
+    bg: "linear-gradient(135deg, #0A0F1E 50%, #1E3A8A 50%)",
+    fg: "#E0EDFF",
+  },
+  {
+    id: "product-launch",
+    name: "Product Launch",
+    desc: "Midnight black + amber glow, dramatic reveals",
+    best: "Feature launches, press events",
+    bg: "linear-gradient(135deg, #0A0A0A 50%, #F59E0B 50%)",
+    fg: "#FFFBEB",
+  },
+  {
+    id: "quarterly-report",
+    name: "Quarterly Report",
+    desc: "Professional slate + teal accents",
+    best: "Business reviews, OKR updates",
+    bg: "linear-gradient(135deg, #F8FAFC 50%, #0F766E 50%)",
+    fg: "#0F172A",
+  },
+  {
+    id: "tech-talk",
+    name: "Tech Talk",
+    desc: "Dark terminal green + code aesthetic",
+    best: "Dev conferences, internal demos",
+    bg: "linear-gradient(135deg, #0D1117 50%, #1A4231 50%)",
+    fg: "#39D353",
+  },
+  {
+    id: "forai-white",
+    name: "ForAI White",
+    desc: "Pure white + geometric precision",
+    best: "AI demos, clean corporate",
+    bg: "linear-gradient(135deg, #FFFFFF 50%, #F0F0F0 50%)",
+    fg: "#111111",
+  },
+  {
+    id: "pash-orange",
+    name: "Pash Orange",
+    desc: "Vibrant orange, bold headlines",
+    best: "Brand energy, consumer apps",
+    bg: "linear-gradient(135deg, #FF5C00 60%, #FF8C42 100%)",
+    fg: "#FFFFFF",
+  },
+  {
+    id: "hhart-red",
+    name: "Hhart Red",
+    desc: "Crimson + warm white, high contrast",
+    best: "Urgent releases, alerts",
+    bg: "linear-gradient(135deg, #C8102E 60%, #F0E8E8 100%)",
+    fg: "#FFFFFF",
+  },
+];
+
+// ── Skeleton definitions ──────────────────────────────────────────────────────
+const SKELETONS = [
+  { id: "A", name: "Investor Pitch", slides: "10–14", desc: "Problem → Market → Solution → Traction → Ask" },
+  { id: "B", name: "Tech Talk", slides: "8–12", desc: "Insight → Architecture → Demo → Results → Q&A" },
+  { id: "C", name: "Business Review", slides: "10–16", desc: "OKR Scorecard → Wins → Misses → Next Quarter" },
+  { id: "D", name: "Product Launch", slides: "8–12", desc: "Pain → Old Way → New World → Features → CTA" },
+  { id: "E", name: "Brand Story", slides: "10–15", desc: "Mission → Values → Origin → Community → Join Us" },
+  { id: "F", name: "Internal Demo", slides: "6–10", desc: "Context → Built → Demo → Metrics → Ask" },
+  { id: "G", name: "Tutorial", slides: "8–15", desc: "Objectives → Concepts → Exercise → Summary" },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedTemplate = null;
+let selectedSkeleton = null;
+let contentMode = "topic";
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  // Render template cards
+  const grid = document.getElementById("template-grid");
+  TEMPLATES.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+    card.dataset.id = t.id;
+    card.innerHTML = `
+      <div class="check-mark">✓</div>
+      <div class="swatch" style="background:${t.bg}; color:${t.fg}">
+        <span>${t.name}</span>
+      </div>
+      <div class="t-name">${t.name}</div>
+      <div class="t-desc">${t.desc}</div>
+      <div class="t-best">Best for: ${t.best}</div>
+    `;
+    card.addEventListener("click", () => selectTemplate(t.id));
+    grid.appendChild(card);
+  });
+
+  // Render skeleton cards
+  const sgrid = document.getElementById("skeleton-grid");
+  const noneCard = document.createElement("div");
+  noneCard.className = "skeleton-card selected";
+  noneCard.dataset.id = "none";
+  noneCard.innerHTML = `<div class="sk-name">No skeleton</div><div class="sk-desc">Let AI decide the structure freely</div>`;
+  noneCard.addEventListener("click", () => selectSkeleton("none"));
+  sgrid.appendChild(noneCard);
+
+  SKELETONS.forEach(s => {
+    const card = document.createElement("div");
+    card.className = "skeleton-card";
+    card.dataset.id = s.id;
+    card.innerHTML = `
+      <div class="sk-name">Skeleton ${s.id} — ${s.name}</div>
+      <div class="sk-slides">${s.slides} slides</div>
+      <div class="sk-desc">${s.desc}</div>
+    `;
+    card.addEventListener("click", () => selectSkeleton(s.id));
+    sgrid.appendChild(card);
+  });
+}
+
+// ── Template selection ────────────────────────────────────────────────────────
+function selectTemplate(id) {
+  selectedTemplate = id;
+  document.querySelectorAll(".template-card").forEach(c => {
+    c.classList.toggle("selected", c.dataset.id === id);
+  });
+  document.getElementById("btn-step2").disabled = false;
+  updateCommand();
+}
+
+// ── Skeleton selection ────────────────────────────────────────────────────────
+function selectSkeleton(id) {
+  selectedSkeleton = id === "none" ? null : id;
+  document.querySelectorAll(".skeleton-card").forEach(c => {
+    c.classList.toggle("selected", c.dataset.id === id);
+  });
+  updateCommand();
+}
+
+// ── Step navigation ───────────────────────────────────────────────────────────
+function goStep(step) {
+  [1, 2, 3].forEach(i => {
+    document.getElementById(`section-${i}`).classList.toggle("section-hidden", i !== step);
+    const ind = document.getElementById(`step-ind-${i}`);
+    ind.classList.remove("active", "done");
+    if (i === step) ind.classList.add("active");
+    if (i < step)  ind.classList.add("done");
+  });
+  if (step === 3) updateCommand();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Content mode ──────────────────────────────────────────────────────────────
+function setMode(mode) {
+  contentMode = mode;
+  ["topic", "outline"].forEach(m => {
+    document.getElementById(`tab-${m}`).classList.toggle("active", m === mode);
+    document.getElementById(`mode-${m}`).classList.toggle("section-hidden", m !== mode);
+  });
+  updateCommand();
+}
+
+// ── Slide count ───────────────────────────────────────────────────────────────
+function updateSlideCount() {
+  const val = document.getElementById("slide-count").value;
+  document.getElementById("slide-count-val").textContent = val;
+  updateCommand();
+}
+
+// ── Command generation ────────────────────────────────────────────────────────
+function updateCommand() {
+  const title  = document.getElementById("deck-title")?.value?.trim() || "";
+  const author = document.getElementById("deck-author")?.value?.trim() || "";
+  const output = document.getElementById("deck-output")?.value?.trim() || "";
+  const lang   = document.getElementById("deck-lang")?.value || "zh-CN";
+  const tmpl   = selectedTemplate || "claude-warmth";
+  const count  = document.getElementById("slide-count")?.value || "10";
+  const topic  = document.getElementById("topic-text")?.value?.trim() || "";
+  const outlinePath = document.getElementById("outline-path")?.value?.trim() || "outline.json";
+
+  const outFile = output || (title ? title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "") + ".html" : "presentation.html");
+
+  let cmd = "";
+  const parts = [];
+
+  if (contentMode === "topic") {
+    const expandTopic = topic || title || "我的演示文稿";
+    parts.push(`python3 scripts/generate_slides.py`);
+    parts.push(`  --expand "${expandTopic}"`);
+    parts.push(`  --template ${tmpl}`);
+    parts.push(`  --slides ${count}`);
+    parts.push(`  --output ${outFile}`);
+    parts.push(`  --lang ${lang}`);
+    if (title) parts.push(`  --title "${title}"`);
+    if (selectedSkeleton) {
+      // Skeleton is passed as a comment hint since generate_slides uses LLM to expand
+      parts.push(`  # Narrative: Skeleton ${selectedSkeleton}`);
+    }
+    parts.push(`  --open`);
+  } else {
+    parts.push(`python3 scripts/generate_slides.py ${outlinePath}`);
+    parts.push(`  --template ${tmpl}`);
+    parts.push(`  --output ${outFile}`);
+    parts.push(`  --lang ${lang}`);
+    if (title) parts.push(`  --title "${title}"`);
+    parts.push(`  --open`);
+  }
+
+  cmd = parts.join(" \\\n");
+
+  // Render with syntax highlighting
+  const cmdEl = document.getElementById("cmd-text");
+  if (cmdEl) {
+    cmdEl.innerHTML = highlightCmd(cmd);
+  }
+
+  // Extra commands
+  const embedEl = document.getElementById("cmd-embed");
+  if (embedEl) {
+    embedEl.textContent = `# Embed local images (make deck fully self-contained)\npython3 scripts/embed_images.py ${outFile} --verbose`;
+  }
+  const fontsEl = document.getElementById("cmd-fonts");
+  if (fontsEl) {
+    fontsEl.textContent = `# Inline Google Fonts for offline use\npython3 scripts/inline_fonts.py ${outFile} --output ${outFile.replace('.html', '-offline.html')}`;
+  }
+  const parseEl = document.getElementById("cmd-parse");
+  if (parseEl) {
+    parseEl.textContent = `# Reverse-parse the HTML back to editable JSON\npython3 scripts/parse_html.py ${outFile} --pretty`;
+  }
+}
+
+function highlightCmd(cmd) {
+  return cmd
+    .replace(/^(python3 scripts\/\S+)/m, '<span class="cmd-main">$1</span>')
+    .replace(/(--[\w-]+)/g, '<span class="flag">$1</span>')
+    .replace(/"([^"]+)"/g, '"<span class="value">$1</span>"')
+    .replace(/(#.*)/g, '<span class="comment">$1</span>');
+}
+
+// ── Copy utils ────────────────────────────────────────────────────────────────
+function copyCmd(triggerBtn) {
+  const cmdEl = document.getElementById("cmd-text");
+  const text = cmdEl?.innerText || cmdEl?.textContent || "";
+  // Strip comment lines before copying
+  const clean = text.split("\n").filter(l => !l.trim().startsWith("#")).join("\n").replace(/\s*\\\n\s*/g, " \\\n");
+  navigator.clipboard.writeText(clean).then(() => {
+    // Update the button that triggered the copy (passed in), or fall back to first .copy-btn
+    const btn = triggerBtn || document.querySelector("#cmd-output .copy-btn");
+    if (btn) { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Copy", 1800); }
+  });
+}
+
+function copyExtra(id) {
+  const el = document.getElementById(id);
+  const text = el?.textContent || "";
+  navigator.clipboard.writeText(text).then(() => {
+    const btns = el.parentElement.querySelectorAll(".copy-btn");
+    btns.forEach(b => { b.textContent = "Copied!"; setTimeout(() => b.textContent = "Copy", 1800); });
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

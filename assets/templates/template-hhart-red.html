@@ -712,99 +712,6 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       KEYFRAME ANIMATIONS — Hhart Red Power
-       ═══════════════════════════════════════════════════════ */
-
-    /* Red ambient glow — slow breath */
-    @keyframes redGlowPulse {
-      0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      50%       { opacity: 0.55; transform: translate(-50%, -50%) scale(1.18); }
-    }
-
-    /* Dot grid — very subtle flicker */
-    @keyframes dotsFadeRed {
-      0%, 100% { opacity: 1; }
-      45%       { opacity: 0.45; }
-    }
-
-    /* Red bar edge pulse */
-    @keyframes redBarPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(200,16,46,0); }
-      50%       { box-shadow: 4px 0 18px 0 rgba(200,16,46,0.35); }
-    }
-
-    /* Cover display text shimmer */
-    @keyframes redTextShimmer {
-      0%   { background-position: 200% center; }
-      100% { background-position: -200% center; }
-    }
-
-    /* Corner mark draw-in */
-    @keyframes cornerDraw {
-      0%   { width: 0; height: 0; opacity: 0; }
-      40%  { width: 22px; height: 0; opacity: 1; }
-      100% { width: 22px; height: 22px; opacity: 1; }
-    }
-
-    /* Stat value count-in */
-    @keyframes statCountIn {
-      0%   { opacity: 0; transform: translateY(20px) scale(0.92); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    /* Process item slide-in from left */
-    @keyframes processSlideIn {
-      0%   { opacity: 0; transform: translateX(-24px); }
-      100% { opacity: 1; transform: translateX(0); }
-    }
-
-    /* Pull quote — slow fade-scale */
-    @keyframes quoteReveal {
-      0%   { opacity: 0; letter-spacing: -0.02em; }
-      100% { opacity: 1; letter-spacing: 0.04em; }
-    }
-
-    /* View Transitions — slide up / down */
-    @keyframes redSlideUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes redSlideDown {
-      from { opacity: 1; transform: translateY(0); }
-      to   { opacity: 0; transform: translateY(-40px); }
-    }
-
-    /* ── Persistent decorative animations ───────────────── */
-
-    /* Red ambient glow breathes continuously */
-    .bg-glow::after {
-      animation: redGlowPulse 7s ease-in-out infinite;
-    }
-
-    /* Dot grid texture subtle flicker */
-    .bg-dots::before {
-      animation: dotsFadeRed 12s ease-in-out infinite;
-    }
-
-    /* Red vertical bar pulses on dark slides */
-    .red-bar {
-      animation: redBarPulse 4s ease-in-out infinite;
-    }
-
-    /* ── View Transitions API ─────────────────────────────── */
-    @view-transition { navigation: auto; }
-
-    ::view-transition-old(slide-content) {
-      animation: redSlideDown 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-    ::view-transition-new(slide-content) {
-      animation: redSlideUp 0.42s cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-
-    /* Assign view-transition-name to each slide */
-    .slide { view-transition-name: slide-content; }
-
-    /* ═══════════════════════════════════════════════════════
        NAVIGATION CHROME
        ═══════════════════════════════════════════════════════ */
     .progress-bar {
@@ -907,52 +814,7 @@
       }
       .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
     }
-  
-    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
-    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
-    :root {
-      --chart3:  var(--chart3-raw, #10b981);
-      --chart4:  var(--chart4-raw, #f59e0b);
-      --chart5:  var(--chart5-raw, #3b82f6);
-      --chart6:  var(--chart6-raw, #ef4444);
-    }
-
-    /* text-primary / text-secondary fallbacks for LIGHT-THEME templates  */
-    /* forai-white uses --ink; quarterly-report uses default dark; etc.   */
-    :root {
-      --text-primary:   var(--text-primary-override,
-                          var(--fg, var(--ink, var(--color-text, #1a1a1a))));
-      --text-secondary: var(--text-secondary-override,
-                          var(--ink-2, var(--muted, var(--color-muted, #666))));
-      --surface:        var(--surface-override,
-                          var(--bg-muted, var(--card-bg, rgba(255,255,255,0.06))));
-      --bg:             var(--bg-override,
-                          var(--background, var(--page-bg, #fff)));
-    }
-
-    /* Chart slide layout helpers */
-    .chart-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sc-chart-full {
-      display: flex; flex-direction: column;
-      gap: 16px; width: 80%; max-width: 740px;
-    }
-    .sc-chart-split {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: 52px;
-      align-items: center;
-      width: min(92%, 1060px);
-    }
-    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
-    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
-    @media (max-width: 768px) {
-      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
-    }
-    /* ─────────────────────────────────────────────────────────────────── */
-</style>
+  </style>
 </head>
 <body>
   <div class="progress-bar" id="progressBar"></div>
@@ -1218,9 +1080,10 @@
         this.current     = 0;
         this.total       = this.slides.length;
         this.animating   = false;
-        this.channel     = new BroadcastChannel('slides-presenter-sync');
+        this.channel     = new BroadcastChannel('slide-sync');
 
         this._buildDots();
+        this._initAnimationObserver();
         this._bindKeys();
         this._bindTouch();
         this._bindWheel();
@@ -1239,16 +1102,19 @@
         });
       }
 
-      /* Trigger enter-animations for a slide; baseDelay in ms */
-      _triggerAnimations(slideEl, baseDelay = 0) {
-        slideEl.querySelectorAll('[data-animate]').forEach((el, i) => {
-          el.classList.remove('visible');
-          const cssDelay = parseFloat(el.style.transitionDelay) * 1000 || 0;
-          setTimeout(
-            () => el.classList.add('visible'),
-            baseDelay + cssDelay + i * 100
-          );
-        });
+      _initAnimationObserver() {
+        const obs = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.querySelectorAll('[data-animate]').forEach((el, i) => {
+                setTimeout(() => el.classList.add('visible'), i * 110);
+              });
+            } else {
+              entry.target.querySelectorAll('[data-animate]').forEach(el => el.classList.remove('visible'));
+            }
+          });
+        }, { threshold: 0.35 });
+        this.slides.forEach(s => obs.observe(s));
       }
 
       goTo(n, animate = true) {
@@ -1273,9 +1139,6 @@
 
         this.channel.postMessage({ type: 'slide-change', index: n, total: this.total });
 
-        /* trigger enter-animations for the incoming slide */
-        this._triggerAnimations(this.slides[n], animate ? 320 : 0);
-
         setTimeout(() => { this.animating = false; }, animate ? 680 : 0);
       }
 
@@ -1290,9 +1153,7 @@
             ' ':        () => this.next(),
             Home:       () => this.goTo(0),
             End:        () => this.goTo(this.total - 1),
-            'p': () => this._openPresenter(), 'P': () => this._openPresenter(),
-            'f': () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); },
-            'F': () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+            'p': () => this._openPresenter(), 'P': () => this._openPresenter()
           };
           if (map[e.key]) { e.preventDefault(); map[e.key](); }
           if (e.key === ' ' && e.shiftKey) { e.preventDefault(); this.prev(); }
@@ -1346,7 +1207,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>演讲者视图</title>
+<title>Presenter View — Hhart Red</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#0a0a0a;color:#f2f0ee;font-family:'Barlow',sans-serif;height:100vh;display:grid;grid-template-columns:3fr 2fr;grid-template-rows:1fr 1fr;overflow:hidden}
@@ -1387,7 +1248,7 @@
 </div>
 <div id="laser-dot"></div>
 <script>
-  const ch=new BroadcastChannel('slides-presenter-sync');
+  const ch=new BroadcastChannel('slide-sync');
   let cur=0,tot=1,src='',started=null,timerInterval=null,laserOn=false,blackOut=false;
   const main=document.getElementById('mainIframe');
   const next=document.getElementById('nextIframe');

@@ -43,7 +43,6 @@
       --accent-warm:  #e85d26;         /* Optional warm accent */
       --accent-cool:  #1a56db;         /* Optional cool accent */
       --border:       rgba(0,0,0,0.08);
-      --surface:      var(--bg-muted);   /* presenterBtn background alias */
 
       /* Typography — CJK-aware */
       --font-head: 'DM Serif Display', 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC', Georgia, 'Times New Roman', serif;
@@ -488,53 +487,6 @@
     }
     [data-animate="scale"].visible { transform: scale(1); }
 
-    /* ── @keyframes — ForAI White signature effects ── */
-    @keyframes dotsFade {
-      0%, 100% { opacity: 0.45; }
-      50%       { opacity: 0.75; }
-    }
-    @keyframes lineDrawH {
-      from { width: 0; opacity: 0; }
-      to   { width: 100%; opacity: 1; }
-    }
-    @keyframes lineDrawV {
-      from { height: 0; opacity: 0; }
-      to   { height: 100%; opacity: 1; }
-    }
-    @keyframes subtleFloat {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-6px); }
-    }
-    @keyframes inkReveal {
-      from { clip-path: inset(0 100% 0 0); opacity: 0; }
-      to   { clip-path: inset(0 0% 0 0); opacity: 1; }
-    }
-    @keyframes foraiFadeUp {
-      from { opacity: 0; transform: translateY(50px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes foraiFadeDown {
-      from { opacity: 1; transform: translateY(0); }
-      to   { opacity: 0; transform: translateY(-50px); }
-    }
-
-    /* ── View Transitions ── */
-    ::view-transition-old(slide-content) {
-      animation: 320ms cubic-bezier(0.4,0,1,1) both foraiFadeDown;
-    }
-    ::view-transition-new(slide-content) {
-      animation: 320ms cubic-bezier(0,0,0.2,1) 50ms both foraiFadeUp;
-    }
-    .slide { view-transition-name: slide-content; }
-
-    /* ── Dot grid subtle pulse ── */
-    .bg-dots::before { animation: dotsFade 8s ease-in-out infinite; }
-
-    /* ── Corner mark line draw on load ── */
-    .corner-mark::after {
-      animation: lineDrawH 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s both;
-    }
-
     /* ── 7. Navigation ───────────────────────────────────────────── */
     .progress-bar {
       position: fixed;
@@ -557,18 +509,19 @@
       z-index: 100;
     }
     .nav-dot {
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--ink-4);
       cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
+      transition: background 0.2s, transform 0.2s, height 0.25s, border-radius 0.25s;
       border: none;
       padding: 0;
     }
     .nav-dot.active {
       background: var(--ink);
-      transform: scale(1.4);
+      height: 20px;
+      border-radius: 1px;
     }
 
     /* ── Slide counter + Presenter button ───────────────────────── */
@@ -610,52 +563,7 @@
       [data-animate] { transition: none; }
       * { animation: none !important; }
     }
-  
-    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
-    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
-    :root {
-      --chart3:  var(--chart3-raw, #10b981);
-      --chart4:  var(--chart4-raw, #f59e0b);
-      --chart5:  var(--chart5-raw, #3b82f6);
-      --chart6:  var(--chart6-raw, #ef4444);
-    }
-
-    /* text-primary / text-secondary fallbacks for LIGHT-THEME templates  */
-    /* forai-white uses --ink; quarterly-report uses default dark; etc.   */
-    :root {
-      --text-primary:   var(--text-primary-override,
-                          var(--fg, var(--ink, var(--color-text, #1a1a1a))));
-      --text-secondary: var(--text-secondary-override,
-                          var(--ink-2, var(--muted, var(--color-muted, #666))));
-      --surface:        var(--surface-override,
-                          var(--bg-muted, var(--card-bg, rgba(255,255,255,0.06))));
-      --bg:             var(--bg-override,
-                          var(--background, var(--page-bg, #fff)));
-    }
-
-    /* Chart slide layout helpers */
-    .chart-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sc-chart-full {
-      display: flex; flex-direction: column;
-      gap: 16px; width: 80%; max-width: 740px;
-    }
-    .sc-chart-split {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: 52px;
-      align-items: center;
-      width: min(92%, 1060px);
-    }
-    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
-    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
-    @media (max-width: 768px) {
-      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
-    }
-    /* ─────────────────────────────────────────────────────────────────── */
-</style>
+  </style>
 </head>
 <body>
 
@@ -1079,10 +987,10 @@ class SlidePresentation {
     this._buildDots();
     this._bindEvents();
     this._updateUI(0);
-    // Trigger initial animations — respect HTML transition-delay, no extra JS stagger
+    // Trigger initial animations
     setTimeout(() => {
-      this.slides[0].querySelectorAll('[data-animate]').forEach((el) => {
-        el.classList.add('visible');
+      this.slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), 100 + i * 110);
       });
     }, 200);
   }
@@ -1108,10 +1016,6 @@ class SlidePresentation {
         case 'Home': this.goTo(0); break;
         case 'End': this.goTo(this.slides.length - 1); break;
         case 'p': case 'P': this._openPresenterView(); break;
-        case 'f': case 'F':
-          if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-          else document.exitFullscreen?.();
-          break;
       }
     });
 
@@ -1177,17 +1081,10 @@ class SlidePresentation {
     this.slides.forEach((s, j) => {
       s.style.transform = `translateY(${(j - idx) * 100}vh)`;
     });
-    // Trigger enter animations — remove visible first, then re-add
-    // No extra JS stagger: HTML transition-delay handles sequencing
-    this.slides[idx].querySelectorAll('[data-animate]').forEach((el) => {
+    // Trigger enter animations on incoming slide
+    this.slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
       el.classList.remove('visible');
-    });
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this.slides[idx].querySelectorAll('[data-animate]').forEach((el) => {
-          el.classList.add('visible');
-        });
-      });
+      setTimeout(() => el.classList.add('visible'), i * 110);
     });
     this._updateUI(idx);
     if (!fromBroadcast) this._broadcastState();

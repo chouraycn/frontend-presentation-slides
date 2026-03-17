@@ -148,93 +148,16 @@
 
     /* ── Animations ── */
     [data-animate] { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
-    [data-animate="slide-left"] { transform: translateX(-24px); }
-    [data-animate="left"] { transform: translateX(-24px); } /* alias for backward compat */
+    [data-animate="left"] { transform: translateX(-24px); }
     [data-animate="fade"] { transform: none; }
-    [data-animate="scale"] { transform: scale(0.9); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34,1.2,0.64,1); }
     [data-animate].visible { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
-
-    /* ── @keyframes — Vibrant Energy signature effects ── */
-    @keyframes gradientShift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    @keyframes heroGlow {
-      0%, 100% { text-shadow: 0 0 20px rgba(167,139,250,0.2), 0 0 40px rgba(236,72,153,0.1); }
-      50%       { text-shadow: 0 0 35px rgba(167,139,250,0.45), 0 0 60px rgba(236,72,153,0.25); }
-    }
-    @keyframes scanLine {
-      0%   { top: -2px; opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { top: 100%; opacity: 0; }
-    }
-    @keyframes borderPulse {
-      0%, 100% { border-color: rgba(124,58,237,0.2); box-shadow: 0 0 0 rgba(124,58,237,0); }
-      50%       { border-color: rgba(124,58,237,0.5); box-shadow: 0 0 12px rgba(124,58,237,0.2); }
-    }
-    @keyframes tagFloat {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-4px); }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(60px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideDown {
-      from { opacity: 1; transform: translateY(0); }
-      to   { opacity: 0; transform: translateY(-60px); }
-    }
-
-    /* ── View Transitions ── */
-    ::view-transition-old(slide-content) {
-      animation: 380ms cubic-bezier(0.4,0,1,1) both slideDown;
-    }
-    ::view-transition-new(slide-content) {
-      animation: 380ms cubic-bezier(0,0,0.2,1) 80ms both slideUp;
-    }
-    .slide { view-transition-name: slide-content; }
-
-    /* ── Hero slide animated gradient bg ── */
-    .bg-hero {
-      background: linear-gradient(135deg,
-        #1a0533 0%, #2d1065 25%, #1e1e2e 50%, #0d1a33 75%, #1a0533 100%);
-      background-size: 300% 300%;
-      animation: gradientShift 12s ease infinite;
-    }
-    /* Hero h1 glow */
-    .bg-hero h1 { animation: heroGlow 4s ease-in-out infinite; animation-delay: 0.8s; }
-
-    /* Code block scan-line effect */
-    pre.code-block { position: relative; overflow: hidden; }
-    pre.code-block::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(124,58,237,0.6), transparent);
-      animation: scanLine 4s ease-in-out infinite;
-      animation-delay: 1.5s;
-      pointer-events: none;
-    }
-
-    /* Card border pulse on hover slide */
-    .card { animation: borderPulse 4s ease-in-out infinite; }
-    .card:nth-child(2) { animation-delay: 1.3s; }
-    .card:nth-child(3) { animation-delay: 2.6s; }
-
-    /* Tag gentle float */
-    .tags .tag:nth-child(1) { animation: tagFloat 3.5s ease-in-out infinite; }
-    .tags .tag:nth-child(2) { animation: tagFloat 3.5s ease-in-out infinite; animation-delay: 0.5s; }
-    .tags .tag:nth-child(3) { animation: tagFloat 3.5s ease-in-out infinite; animation-delay: 1s; }
 
     /* ── Navigation ── */
     .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; z-index: 100; }
     .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
-    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
-    .nav-dots button.active { background: var(--accent2); transform: scale(1.5); }
+    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s, transform 0.2s, height 0.25s, border-radius 0.25s; padding: 0; }
+    .nav-dots button.active { background: var(--accent2); height: 20px; border-radius: 1px; }
     .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-mono); }
     #presenterBtn { position: fixed; bottom: 16px; left: 18px; background: var(--surface); border: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100; }
     #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
@@ -281,52 +204,7 @@
       pre.code-block { overflow: visible; white-space: pre-wrap; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
-  
-    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
-    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
-    :root {
-      --chart3:  var(--chart3-raw, #10b981);
-      --chart4:  var(--chart4-raw, #f59e0b);
-      --chart5:  var(--chart5-raw, #3b82f6);
-      --chart6:  var(--chart6-raw, #ef4444);
-    }
-
-    /* text-primary / text-secondary fallbacks for LIGHT-THEME templates  */
-    /* forai-white uses --ink; quarterly-report uses default dark; etc.   */
-    :root {
-      --text-primary:   var(--text-primary-override,
-                          var(--fg, var(--ink, var(--color-text, #1a1a1a))));
-      --text-secondary: var(--text-secondary-override,
-                          var(--ink-2, var(--muted, var(--color-muted, #666))));
-      --surface:        var(--surface-override,
-                          var(--bg-muted, var(--card-bg, rgba(255,255,255,0.06))));
-      --bg:             var(--bg-override,
-                          var(--background, var(--page-bg, #fff)));
-    }
-
-    /* Chart slide layout helpers */
-    .chart-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sc-chart-full {
-      display: flex; flex-direction: column;
-      gap: 16px; width: 80%; max-width: 740px;
-    }
-    .sc-chart-split {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: 52px;
-      align-items: center;
-      width: min(92%, 1060px);
-    }
-    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
-    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
-    @media (max-width: 768px) {
-      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
-    }
-    /* ─────────────────────────────────────────────────────────────────── */
-</style>
+  </style>
 </head>
 <body>
 

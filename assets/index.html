@@ -484,8 +484,335 @@
     @media (max-width: 640px) {
       .page { padding: 40px 16px 64px; }
       .grid { grid-template-columns: 1fr; }
-      .mode-legend { flex-direction: column; }
     }
+
+    /* ── Skill Modes Marquee ── */
+    .modes-marquee-wrap {
+      overflow: hidden;
+      margin-bottom: 48px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    }
+
+    .modes-marquee-track {
+      display: flex;
+      gap: 12px;
+      width: max-content;
+      animation: marqueeScroll 36s linear infinite;
+    }
+
+    .modes-marquee-wrap:hover .modes-marquee-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes marqueeScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .mode-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      flex-shrink: 0;
+      width: 260px;
+      transition: border-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .mode-item:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .mode-letter {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-1);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .mode-text strong {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 2px;
+    }
+
+    .mode-text span {
+      font-size: 11px;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+
+    .mode-text .mode-sub {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-3, #888);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ── Select Template Toast ── */
+    .select-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--surface-2);
+      border: 1px solid var(--border-hover);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 12px;
+      color: var(--text-1);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 2000;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .select-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── 14. Filter Bar ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .filter-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .filter-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 13px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text-1);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .filter-btn.active:hover {
+      opacity: 0.9;
+    }
+
+    /* Filter result count */
+    .filter-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-3);
+      white-space: nowrap;
+    }
+
+    /* Hidden card */
+    .card.hidden {
+      display: none;
+    }
+
+    /* ── 15. Modal Preview ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-window {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      width: min(1080px, 100%);
+      height: min(680px, 90vh);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      animation: modalIn 0.22s cubic-bezier(0.34,1.3,0.64,1) both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+      flex-shrink: 0;
+    }
+
+    .modal-dots {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .modal-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .modal-dot.close { background: #ff5f57; }
+    .modal-dot.minimize { background: #ffbd2e; }
+    .modal-dot.expand { background: #28c840; }
+    .modal-dot.close:hover { background: #e04b43; }
+
+    .modal-title {
+      font-size: 12px;
+      color: var(--text-2);
+      flex: 1;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .modal-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .modal-action-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text-1);
+    }
+
+    .modal-action-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .modal-action-btn.primary:hover {
+      opacity: 0.88;
+    }
+
+    .modal-iframe-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .modal-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 13px;
+    }
+
+    .modal-loading .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -501,81 +828,159 @@
     <p>8 production-ready templates. Each is a complete, single-file HTML presentation — zero dependencies, fully animated.</p>
   </header>
 
-  <!-- Mode quick-reference -->
+  <!-- Mode quick-reference — marquee -->
   <div class="section-label">Skill Modes</div>
-  <div class="mode-legend">
-
-    <div class="mode-item">
-      <div class="mode-letter">A</div>
-      <div class="mode-text">
-        <strong>New from Scratch</strong>
-        <span>Discover purpose → explore 3 style previews → generate full deck</span>
-        <em class="mode-sub">Includes data viz planning if slides need charts</em>
+  <div class="modes-marquee-wrap">
+    <div class="modes-marquee-track" id="marqueeTrack">
+      <!-- set 1 -->
+      <div class="mode-item">
+        <div class="mode-letter">A</div>
+        <div class="mode-text">
+          <strong>New from Scratch</strong>
+          <span>Discover purpose → explore 3 style previews → generate full deck</span>
+          <em class="mode-sub">Includes data viz planning if slides need charts</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">B</div>
+        <div class="mode-text">
+          <strong>Convert PPT / PPTX</strong>
+          <span>Extract all slides → choose template → generate HTML (slide count guaranteed)</span>
+          <em class="mode-sub">Run: scripts/extract_pptx.py → scripts/generate_slides.py</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">C</div>
+        <div class="mode-text">
+          <strong>Enhance Existing HTML</strong>
+          <span>Read file → improve animations, layout, or content → iterate</span>
+          <em class="mode-sub">Overflow-safe: all edits verified at 1280×720</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">D</div>
+        <div class="mode-text">
+          <strong>Use a Template (D1–D8)</strong>
+          <span>Pick a style below → fill with your content → done in minutes</span>
+          <em class="mode-sub">8 templates · all include Presenter Mode + charts + print styles</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">P</div>
+        <div class="mode-text">
+          <strong>Presenter Mode</strong>
+          <span>Press [P] in any deck — dual-window sync via BroadcastChannel, no server needed</span>
+          <em class="mode-sub">Next slide preview · speaker notes · timer · laser pointer · blackout</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">V</div>
+        <div class="mode-text">
+          <strong>Data Visualization</strong>
+          <span>Inline charts engine: bar · line · area · donut · horizontal bar · progress · radar</span>
+          <em class="mode-sub">Zero-dependency SVG · IntersectionObserver lazy-trigger · dynamic update API</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">E</div>
+        <div class="mode-text">
+          <strong>Export &amp; Offline</strong>
+          <span>PDF export (Playwright / Puppeteer / WeasyPrint) · font inlining for offline use</span>
+          <em class="mode-sub">scripts/export_pdf.py · scripts/inline_fonts.py</em>
+        </div>
+      </div>
+      <!-- set 2 — duplicate for seamless loop -->
+      <div class="mode-item">
+        <div class="mode-letter">A</div>
+        <div class="mode-text">
+          <strong>New from Scratch</strong>
+          <span>Discover purpose → explore 3 style previews → generate full deck</span>
+          <em class="mode-sub">Includes data viz planning if slides need charts</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">B</div>
+        <div class="mode-text">
+          <strong>Convert PPT / PPTX</strong>
+          <span>Extract all slides → choose template → generate HTML (slide count guaranteed)</span>
+          <em class="mode-sub">Run: scripts/extract_pptx.py → scripts/generate_slides.py</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">C</div>
+        <div class="mode-text">
+          <strong>Enhance Existing HTML</strong>
+          <span>Read file → improve animations, layout, or content → iterate</span>
+          <em class="mode-sub">Overflow-safe: all edits verified at 1280×720</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">D</div>
+        <div class="mode-text">
+          <strong>Use a Template (D1–D8)</strong>
+          <span>Pick a style below → fill with your content → done in minutes</span>
+          <em class="mode-sub">8 templates · all include Presenter Mode + charts + print styles</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">P</div>
+        <div class="mode-text">
+          <strong>Presenter Mode</strong>
+          <span>Press [P] in any deck — dual-window sync via BroadcastChannel, no server needed</span>
+          <em class="mode-sub">Next slide preview · speaker notes · timer · laser pointer · blackout</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">V</div>
+        <div class="mode-text">
+          <strong>Data Visualization</strong>
+          <span>Inline charts engine: bar · line · area · donut · horizontal bar · progress · radar</span>
+          <em class="mode-sub">Zero-dependency SVG · IntersectionObserver lazy-trigger · dynamic update API</em>
+        </div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-letter">E</div>
+        <div class="mode-text">
+          <strong>Export &amp; Offline</strong>
+          <span>PDF export (Playwright / Puppeteer / WeasyPrint) · font inlining for offline use</span>
+          <em class="mode-sub">scripts/export_pdf.py · scripts/inline_fonts.py</em>
+        </div>
       </div>
     </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">B</div>
-      <div class="mode-text">
-        <strong>Convert PPT / PPTX</strong>
-        <span>Extract all slides → choose template → generate HTML (slide count guaranteed)</span>
-        <em class="mode-sub">Run: scripts/extract_pptx.py → scripts/generate_slides.py</em>
-      </div>
-    </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">C</div>
-      <div class="mode-text">
-        <strong>Enhance Existing HTML</strong>
-        <span>Read file → improve animations, layout, or content → iterate</span>
-        <em class="mode-sub">Overflow-safe: all edits verified at 1280×720</em>
-      </div>
-    </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">D</div>
-      <div class="mode-text">
-        <strong>Use a Template (D1–D8)</strong>
-        <span>Pick a style below → fill with your content → done in minutes</span>
-        <em class="mode-sub">8 templates · all include Presenter Mode + charts + print styles</em>
-      </div>
-    </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">P</div>
-      <div class="mode-text">
-        <strong>Presenter Mode</strong>
-        <span>Press [P] in any deck — dual-window sync via BroadcastChannel, no server needed</span>
-        <em class="mode-sub">Next slide preview · speaker notes · timer · laser pointer · blackout</em>
-      </div>
-    </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">V</div>
-      <div class="mode-text">
-        <strong>Data Visualization</strong>
-        <span>Inline charts engine: bar · line · area · donut · horizontal bar · progress · radar</span>
-        <em class="mode-sub">Zero-dependency SVG · IntersectionObserver lazy-trigger · dynamic update API</em>
-      </div>
-    </div>
-
-    <div class="mode-item">
-      <div class="mode-letter">E</div>
-      <div class="mode-text">
-        <strong>Export & Offline</strong>
-        <span>PDF export (Playwright / Puppeteer / WeasyPrint) · font inlining for offline use</span>
-        <em class="mode-sub">scripts/export_pdf.py · scripts/inline_fonts.py</em>
-      </div>
-    </div>
-
   </div>
 
   <!-- Template grid -->
   <div class="section-label">8 Templates — click to preview</div>
-  <div class="grid">
+
+  <!-- Filter bar -->
+  <div class="filter-bar" id="filterBar">
+    <span class="filter-label">色调</span>
+    <div class="filter-group" id="toneFilters">
+      <button class="filter-btn active" data-filter="tone" data-value="all">全部</button>
+      <button class="filter-btn" data-filter="tone" data-value="dark">Dark</button>
+      <button class="filter-btn" data-filter="tone" data-value="light">Light</button>
+      <button class="filter-btn" data-filter="tone" data-value="warm">Warm</button>
+    </div>
+    <div class="filter-divider"></div>
+    <span class="filter-label">用途</span>
+    <div class="filter-group" id="useFilters">
+      <button class="filter-btn active" data-filter="use" data-value="all">全部</button>
+      <button class="filter-btn" data-filter="use" data-value="pitch">Pitch</button>
+      <button class="filter-btn" data-filter="use" data-value="report">Report</button>
+      <button class="filter-btn" data-filter="use" data-value="agency">Agency</button>
+      <button class="filter-btn" data-filter="use" data-value="launch">Launch</button>
+      <button class="filter-btn" data-filter="use" data-value="tech">Tech</button>
+    </div>
+    <span class="filter-count" id="filterCount">8 templates</span>
+  </div>
+
+  <div class="grid" id="templateGrid">
 
     <!-- 1. Dark Elegance -->
-    <a class="card" href="style-previews/style-preview-pitch-deck.html" target="_blank">
+    <div class="card" data-tone="dark" data-use="pitch"
+         data-preview="style-previews/style-preview-pitch-deck.html"
+         data-template="templates/template-pitch-deck.html"
+         data-title="Dark Elegance — Investor Pitch">
       <div class="card-thumbnail">
         <div class="thumb thumb-dark-elegance">
           <div class="thumb-bar wide"></div>
@@ -600,14 +1005,17 @@
           <span class="meta-pill">Pitch</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-pitch-deck.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 2. Vibrant Energy -->
-    <a class="card" href="style-previews/style-preview-tech-talk.html" target="_blank">
+    <div class="card" data-tone="dark" data-use="tech"
+         data-preview="style-previews/style-preview-tech-talk.html"
+         data-template="templates/template-tech-talk.html"
+         data-title="Vibrant Energy — Tech Talk">
       <div class="card-thumbnail">
         <div class="thumb thumb-vibrant-energy">
           <div class="thumb-bar wide"></div>
@@ -633,14 +1041,17 @@
           <span class="meta-pill">Startup</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-tech-talk.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 3. Royal Blue × White -->
-    <a class="card" href="style-previews/style-preview-quarterly-report.html" target="_blank">
+    <div class="card" data-tone="dark" data-use="report"
+         data-preview="style-previews/style-preview-quarterly-report.html"
+         data-template="templates/template-quarterly-report.html"
+         data-title="Royal Blue × White — Quarterly Report">
       <div class="card-thumbnail">
         <div class="thumb thumb-cobalt-tech">
           <div class="thumb-bar wide"></div>
@@ -666,14 +1077,17 @@
           <span class="meta-pill">Data-Forward</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-quarterly-report.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 4. Claude Warmth -->
-    <a class="card" href="style-previews/style-preview-claude-warmth.html" target="_blank">
+    <div class="card" data-tone="warm" data-use="pitch"
+         data-preview="style-previews/style-preview-claude-warmth.html"
+         data-template="templates/template-claude-warmth.html"
+         data-title="Claude Warmth — Brand Story">
       <div class="card-thumbnail">
         <div class="thumb thumb-claude-warmth">
           <div class="thumb-bar wide"></div>
@@ -698,14 +1112,17 @@
           <span class="meta-pill">General</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-claude-warmth.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 5. Warm Inspire -->
-    <a class="card" href="style-previews/style-preview-product-launch.html" target="_blank">
+    <div class="card" data-tone="warm" data-use="launch"
+         data-preview="style-previews/style-preview-product-launch.html"
+         data-template="templates/template-product-launch.html"
+         data-title="Warm Inspire — Product Launch">
       <div class="card-thumbnail">
         <div class="thumb thumb-warm-inspire">
           <div class="thumb-bar wide"></div>
@@ -730,14 +1147,17 @@
           <span class="meta-pill">Event</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-product-launch.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 6. ForAI White -->
-    <a class="card" href="style-previews/style-preview-forai-white.html" target="_blank">
+    <div class="card" data-tone="light" data-use="agency"
+         data-preview="style-previews/style-preview-forai-white.html"
+         data-template="templates/template-forai-white.html"
+         data-title="ForAI White — Editorial Agency">
       <div class="card-thumbnail">
         <div class="thumb thumb-forai-white">
           <div class="thumb-bar wide"></div>
@@ -762,14 +1182,17 @@
           <span class="meta-pill">Minimal</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-forai-white.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 7. Pash Orange -->
-    <a class="card" href="style-previews/style-preview-pash-orange.html" target="_blank">
+    <div class="card" data-tone="light" data-use="agency"
+         data-preview="style-previews/style-preview-pash-orange.html"
+         data-template="templates/template-pash-orange.html"
+         data-title="Pash Orange — Agency Studio">
       <div class="card-thumbnail">
         <div class="thumb thumb-pash-orange">
           <div class="thumb-bar wide"></div>
@@ -794,14 +1217,17 @@
           <span class="meta-pill">Orange Brand</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-pash-orange.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- 8. Hhart Red Power -->
-    <a class="card" href="style-previews/style-preview-hhart-red.html" target="_blank">
+    <div class="card" data-tone="dark" data-use="agency"
+         data-preview="style-previews/style-preview-hhart-red.html"
+         data-template="templates/template-hhart-red.html"
+         data-title="Hhart Red Power — Creative Studio">
       <div class="card-thumbnail">
         <div class="thumb thumb-hhart-red">
           <div class="thumb-bar wide"></div>
@@ -826,13 +1252,38 @@
           <span class="meta-pill">Photography</span>
         </div>
         <div class="card-cta">
-          <span class="btn btn-primary">Preview ↗</span>
-          <span class="btn btn-outline" onclick="event.preventDefault(); navigator.clipboard.writeText('assets/templates/template-hhart-red.html')">Copy path</span>
+          <button class="btn btn-primary preview-btn">Preview ↗</button>
+          <button class="btn btn-outline use-btn">使用此模版</button>
         </div>
       </div>
-    </a>
+    </div>
 
   </div><!-- /grid -->
+
+  <!-- Modal Preview Overlay -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Template Preview">
+    <div class="modal-window" id="modalWindow">
+      <div class="modal-header">
+        <div class="modal-dots">
+          <div class="modal-dot close" id="modalClose" title="Close"></div>
+          <div class="modal-dot minimize"></div>
+          <div class="modal-dot expand"></div>
+        </div>
+        <div class="modal-title" id="modalTitle">Template Preview</div>
+        <div class="modal-actions">
+          <a class="modal-action-btn" id="modalOpenNew" href="#" target="_blank">新窗口打开 ↗</a>
+          <button class="modal-action-btn primary" id="modalUseTemplate">使用此模版</button>
+        </div>
+      </div>
+      <div class="modal-iframe-wrap">
+        <div class="modal-loading" id="modalLoading">
+          <div class="spinner"></div>
+          <span>Loading preview…</span>
+        </div>
+        <iframe class="modal-iframe" id="modalIframe" src="" title="Template Preview" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -846,23 +1297,209 @@
 
 </div><!-- /page -->
 
+<!-- Select toast notification -->
+<div class="select-toast" id="selectToast"></div>
+
 <script>
-  // Copy-path buttons: show a brief "Copied!" feedback
-  document.querySelectorAll('.btn-outline').forEach(btn => {
+  /* ─── Filter Logic ─────────────────────────────────── */
+  const toneFilterBtns = document.querySelectorAll('#toneFilters .filter-btn');
+  const useFilterBtns  = document.querySelectorAll('#useFilters .filter-btn');
+  const cards          = document.querySelectorAll('#templateGrid .card');
+  const filterCount    = document.getElementById('filterCount');
+
+  let activeTone = 'all';
+  let activeUse  = 'all';
+
+  function applyFilters() {
+    let visible = 0;
+    cards.forEach(card => {
+      const toneOk = activeTone === 'all' || card.dataset.tone === activeTone;
+      const useOk  = activeUse  === 'all' || card.dataset.use  === activeUse;
+      const show   = toneOk && useOk;
+      card.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    filterCount.textContent = `${visible} template${visible !== 1 ? 's' : ''}`;
+  }
+
+  toneFilterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toneFilterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTone = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  useFilterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      useFilterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeUse = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  /* ─── Toast ─────────────────────────────────────────── */
+  const selectToast = document.getElementById('selectToast');
+  let toastTimer;
+
+  function showToast(msg) {
+    selectToast.textContent = msg;
+    selectToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => selectToast.classList.remove('show'), 2200);
+  }
+
+  /* ─── Use Template Logic ────────────────────────────── */
+  // Build the AI command string for a template selection
+  function buildAICommand(templatePath, title) {
+    return `我选择了模版：${title}（${templatePath}），请使用这个模版帮我制作幻灯片。`;
+  }
+
+  // Try to inject command into AI chat input box, fallback to clipboard
+  function selectTemplate(templatePath, title, btn) {
+    const cmd = buildAICommand(templatePath, title);
+
+    // Attempt 1: WorkBuddy / common AI input selectors
+    const inputSelectors = [
+      'textarea[placeholder*="输入"]',
+      'textarea[placeholder*="Ask"]',
+      'textarea[placeholder*="message"]',
+      '#chat-input',
+      '.chat-input textarea',
+      '[data-testid="chat-input"]',
+      'textarea.chat-textarea',
+      '.input-area textarea',
+    ];
+
+    let injected = false;
+    for (const sel of inputSelectors) {
+      const el = window.parent.document.querySelector(sel)
+               || document.querySelector(sel);
+      if (el) {
+        el.focus();
+        // Set value via native input value setter for React-controlled inputs
+        const nativeSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype, 'value'
+        ).set;
+        nativeSetter.call(el, cmd);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        injected = true;
+        break;
+      }
+    }
+
+    if (injected) {
+      showToast(`已选择：${title} · 指令已填入输入框`);
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(cmd).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = cmd;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+      showToast(`已选择：${title} · 指令已复制，请粘贴到 AI 输入框`);
+    }
+
+    // Button feedback
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '已选择 ✓';
+      setTimeout(() => { btn.textContent = orig; }, 1800);
+    }
+  }
+
+  // Card "使用此模版" buttons
+  document.querySelectorAll('.use-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
-      const originalText = btn.textContent;
-      const text = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-      if (text) {
-        navigator.clipboard.writeText(text).then(() => {
-          btn.textContent = 'Copied!';
-          setTimeout(() => { btn.textContent = originalText; }, 1400);
-        });
-      }
+      const card = btn.closest('.card');
+      selectTemplate(card.dataset.template, card.dataset.title, btn);
     });
-    // Remove inline onclick to avoid double-firing
-    btn.removeAttribute('onclick');
+  });
+
+  /* ─── Modal Logic ──────────────────────────────────── */
+  const overlay         = document.getElementById('modalOverlay');
+  const modalIframe     = document.getElementById('modalIframe');
+  const modalTitle      = document.getElementById('modalTitle');
+  const modalLoading    = document.getElementById('modalLoading');
+  const modalClose      = document.getElementById('modalClose');
+  const modalOpenNew    = document.getElementById('modalOpenNew');
+  const modalUseBtn     = document.getElementById('modalUseTemplate');
+
+  let currentTemplatePath = '';
+  let currentTemplateTitle = '';
+
+  function openModal(previewUrl, templatePath, title) {
+    currentTemplatePath  = templatePath;
+    currentTemplateTitle = title;
+
+    modalTitle.textContent = title;
+    modalOpenNew.href = previewUrl;
+
+    modalLoading.style.display = 'flex';
+    modalIframe.style.opacity  = '0';
+    modalIframe.src = '';
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(() => {
+      modalIframe.src = previewUrl;
+    });
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      modalIframe.src = '';
+      modalIframe.style.opacity = '0';
+    }, 240);
+  }
+
+  modalIframe.addEventListener('load', () => {
+    if (!modalIframe.src || modalIframe.src === window.location.href) return;
+    modalLoading.style.display = 'none';
+    modalIframe.style.opacity  = '1';
+    modalIframe.style.transition = 'opacity 0.18s ease';
+  });
+
+  // Preview buttons
+  document.querySelectorAll('.preview-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = btn.closest('.card');
+      openModal(card.dataset.preview, card.dataset.template, card.dataset.title);
+    });
+  });
+
+  // Whole card click opens preview (skip use-btn and preview-btn)
+  cards.forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.use-btn') || e.target.closest('.preview-btn')) return;
+      openModal(card.dataset.preview, card.dataset.template, card.dataset.title);
+    });
+  });
+
+  modalClose.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  // Modal "使用此模版" button
+  modalUseBtn.addEventListener('click', () => {
+    selectTemplate(currentTemplatePath, currentTemplateTitle, modalUseBtn);
+    closeModal();
   });
 </script>
 </body>

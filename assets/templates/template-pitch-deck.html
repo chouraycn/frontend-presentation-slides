@@ -171,8 +171,73 @@
     [data-animate] { opacity: 0; transform: translateY(20px); transition: opacity 0.65s ease, transform 0.65s ease; }
     [data-animate="fade"] { transform: none; }
     [data-animate="scale"] { transform: scale(0.88); }
+    [data-animate="slide-left"] { transform: translateX(-28px); }
     [data-animate].visible { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    /* ─── @keyframes — Dark Elegance signature effects ── */
+    @keyframes goldSweep {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+      50%       { transform: translateY(-18px) scale(1.06); opacity: 0.6; }
+    }
+    @keyframes orbFloat2 {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.25; }
+      40%       { transform: translateY(14px) scale(0.96); opacity: 0.45; }
+      80%       { transform: translateY(-8px) scale(1.02); opacity: 0.35; }
+    }
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.15; transform: scale(0.8); }
+      50%       { opacity: 0.7;  transform: scale(1.2); }
+    }
+    @keyframes dividerGlow {
+      0%, 100% { opacity: 0.5; box-shadow: 0 0 0px var(--accent); }
+      50%       { opacity: 1;   box-shadow: 0 0 8px var(--accent); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(100vh); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-100vh); }
+    }
+
+    /* ─── View Transitions (幻灯片切换动效) ──── */
+    ::view-transition-old(slide-content) {
+      animation: 420ms cubic-bezier(0.4,0,0.2,1) both slideOut;
+    }
+    ::view-transition-new(slide-content) {
+      animation: 420ms cubic-bezier(0.4,0,0.2,1) both slideIn;
+    }
+
+    /* ─── Decorative animated elements ──────────────── */
+    .slide-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle 120px at 20% 30%, rgba(201,168,76,0.08) 0%, transparent 70%),
+        radial-gradient(circle 80px at 80% 70%, rgba(201,168,76,0.05) 0%, transparent 70%);
+      animation: orbFloat 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    /* Animated gold divider */
+    .slide-cover .divider {
+      animation: dividerGlow 3s ease-in-out infinite;
+      animation-delay: 1.2s;
+    }
+    /* Star particles */
+    .star-particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--accent);
+      pointer-events: none;
+    }
 
     /* ─── Navigation chrome ─────────────────────────────── */
     .progress-bar {
@@ -492,6 +557,27 @@
     updateChrome(i);
     setTimeout(() => { navigating = false; }, 650);
   }
+
+  // ── Star particle generator for cover slide ──────────
+  function spawnStars() {
+    const cover = slides[0];
+    if (!cover) return;
+    for (let k = 0; k < 18; k++) {
+      const s = document.createElement('div');
+      s.className = 'star-particle';
+      s.style.cssText = `
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        animation: starTwinkle ${2.5 + Math.random() * 4}s ease-in-out infinite;
+        animation-delay: ${Math.random() * 5}s;
+        opacity: 0;
+        width: ${Math.random() > 0.6 ? 3 : 2}px;
+        height: ${Math.random() > 0.6 ? 3 : 2}px;
+      `;
+      cover.appendChild(s);
+    }
+  }
+  spawnStars();
 
   // Initial state
   updateChrome(0);

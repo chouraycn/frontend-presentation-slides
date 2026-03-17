@@ -521,6 +521,49 @@
       .slide { transition: none; }
     }
 
+    /* ── @keyframes — Pash Orange signature effects ── */
+    @keyframes orangeGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255,90,0,0);
+        border-color: rgba(255,90,0,0.12);
+      }
+      50% {
+        box-shadow: 0 0 24px 4px rgba(255,90,0,0.12);
+        border-color: rgba(255,90,0,0.32);
+      }
+    }
+    @keyframes orangeHaloBg {
+      0%, 100% {
+        background: radial-gradient(ellipse at 50% 55%, rgba(255,90,0,0.06) 0%, transparent 60%);
+      }
+      50% {
+        background: radial-gradient(ellipse at 50% 55%, rgba(255,90,0,0.12) 0%, transparent 65%);
+      }
+    }
+    @keyframes counterSlide {
+      from { opacity: 0; transform: translateX(-16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes orangeSlideUp {
+      from { opacity: 0; transform: translateY(70px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes orangeSlideDown {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-70px); }
+    }
+
+    /* ── View Transitions ── */
+    ::view-transition-old(slide-content) {
+      animation: 380ms ease-in both orangeSlideDown;
+    }
+    ::view-transition-new(slide-content) {
+      animation: 380ms cubic-bezier(0,0,0.2,1) 60ms both orangeSlideUp;
+    }
+
+    /* ── Slide counter (section label) animated entrance ── */
+    .counter-label { animation: counterSlide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
     /* ═══════════════════════════════════════════════════════
        NAVIGATION CHROME
        ═══════════════════════════════════════════════════════ */
@@ -962,18 +1005,14 @@
     navDots.appendChild(btn);
   });
 
-  /* ── Intersection Observer for enter animations ── */
-  const animObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.querySelectorAll('[data-animate]').forEach((el, i) => {
-          const delay = parseFloat(el.style.transitionDelay) || 0;
-          setTimeout(() => el.classList.add('visible'), delay * 1000 + i * 90);
-        });
-      }
+  /* ── Animation trigger helper ── */
+  function triggerAnimations(slideEl, baseDelay) {
+    slideEl.querySelectorAll('[data-animate]').forEach((el, i) => {
+      el.classList.remove('visible');
+      const cssDelay = parseFloat(el.style.transitionDelay) || 0;
+      setTimeout(() => el.classList.add('visible'), baseDelay + cssDelay * 1000 + i * 80);
     });
-  }, { threshold: 0.4 });
-  slides.forEach(s => animObserver.observe(s));
+  }
 
   /* ── goTo: core navigation ── */
   function goTo(idx, force) {
@@ -986,6 +1025,9 @@
       s.style.transform = `translateY(${(j - idx) * 100}vh)`;
     });
     current = idx;
+
+    /* Trigger enter animations on incoming slide */
+    triggerAnimations(slides[idx], 80);
 
     /* Update chrome */
     const pct = total <= 1 ? 100 : (idx / (total - 1)) * 100;
@@ -1039,14 +1081,7 @@
   }, { passive: true });
 
   /* ── Init first slide ── */
-  goTo(0, true);  // force=true: bypass idx===current guard on init
-  /* Manually trigger first slide animations since IntersectionObserver fires on load */
-  setTimeout(() => {
-    slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
-      const delay = parseFloat(el.style.transitionDelay) || 0;
-      setTimeout(() => el.classList.add('visible'), delay * 1000 + 80 + i * 90);
-    });
-  }, 0);
+  goTo(0, true);  // force=true: bypass idx===current guard on init; also triggers animations
 
   /* ═══════════════════════════════════════════════════════
      BROADCASTER — for Presenter Mode

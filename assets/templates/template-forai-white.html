@@ -43,6 +43,7 @@
       --accent-warm:  #e85d26;         /* Optional warm accent */
       --accent-cool:  #1a56db;         /* Optional cool accent */
       --border:       rgba(0,0,0,0.08);
+      --surface:      var(--bg-muted);   /* presenterBtn background alias */
 
       /* Typography — CJK-aware */
       --font-head: 'DM Serif Display', 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC', Georgia, 'Times New Roman', serif;
@@ -486,6 +487,52 @@
       transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
     }
     [data-animate="scale"].visible { transform: scale(1); }
+
+    /* ── @keyframes — ForAI White signature effects ── */
+    @keyframes dotsFade {
+      0%, 100% { opacity: 0.45; }
+      50%       { opacity: 0.75; }
+    }
+    @keyframes lineDrawH {
+      from { width: 0; opacity: 0; }
+      to   { width: 100%; opacity: 1; }
+    }
+    @keyframes lineDrawV {
+      from { height: 0; opacity: 0; }
+      to   { height: 100%; opacity: 1; }
+    }
+    @keyframes subtleFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-6px); }
+    }
+    @keyframes inkReveal {
+      from { clip-path: inset(0 100% 0 0); opacity: 0; }
+      to   { clip-path: inset(0 0% 0 0); opacity: 1; }
+    }
+    @keyframes foraiFadeUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes foraiFadeDown {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-50px); }
+    }
+
+    /* ── View Transitions ── */
+    ::view-transition-old(slide-content) {
+      animation: 320ms cubic-bezier(0.4,0,1,1) both foraiFadeDown;
+    }
+    ::view-transition-new(slide-content) {
+      animation: 320ms cubic-bezier(0,0,0.2,1) 50ms both foraiFadeUp;
+    }
+
+    /* ── Dot grid subtle pulse ── */
+    .bg-dots::before { animation: dotsFade 8s ease-in-out infinite; }
+
+    /* ── Corner mark line draw on load ── */
+    .corner-mark::after {
+      animation: lineDrawH 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+    }
 
     /* ── 7. Navigation ───────────────────────────────────────────── */
     .progress-bar {
@@ -986,10 +1033,10 @@ class SlidePresentation {
     this._buildDots();
     this._bindEvents();
     this._updateUI(0);
-    // Trigger initial animations
+    // Trigger initial animations — respect HTML transition-delay, no extra JS stagger
     setTimeout(() => {
-      this.slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
-        setTimeout(() => el.classList.add('visible'), 100 + i * 110);
+      this.slides[0].querySelectorAll('[data-animate]').forEach((el) => {
+        el.classList.add('visible');
       });
     }, 200);
   }
@@ -1080,10 +1127,17 @@ class SlidePresentation {
     this.slides.forEach((s, j) => {
       s.style.transform = `translateY(${(j - idx) * 100}vh)`;
     });
-    // Trigger enter animations on incoming slide
-    this.slides[idx].querySelectorAll('[data-animate]').forEach((el, i) => {
+    // Trigger enter animations — remove visible first, then re-add
+    // No extra JS stagger: HTML transition-delay handles sequencing
+    this.slides[idx].querySelectorAll('[data-animate]').forEach((el) => {
       el.classList.remove('visible');
-      setTimeout(() => el.classList.add('visible'), i * 110);
+    });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.slides[idx].querySelectorAll('[data-animate]').forEach((el) => {
+          el.classList.add('visible');
+        });
+      });
     });
     this._updateUI(idx);
     if (!fromBroadcast) this._broadcastState();

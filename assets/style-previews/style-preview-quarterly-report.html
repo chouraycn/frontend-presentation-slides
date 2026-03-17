@@ -3,104 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Style Preview C — Clean Minimal</title>
+  <title>Style Preview — Royal Blue × White (Quarterly Report)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     /* ── Synced from template-quarterly-report.html ── */
     :root {
-      --bg:             #fafaf8;
-      --surface:        #f0ede6;
-      --surface2:       #e8e4dd;
-      --accent:         #2563eb;
-      --accent2:        #0ea5e9;
-      --accent-green:   #16a34a;
-      --accent-red:     #dc2626;
-      --accent-amber:   #d97706;
-      --text-primary:   #1c1917;
-      --text-secondary: #78716c;
-      --border:         rgba(0,0,0,0.08);
-      --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
-      --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+      --cover-bg:      #1458ea;
+      --cover-deep:    #0d40c4;
+      --cover-surface: #1a64f0;
+      --bg:            #ffffff;
+      --surface:       #f4f7ff;
+      --surface2:      #eaeffc;
+      --surface3:      #dce5ff;
+      --text-primary:  #0d1a3a;
+      --text-secondary:rgba(13,26,58,0.55);
+      --text-muted:    rgba(13,26,58,0.35);
+      --accent:        #1458ea;
+      --accent-green:  #10b981;
+      --accent-amber:  #f59e0b;
+      --accent-red:    #ef4444;
+      --accent-cyan:   #0ea5e9;
+      --border:        rgba(13,26,58,0.10);
+      --border-strong: rgba(13,26,58,0.22);
+      --font: 'Inter','Noto Sans SC',system-ui,sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; font-family: var(--font); }
 
-    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; }
-    h2 { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; }
-    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.4vw, 0.95rem); line-height: 1.7; color: var(--text-secondary); }
-    strong { color: var(--text-primary); }
-
+    /* ── Slide shell ── */
     .slides-container { height: 100vh; overflow: hidden; position: relative; }
     .slide {
-      height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%;
+      height: 100vh; overflow: hidden;
+      position: absolute; top: 0; left: 0; width: 100%;
       display: flex; align-items: center; justify-content: center;
-      background: var(--bg); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .slide-content { width: min(88%, 1050px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .slide-content { width: min(88%, 1100px); display: flex; flex-direction: column; gap: 32px; position: relative; z-index: 1; }
     .slide-content.centered { text-align: center; align-items: center; }
 
-    /* Slide backgrounds */
-    .slide-cover { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); color: white; }
-    .slide-cover h1, .slide-cover h2, .slide-cover p { color: rgba(255,255,255,0.9); }
-    .slide-cover .subtitle { color: rgba(255,255,255,0.65); }
-    .slide-surface { background: var(--surface); }
-    .slide-white { background: #ffffff; }
+    /* ── Backgrounds ── */
+    .bg-cover  { background: var(--cover-bg); }
+    .bg-white  { background: var(--bg); }
+    .bg-surface{ background: var(--surface2); }
 
-    /* Text components */
+    /* Cover dot-grid texture */
+    .bg-cover-grid::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.13) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 20%, transparent 100%);
+      opacity: 0.5; z-index: 0;
+    }
+
+    /* ── Text helpers ── */
     .eyebrow {
-      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.75rem);
-      text-transform: uppercase; letter-spacing: 0.14em;
-      color: var(--accent); font-weight: 600;
+      font-size: clamp(0.62rem, 0.9vw, 0.72rem);
+      text-transform: uppercase; letter-spacing: 0.22em;
+      font-weight: 700;
     }
-    .slide-cover .eyebrow { color: rgba(255,255,255,0.6); }
-    .subtitle { color: var(--text-secondary); }
-    .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
+    .eyebrow-cover {
+      color: rgba(255,255,255,0.45);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .eyebrow-cover::before { content:''; display:block; width:20px; height:1px; background:rgba(255,255,255,0.45); }
+    .eyebrow-dark {
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .eyebrow-dark::before { content:''; display:block; width:20px; height:1px; background:rgba(20,88,234,0.45); }
 
-    /* Status badges */
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; font-family: var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; }
-    .badge-green { background: #dcfce7; color: #15803d; }
-    .badge-amber { background: #fef3c7; color: #92400e; }
-    .badge-red   { background: #fee2e2; color: #991b1b; }
-    .badge-blue  { background: #dbeafe; color: #1e40af; }
+    h1.cover-title {
+      font-size: clamp(3.2rem, 6.5vw, 6rem); font-weight: 900;
+      line-height: 1.0; letter-spacing: -0.04em; color: #fff;
+    }
+    h2.section-title {
+      font-size: clamp(1.8rem, 3.5vw, 3rem); font-weight: 800;
+      line-height: 1.1; letter-spacing: -0.03em; color: var(--text-primary);
+    }
+    .cover-sub {
+      font-size: clamp(0.85rem, 1.4vw, 1rem); color: rgba(255,255,255,0.55);
+      line-height: 1.7; max-width: 520px;
+    }
+    .divider     { width: 100%; height: 1px; background: var(--border); }
+    .divider-cover { width: 100%; height: 1px; background: rgba(255,255,255,0.2); }
 
-    /* Metric cards */
+    /* ── Cover badge ── */
+    .cover-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .cover-badge::before { content:'●'; font-size:0.5em; color:#6ee7b7; }
+
+    /* Ghost watermark on cover */
+    .cover-ghost {
+      position: absolute; right: 5%; bottom: -4%;
+      font-size: clamp(7rem, 16vw, 16rem); font-weight: 900; line-height: 1;
+      letter-spacing: -0.06em; color: rgba(255,255,255,0.05);
+      user-select: none; pointer-events: none; z-index: 0;
+    }
+
+    /* ── Metric cards (Slide 2 — cover blue) ── */
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 1px; background: rgba(255,255,255,0.15);
+    }
     .metric-card {
-      background: #fff; border-radius: 10px; padding: 20px 22px;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.10); padding: 28px 24px 24px;
+      position: relative;
     }
-    .metric-value { font-family: var(--font-heading); font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
-    .metric-delta { font-size: 0.8rem; font-weight: 600; }
-    .metric-delta.up   { color: var(--accent-green); }
-    .metric-delta.down { color: var(--accent-red); }
-    .metric-delta.flat { color: var(--text-secondary); }
-    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .metric-card::before {
+      content:''; position:absolute; top:0; left:0; width:2px; height:100%;
+    }
+    .metric-card.green::before { background: #6ee7b7; }
+    .metric-card.white::before { background: rgba(255,255,255,0.35); }
+    .metric-card .m-lbl {
+      font-size: clamp(0.6rem, 0.8vw, 0.72rem); text-transform: uppercase;
+      letter-spacing: 0.16em; color: rgba(255,255,255,0.45); margin-bottom: 8px;
+    }
+    .metric-card .m-val {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 900;
+      color: #fff; letter-spacing: -0.04em; line-height: 1;
+    }
+    .metric-card .m-dlt {
+      font-size: 0.72rem; font-weight: 600; margin-top: 6px;
+    }
+    .m-dlt.up { color: #6ee7b7; }
+    .m-dlt.fl { color: rgba(255,255,255,0.45); }
 
-    /* Win/miss item list */
-    .item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .item-list li { display: flex; align-items: flex-start; gap: 10px; background: #fff; border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); font-size: 0.9rem; font-family: var(--font-body); }
-    .item-list li::before { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
-    .item-list.wins   li::before { content: '✓'; background: #dcfce7; color: #15803d; }
-    .item-list.misses li::before { content: '△'; background: #fef3c7; color: #92400e; }
+    .callout-box {
+      border-left: 2px solid rgba(255,255,255,0.45);
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.07);
+      font-size: 0.88rem; color: rgba(255,255,255,0.65); line-height: 1.7;
+    }
+    .callout-box strong { color: #fff; }
 
-    /* Slide label */
-    .slide-label { position: absolute; top: 20px; right: 24px; font-family: var(--font-body); font-size: 10px; color: var(--text-secondary); opacity: 0.4; z-index: 1; }
+    /* ── OKR slide (surface2) ── */
+    .okr-list { width: 100%; display: flex; flex-direction: column; }
+    .okr-item { width: 100%; padding: 20px 0; border-bottom: 1px solid var(--border); }
+    .okr-item:first-child { border-top: 1px solid var(--border); }
+    .okr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .okr-obj { font-size: clamp(0.85rem, 1.2vw, 1rem); font-weight: 700; color: var(--text-primary); }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; font-size: 0.64rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid;
+    }
+    .status-badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+    .sb-green { background: rgba(16,185,129,0.10); color: #059669; border-color: rgba(16,185,129,0.35); }
+    .sb-green::before { background: #10b981; }
+    .sb-amber { background: rgba(245,158,11,0.10); color: #d97706; border-color: rgba(245,158,11,0.35); }
+    .sb-amber::before { background: #f59e0b; }
+    .sb-red   { background: rgba(239,68,68,0.10);  color: #dc2626; border-color: rgba(239,68,68,0.35); }
+    .sb-red::before { background: #ef4444; }
+    .kr-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .kr-lbl { font-size: 0.78rem; color: var(--text-secondary); flex: 1; }
+    .kr-track { flex: 2; height: 2px; background: var(--border); overflow: hidden; }
+    .kr-fill  { height: 100%; background: var(--accent); }
+    .kr-pct   { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; min-width: 32px; text-align: right; }
 
-    /* Navigation */
-    .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; transition: width 0.3s ease; z-index: 100; }
-    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
-    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
-    .nav-dots button.active { background: var(--accent); border-color: var(--accent); transform: scale(1.5); }
-    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
+    /* ── Navigation ── */
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--cover-bg); width: 0%; transition: width 0.3s ease; z-index: 100; }
+    .nav-dots { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .nav-dots button { width: 5px; height: 5px; border-radius: 50%; border: 1px solid rgba(20,88,234,0.4); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .nav-dots button.active { background: var(--cover-bg); border-color: var(--cover-bg); transform: scale(1.5); }
+    .slide-counter { position: fixed; bottom: 24px; right: 60px; font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.1em; z-index: 100; }
 
     /* Style label */
-    .style-label { position: fixed; top: 20px; left: 24px; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--text-secondary); z-index: 100; }
-    .style-label span { color: var(--accent); font-weight: 600; }
+    .style-label { position: fixed; top: 32px; left: 56px; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); z-index: 100; }
+    .style-label span { color: var(--cover-bg); font-weight: 700; }
+    .style-label-cover { color: rgba(255,255,255,0.35); }
+    .style-label-cover span { color: rgba(255,255,255,0.8); }
+    .slide-num { position: absolute; top: 36px; right: 56px; font-size: 0.78rem; color: rgba(13,26,58,0.25); letter-spacing: 0.12em; z-index: 1; }
+    .slide-num-cover { color: rgba(255,255,255,0.2); }
 
-    /* Animations */
-    [data-animate] { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    /* ── Animations ── */
+    [data-animate] { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    [data-animate="left"] { transform: translateX(-28px); }
     [data-animate].visible { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
 
@@ -112,81 +197,97 @@
 </head>
 <body>
 
-<div class="style-label">Style Preview — <span>C: Clean Minimal</span></div>
+<div class="style-label" id="styleLabel">Style Preview — <span>Royal Blue × White</span></div>
 <div class="progress-bar" id="progressBar"></div>
 <nav class="nav-dots" id="navDots"></nav>
 <div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
 
 <div class="slides-container" id="slidesContainer">
 
-  <!-- Slide 1: Cover -->
-  <section class="slide slide-cover">
-    <span class="slide-label" style="color:rgba(255,255,255,0.3);">01 / 03</span>
-    <div class="slide-content" style="max-width:800px;">
-      <p class="eyebrow" data-animate>Product Team · Q1 2026</p>
-      <h1 data-animate>季度业务回顾</h1>
-      <p data-animate style="font-size:clamp(1rem,1.8vw,1.2rem); color:rgba(255,255,255,0.75); margin-top:8px;">
-        Clean Minimal — light mode, corporate blue. Best for QBRs, OKR reviews, and leadership updates.
-      </p>
-      <div data-animate style="margin-top:24px; display:flex; gap:16px; flex-wrap:wrap;">
-        <span class="badge badge-green">On Track</span>
-        <span style="font-size:0.85rem; color:rgba(255,255,255,0.5); align-self:center;">Mar 2026 · Leadership All-Hands</span>
+  <!-- ── Slide 1: Cover ── -->
+  <section class="slide bg-cover bg-cover-grid">
+    <span class="slide-num slide-num-cover" data-animate="fade">01 / 03</span>
+    <div class="cover-ghost">Q4</div>
+    <div class="slide-content">
+      <p class="eyebrow eyebrow-cover" data-animate>[Team / Product] · Q4 2026</p>
+      <h1 class="cover-title" data-animate>季度<br>业务回顾</h1>
+      <div class="divider-cover" data-animate></div>
+      <p class="cover-sub" data-animate>封面采用皇家蓝底色，Inter 900 字重标题，简洁白色排版系统。适用于季度汇报、业务复盘和管理层简报。</p>
+      <div data-animate style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+        <span class="cover-badge">On Track</span>
+        <span class="cover-badge" style="border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.55);">Q4 2026</span>
       </div>
     </div>
   </section>
 
-  <!-- Slide 2: Key Metrics -->
-  <section class="slide slide-white">
-    <span class="slide-label">02</span>
+  <!-- ── Slide 2: Metrics (cover blue glass) ── -->
+  <section class="slide bg-cover">
+    <span class="slide-num slide-num-cover" data-animate="fade">02 / 03</span>
     <div class="slide-content">
-      <p class="eyebrow" data-animate>执行摘要</p>
-      <h2 data-animate>Q1 at a Glance</h2>
+      <div>
+        <p class="eyebrow eyebrow-cover" data-animate>执行摘要</p>
+        <p style="font-size:clamp(1.6rem,3vw,2.5rem); font-weight:800; color:#fff; letter-spacing:-0.03em; margin-top:8px;" data-animate>Q4 季度在一句话里</p>
+      </div>
+      <div class="divider-cover" data-animate></div>
       <div class="metrics-grid" data-animate>
-        <div class="metric-card">
-          <p class="label">Revenue</p>
-          <div class="metric-value">¥8.4M</div>
-          <span class="metric-delta up">↑ 23% vs Q4</span>
+        <div class="metric-card green">
+          <div class="m-lbl">Revenue</div>
+          <div class="m-val">¥24M</div>
+          <div class="m-dlt up">↑ 18% QoQ</div>
         </div>
-        <div class="metric-card">
-          <p class="label">Active Users</p>
-          <div class="metric-value">142K</div>
-          <span class="metric-delta up">↑ 18% MoM</span>
+        <div class="metric-card green">
+          <div class="m-lbl">Active Users</div>
+          <div class="m-val">142K</div>
+          <div class="m-dlt up">↑ 11% MoM</div>
         </div>
-        <div class="metric-card">
-          <p class="label">Net Retention</p>
-          <div class="metric-value">107%</div>
-          <span class="metric-delta flat">→ stable</span>
+        <div class="metric-card white">
+          <div class="m-lbl">Net Retention</div>
+          <div class="m-val">108%</div>
+          <div class="m-dlt fl">— Flat</div>
         </div>
-        <div class="metric-card">
-          <p class="label">Headcount</p>
-          <div class="metric-value">38</div>
-          <span class="metric-delta up">+4 this quarter</span>
+        <div class="metric-card white">
+          <div class="m-lbl">Headcount</div>
+          <div class="m-val">64</div>
+          <div class="m-dlt up">+6 this QTR</div>
         </div>
+      </div>
+      <div class="callout-box" data-animate>
+        <strong>核心洞察：</strong>收入增速首次超过用户增速，单位经济转正拐点确认。蓝底白框指标卡，搭配数字计数动画。
       </div>
     </div>
   </section>
 
-  <!-- Slide 3: Wins & Misses -->
-  <section class="slide slide-surface">
-    <span class="slide-label">03</span>
-    <div class="slide-content">
-      <p class="eyebrow" data-animate>回顾</p>
-      <h2 data-animate>What Went Well / What Didn't</h2>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;" data-animate>
-        <div>
-          <p class="label" style="margin-bottom:8px; color:var(--accent-green);">✓ Wins</p>
-          <ul class="item-list wins">
-            <li>Shipped new dashboard on time</li>
-            <li>Closed 3 enterprise deals above target</li>
-            <li>NPS improved from 42 → 61</li>
-          </ul>
+  <!-- ── Slide 3: OKR (surface2 light) ── -->
+  <section class="slide bg-surface">
+    <span class="slide-num" data-animate="fade">03 / 03</span>
+    <div class="slide-content" style="max-width:min(88%,900px);">
+      <div>
+        <p class="eyebrow eyebrow-dark" data-animate>OKR 进展</p>
+        <h2 class="section-title" data-animate style="margin-top:8px;">Q4 目标完成情况</h2>
+      </div>
+      <div class="okr-list" data-animate>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-obj">O1: 实现收入突破性增长</span>
+            <span class="status-badge sb-green">On Track</span>
+          </div>
+          <div class="kr-row"><span class="kr-lbl">KR1: GMV 达到 ¥25M</span><div class="kr-track"><div class="kr-fill" style="width:78%"></div></div><span class="kr-pct">78%</span></div>
+          <div class="kr-row"><span class="kr-lbl">KR2: 新增付费用户 5K</span><div class="kr-track"><div class="kr-fill" style="width:91%"></div></div><span class="kr-pct">91%</span></div>
         </div>
-        <div>
-          <p class="label" style="margin-bottom:8px; color:var(--accent-amber);">△ Misses</p>
-          <ul class="item-list misses">
-            <li>Mobile app launch slipped 2 weeks</li>
-            <li>Support ticket volume exceeded capacity</li>
-          </ul>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-obj">O2: 提升用户留存与满意度</span>
+            <span class="status-badge sb-amber">At Risk</span>
+          </div>
+          <div class="kr-row"><span class="kr-lbl">KR1: NPS 提升至 60</span><div class="kr-track"><div class="kr-fill" style="width:45%; background:#f59e0b;"></div></div><span class="kr-pct" style="color:#d97706;">45%</span></div>
+          <div class="kr-row"><span class="kr-lbl">KR2: D30 留存率 55%</span><div class="kr-track"><div class="kr-fill" style="width:62%; background:#f59e0b;"></div></div><span class="kr-pct" style="color:#d97706;">62%</span></div>
+        </div>
+        <div class="okr-item">
+          <div class="okr-header">
+            <span class="okr-obj">O3: 完成国际化产品上线</span>
+            <span class="status-badge sb-red">Off Track</span>
+          </div>
+          <div class="kr-row"><span class="kr-lbl">KR1: 完成双语版上线</span><div class="kr-track"><div class="kr-fill" style="width:28%; background:#ef4444;"></div></div><span class="kr-pct" style="color:#dc2626;">28%</span></div>
         </div>
       </div>
     </div>
@@ -196,14 +297,19 @@
 
 <script>
   const container = document.getElementById('slidesContainer');
-  const slides = Array.from(document.querySelectorAll('.slide'));
-  const navDots = document.getElementById('navDots');
+  const slides    = Array.from(document.querySelectorAll('.slide'));
+  const navDots   = document.getElementById('navDots');
   const progressBar = document.getElementById('progressBar');
+  const styleLabel  = document.getElementById('styleLabel');
   let current = 0, navigating = false;
+  document.getElementById('totalSlides').textContent = slides.length;
 
+  /* Position slides */
   slides.forEach((s, i) => {
-    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);';
+    s.style.cssText += '; position:absolute; top:0; left:0; width:100%; transform:translateY(' + (i * 100) + 'vh); transition:transform 0.65s cubic-bezier(0.16,1,0.3,1);';
   });
+
+  /* Build nav dots */
   slides.forEach((_, i) => {
     const b = document.createElement('button');
     b.className = i === 0 ? 'active' : '';
@@ -225,17 +331,47 @@
     document.getElementById('currentSlide').textContent = idx + 1;
     navDots.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === idx));
     progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+
+    /* Adapt style-label color for cover slides */
+    const isCover = slides[idx].classList.contains('bg-cover');
+    styleLabel.className = isCover ? 'style-label style-label-cover' : 'style-label';
+
+    /* Adapt nav dot border for cover slides */
+    navDots.querySelectorAll('button').forEach(b => {
+      b.style.borderColor = isCover ? 'rgba(255,255,255,0.35)' : 'rgba(20,88,234,0.4)';
+      if (b.classList.contains('active')) {
+        b.style.background = isCover ? '#fff' : 'var(--cover-bg)';
+        b.style.borderColor = isCover ? '#fff' : 'var(--cover-bg)';
+      } else {
+        b.style.background = 'transparent';
+      }
+    });
+    document.getElementById('currentSlide').style.color = isCover ? 'rgba(255,255,255,0.45)' : '';
+    document.querySelector('.slide-counter').style.color = isCover ? 'rgba(255,255,255,0.45)' : '';
+
     setTimeout(() => { navigating = false; }, 650);
   }
 
-  setTimeout(() => { slides[0].querySelectorAll('[data-animate]').forEach((el, i) => { setTimeout(() => el.classList.add('visible'), 200 + i * 120); }); }, 0);
+  /* Initial reveal */
+  setTimeout(() => {
+    goToSlide(0);
+    slides[0].querySelectorAll('[data-animate]').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), 200 + i * 120);
+    });
+  }, 0);
+
+  /* Keyboard */
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(current + 1); }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(current - 1); }
+    if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')                   { e.preventDefault(); goToSlide(current - 1); }
   });
+
+  /* Touch */
   let touchY = 0;
   container.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
-  container.addEventListener('touchend', e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+  container.addEventListener('touchend',   e => { const d = touchY - e.changedTouches[0].clientY; if (Math.abs(d) > 50) goToSlide(current + (d > 0 ? 1 : -1)); }, { passive: true });
+
+  /* Wheel */
   container.addEventListener('wheel', e => { e.preventDefault(); if (navigating) return; goToSlide(current + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
 </script>
 </body>

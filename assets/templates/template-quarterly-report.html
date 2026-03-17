@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <!--
-  template-quarterly-report.html — Quarterly Business Review / Internal Report
-  ─────────────────────────────────────────────────────────────────────────────
-  Best for: QBR, OKR review, leadership update, all-hands, investor update
-  Style: Clean Focus — light mode, corporate blue
-  Slides: 8 (Summary → OKRs → Metrics → Wins → Misses → Initiatives → Risks → Next Quarter)
-
-  HOW TO USE:
-    1. Edit :root {} constants
-    2. Fill in your actual numbers and status
-    3. Paste scripts/charts.js before </body> to enable charts
-    4. Press [P] for presenter mode
+  template-quarterly-report.html — Quarterly Business Review
+  ─────────────────────────────────────────────────────────────
+  Design: #1f00ff cobalt base × Snowhouse Studio (large type, breathing space)
+                               × The Patch System (hairline borders, tight labels, no shadow)
+  Slides: 8 (Cover → Summary → OKRs → Metrics → Wins/Misses → Initiatives → Risks → Next Quarter)
 -->
 <html lang="zh-CN">
 <head>
@@ -19,232 +13,552 @@
   <title>季度报告 — [Team/Product] Q[X] [Year]</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    /* ─────────────────────────────────────────────────────
-       CONSTANTS — this is a LIGHT mode theme
-       ───────────────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════════
+       ROYAL BLUE × WHITE — #1458ea cover + #ffffff content
+       Cover / End slides: deep royal-blue with animated glow
+       Content slides:     clean white panels, dark type
+       ═══════════════════════════════════════════════════════════ */
     :root {
-      --bg:             #fafaf8;
-      --surface:        #f0ede6;
-      --surface2:       #e8e4dd;
-      --accent:         #2563eb;   /* blue */
-      --accent2:        #0ea5e9;   /* sky */
-      --accent-green:   #16a34a;
-      --accent-red:     #dc2626;
-      --accent-amber:   #d97706;
-      --text-primary:   #1c1917;
-      --text-secondary: #78716c;
-      --border:         rgba(0,0,0,0.08);
-      --chart3: #10b981; --chart4: #f59e0b; --chart5: #7c3aed; --chart6: #ef4444;
-      --font-heading: 'Plus Jakarta Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-      --font-body:    'Plus Jakarta Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      /* ── Cover (Slide 1 / Slide 8) background ── */
+      --cover-bg:      #1458ea;          /* royal blue anchor — change here to retheme all covers */
+      --cover-deep:    #0d40c4;          /* slightly deeper for slide-deep on cover */
+      --cover-surface: #1a64f0;          /* lighter royal for highlights */
+
+      /* ── Content slide backgrounds (white system) ── */
+      --bg:        #ffffff;              /* default slide background — white */
+      --surface:   #f4f7ff;              /* light blue-tinted surface (panel slides) */
+      --surface2:  #eaeffc;              /* deeper panel (slide-deep) */
+      --surface3:  #dce5ff;              /* hover / subtle accent bg */
+      --surface-ui:#f0f4ff;              /* metrics grid cell */
+
+      /* ── Text — dark-on-white ── */
+      --text-primary:   #0d1a3a;         /* near-black navy */
+      --text-secondary: rgba(13,26,58,0.55);
+      --text-muted:     rgba(13,26,58,0.35);
+
+      /* ── Cover text — white-on-blue ── */
+      --cover-text-primary:   #ffffff;
+      --cover-text-secondary: rgba(255,255,255,0.65);
+      --cover-text-muted:     rgba(255,255,255,0.35);
+
+      /* ── Accent — royal blue + signal colours ── */
+      --accent:         #1458ea;         /* primary brand blue */
+      --accent-warm:    #f59e0b;         /* amber */
+      --accent-green:   #10b981;         /* emerald — readable on white */
+      --accent-red:     #ef4444;         /* red */
+      --accent-amber:   #f59e0b;         /* amber / warning */
+      --accent-cyan:    #0ea5e9;         /* sky blue — tech accent */
+
+      /* ── Borders — dark-on-white ── */
+      --border:         rgba(13,26,58,0.10);
+      --border-strong:  rgba(13,26,58,0.22);
+      --border-accent:  rgba(20,88,234,0.50);  /* brand blue border */
+
+      /* ── Chart palette — works on white ── */
+      --chart1: #1458ea;                 /* brand blue */
+      --chart2: rgba(20,88,234,0.30);    /* light blue */
+      --chart3: #10b981;                 /* emerald */
+      --chart4: #f59e0b;                 /* amber */
+      --chart5: #0ea5e9;                 /* sky */
+      --chart6: #ef4444;                 /* red */
+
+      /* ── Fonts ── */
+      --font-heading: 'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+      --font-body:    'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text-primary); }
 
-    h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; }
-    h2 { font-family: var(--font-heading); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; }
-    h3 { font-family: var(--font-heading); font-size: clamp(0.95rem, 1.6vw, 1.2rem); font-weight: 600; }
-    p  { font-family: var(--font-body); font-size: clamp(0.875rem, 1.4vw, 0.95rem); line-height: 1.7; color: var(--text-secondary); }
-    strong { color: var(--text-primary); }
+    /* ── Type scale — Snowhouse-influenced scale ── */
+    h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.8rem, 5.5vw, 5rem);
+      font-weight: 900; line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+    }
+    /* Cover slides override h1 to white */
+    .slide-cover h1 { color: #ffffff; }
 
-    /* ── CJK typography optimizations ── */
-    .slide h1, .slide h2, .slide h3 { letter-spacing: 0.02em; word-break: keep-all; overflow-wrap: break-word; }
-    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; line-height: 1.85; }
+    h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      font-weight: 800; line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+    h3 {
+      font-family: var(--font-heading);
+      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+      font-weight: 700; letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+    p {
+      font-family: var(--font-body);
+      font-size: clamp(0.8rem, 1.15vw, 0.875rem);
+      line-height: 1.75;
+      color: var(--text-secondary);
+    }
+    strong { color: var(--text-primary); font-weight: 600; }
 
+    /* CJK */
+    .slide h1, .slide h2, .slide h3 { word-break: keep-all; overflow-wrap: break-word; }
+    .slide p, .slide li { word-break: break-all; overflow-wrap: break-word; }
+
+    /* ══ SLIDE ENGINE ══ */
     .slides-container { height: 100vh; overflow: hidden; position: relative; }
-    .slide { height: 100vh; overflow: hidden; position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
-    .slide-content { width: min(88%, 1050px); display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
-    .slide-content.centered { text-align: center; align-items: center; }
-    .slide-content.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; width: min(92%, 1100px); }
+    .slide {
+      height: 100vh; overflow: hidden;
+      position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide-content {
+      width: min(86%, 1040px);
+      display: flex; flex-direction: column; gap: 28px;
+      position: relative; z-index: 1;
+    }
+    .slide-content.centered  { text-align: center; align-items: center; }
+    .slide-content.wide      { width: min(90%, 1140px); }
+    .slide-content.two-col   {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: start;
+      width: min(90%, 1100px);
+    }
 
-    /* Backgrounds */
-    .slide-cover { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); color: white; }
-    .slide-cover h1, .slide-cover h2, .slide-cover p { color: rgba(255,255,255,0.9); }
-    .slide-cover .subtitle { color: rgba(255,255,255,0.65); }
-    .slide-surface { background: var(--surface); }
-    .slide-white { background: #ffffff; }
+    /* ── Slide surface variants ── */
+    .slide-cover { background: var(--cover-bg) !important; }  /* royal blue cover/end */
+    .slide-deep  { background: var(--surface2); }
+    .slide-panel { background: var(--surface); }
 
-    /* ── Text components ── */
+    /* ══ MICRO-LABELS — Patch System style ══ */
     .eyebrow {
-      font-family: var(--font-body); font-size: clamp(0.65rem, 1vw, 0.75rem);
-      text-transform: uppercase; letter-spacing: 0.14em;
-      color: var(--accent); font-weight: 600;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 0.22em;
+      color: var(--text-muted); font-weight: 500;
     }
-    .slide-cover .eyebrow { color: rgba(255,255,255,0.6); }
-    .subtitle { color: var(--text-secondary); }
-    .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
-
-    /* Status badges */
-    .badge {
-      display: inline-block; padding: 2px 8px; border-radius: 4px;
-      font-size: 0.72rem; font-weight: 600; font-family: var(--font-body);
-      letter-spacing: 0.04em; text-transform: uppercase;
+    .eyebrow-line {
+      display: flex; align-items: center; gap: 14px;
     }
-    .badge-green { background: #dcfce7; color: #15803d; }
-    .badge-amber { background: #fef3c7; color: #92400e; }
-    .badge-red   { background: #fee2e2; color: #991b1b; }
-    .badge-blue  { background: #dbeafe; color: #1e40af; }
+    .eyebrow-line::before {
+      content: ''; display: block; width: 28px; height: 1px;
+      background: var(--border-accent); flex-shrink: 0; opacity: 0.6;
+    }
+    /* Cover slides: eyebrow uses white */
+    .slide-cover .eyebrow-line::before { background: rgba(255,255,255,0.5); opacity: 1; }
+    .slide-cover .eyebrow { color: rgba(255,255,255,0.5); }
+    .slide-cover .eyebrow-line span { color: rgba(255,255,255,0.5); }
 
-    /* Metric card */
+    .label {
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--text-muted); font-weight: 500; margin-bottom: 6px;
+    }
+    .section-rule {
+      width: 100%; height: 1px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ══ HERO NUMBERS — Snowhouse large-type style ══ */
+    .hero-stat {
+      font-family: var(--font-heading);
+      font-size: clamp(3.5rem, 7vw, 6rem);
+      font-weight: 900; line-height: 1;
+      letter-spacing: -0.05em;
+      color: var(--text-primary);
+    }
+    .hero-stat .suffix {
+      font-size: 0.45em; font-weight: 600;
+      color: var(--text-secondary);
+      vertical-align: super; margin-left: 3px;
+    }
+
+    /* ══ METRIC CARDS — Patch "no shadow, border only" ══ */
     .metric-card {
-      background: #fff; border-radius: 10px; padding: 20px 22px;
+      background: transparent;
       border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-radius: 0;
+      padding: 24px 20px;
+      position: relative;
+      transition: border-color 0.2s;
     }
-    .metric-value { font-family: var(--font-heading); font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
-    .metric-delta { font-size: 0.8rem; font-weight: 600; }
-    .metric-delta.up { color: var(--accent-green); }
-    .metric-delta.down { color: var(--accent-red); }
-    .metric-delta.flat { color: var(--text-secondary); }
-    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .metrics-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .metric-card:hover { border-color: var(--border-strong); }
 
-    /* OKR table */
-    .okr-list { display: flex; flex-direction: column; gap: 12px; }
-    .okr-item { background: #fff; border-radius: 8px; padding: 14px 16px; border: 1px solid var(--border); }
-    .okr-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
-    .okr-objective { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
-    .okr-krs { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-    .okr-kr { display: flex; align-items: center; gap: 10px; }
-    .okr-kr-label { font-size: 0.78rem; color: var(--text-secondary); flex: 1; }
-    .okr-kr-bar { height: 6px; background: var(--surface2); border-radius: 3px; flex: 2; overflow: hidden; }
-    .okr-kr-fill { height: 100%; border-radius: 3px; background: var(--accent); }
-    .okr-kr-pct { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; min-width: 32px; text-align: right; }
-
-    /* Win/miss items */
-    .item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .item-list li { display: flex; align-items: flex-start; gap: 10px; background: #fff; border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); font-size: 0.9rem; }
-    .item-list li::before { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
-    .item-list.wins li::before { content: '✓'; background: #dcfce7; color: #15803d; }
-    .item-list.misses li::before { content: '△'; background: #fef3c7; color: #92400e; }
-
-    /* Risk table */
-    .risk-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    .risk-table th { text-align: left; padding: 9px 12px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
-    .risk-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-    .risk-table td:first-child { font-weight: 500; color: var(--text-primary); }
-
-    /* ── Animations ── */
-    [data-animate] { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
-    [data-animate="fade"] { transform: none; }
-    [data-animate="scale"] { transform: scale(0.92); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.34,1.2,0.64,1); }
-    [data-animate="slide-left"] { transform: translateX(-24px); }
-    [data-animate].visible { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
-
-    /* ── @keyframes — Clean Minimal signature effects ── */
-    @keyframes barFill {
-      from { width: 0 !important; }
-      to   { width: var(--fill-w); }
-    }
-    @keyframes metricCountUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes badgePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-      50%       { box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
-    }
-    @keyframes badgePulseAmber {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
-      50%       { box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
-    }
-    @keyframes coverGlow {
-      0%, 100% { background-position: 0% 50%; }
-      50%       { background-position: 100% 50%; }
-    }
-    @keyframes riseUp {
-      from { opacity: 0; transform: translateY(80px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fallDown {
-      from { opacity: 1; transform: translateY(0); }
-      to   { opacity: 0; transform: translateY(-80px); }
-    }
-
-    /* ── View Transitions ── */
-    ::view-transition-old(slide-content) {
-      animation: 350ms ease-in both fallDown;
-    }
-    ::view-transition-new(slide-content) {
-      animation: 350ms ease-out 80ms both riseUp;
-    }
-
-    /* ── Cover slide animated gradient overlay ── */
-    .slide-cover::after {
+    /* Left accent bar */
+    .metric-card::before {
       content: '';
+      position: absolute; top: 0; left: 0;
+      width: 2px; height: 100%;
+      background: var(--accent-line, transparent);
+    }
+    .metric-card.green::before { --accent-line: var(--accent-green); }
+    .metric-card.red::before   { --accent-line: var(--accent-red);   }
+    .metric-card.amber::before { --accent-line: var(--accent-amber); }
+    .metric-card.white::before { --accent-line: rgba(20,88,234,0.4); }
+
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 900; color: var(--text-primary);
+      line-height: 1; margin-bottom: 6px;
+      letter-spacing: -0.04em;
+    }
+    .metric-delta {
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.03em; font-family: var(--font-mono);
+    }
+    .metric-delta.up   { color: var(--accent-green); }
+    .metric-delta.down { color: var(--accent-red); }
+    .metric-delta.flat { color: var(--text-muted); }
+    .metric-note {
+      margin-top: 8px; font-size: 0.72rem;
+      color: var(--text-muted); line-height: 1.5;
+    }
+
+    .metrics-grid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); }
+    .metrics-grid   .metric-card { background: var(--surface-ui); }
+    .metrics-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
+    .metrics-grid-3 .metric-card { background: var(--surface-ui); }
+    .metrics-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+    /* ══ STATUS BADGES — Patch style, minimal, no radius ══ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 8px; border-radius: 0;
+      font-size: 0.58rem; font-weight: 700; font-family: var(--font-body);
+      letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid;
+    }
+    .badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+
+    .badge-green { background: rgba(16,185,129,0.10); color: #059669; border-color: rgba(16,185,129,0.35); }
+    .badge-green::before { background: #10b981; }
+    .badge-amber { background: rgba(245,158,11,0.10); color: #d97706; border-color: rgba(245,158,11,0.35); }
+    .badge-amber::before { background: #f59e0b; }
+    .badge-red   { background: rgba(239,68,68,0.10);  color: #dc2626; border-color: rgba(239,68,68,0.35); }
+    .badge-red::before { background: #ef4444; }
+    .badge-blue  { background: rgba(20,88,234,0.08);  color: #1458ea; border-color: rgba(20,88,234,0.25); }
+    .badge-blue::before { background: #1458ea; }
+    .badge-white { background: rgba(13,26,58,0.05);   color: rgba(13,26,58,0.5); border-color: rgba(13,26,58,0.15); }
+    .badge-white::before { background: rgba(13,26,58,0.3); }
+
+    /* ══ OKR LIST ══ */
+    .okr-list { display: flex; flex-direction: column; gap: 0; }
+    .okr-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .okr-item:first-child { border-top: 1px solid var(--border); }
+    .okr-header {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .okr-objective {
+      font-weight: 600; font-size: 0.875rem;
+      color: var(--text-primary); letter-spacing: -0.01em;
+    }
+    .okr-krs { display: flex; flex-direction: column; gap: 8px; }
+    .okr-kr  { display: flex; align-items: center; gap: 12px; }
+    .okr-kr-label {
+      font-size: 0.72rem; color: var(--text-secondary);
+      flex: 1; min-width: 0; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .okr-kr-bar {
+      height: 2px; background: rgba(13,26,58,0.10);
+      border-radius: 0; flex: 2; overflow: hidden;
+    }
+    .okr-kr-fill {
+      height: 100%; background: var(--accent);
+      transition: width 0s;
+    }
+    .okr-kr-pct {
+      font-size: 0.65rem; color: var(--text-secondary);
+      font-weight: 700; min-width: 34px; text-align: right;
+      font-family: var(--font-mono);
+    }
+
+    /* ══ WIN / MISS LIST ══ */
+    .patch-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+    .patch-list li {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.84rem; color: var(--text-secondary); line-height: 1.65;
+    }
+    .patch-list li:first-child { border-top: 1px solid var(--border); }
+    .patch-list li .mark {
+      flex-shrink: 0; margin-top: 2px;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+    }
+    .patch-list.wins   li .mark { color: var(--accent-green); }
+    .patch-list.misses li .mark { color: var(--accent-amber); }
+
+    /* ══ INITIATIVE / RISK TABLE — Patch hairline grid ══ */
+    .patch-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .patch-table thead tr { border-bottom: 1px solid var(--border-strong); }
+    .patch-table th {
+      text-align: left; padding: 8px 12px 10px 0;
+      font-size: 0.58rem; text-transform: uppercase;
+      letter-spacing: 0.18em; color: var(--text-muted); font-weight: 600;
+    }
+    .patch-table th:last-child, .patch-table td:last-child { padding-right: 0; }
+    .patch-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    .patch-table tbody tr:last-child { border-bottom: none; }
+    .patch-table tbody tr:hover { background: rgba(20,88,234,0.04); }
+    .patch-table td {
+      padding: 13px 12px 13px 0;
+      vertical-align: middle; color: var(--text-secondary);
+    }
+    .patch-table td:first-child { font-weight: 600; color: var(--text-primary); }
+
+    /* ══ CALLOUT ══ */
+    .callout {
+      border-left: 2px solid var(--accent);
+      padding: 12px 0 12px 20px;
+      color: var(--text-secondary);
+      font-size: 0.875rem; line-height: 1.7;
+      background: rgba(20,88,234,0.04);
+    }
+    .callout strong { color: var(--text-primary); }
+
+    /* ══ STAT ROW — Snowhouse "10x" style ══ */
+    .stat-row { display: flex; align-items: baseline; gap: 16px; }
+    .stat-row .big-num {
+      font-family: var(--font-heading);
+      font-size: clamp(3rem, 5.5vw, 5rem);
+      font-weight: 900; line-height: 1;
+      letter-spacing: -0.05em; color: var(--text-primary);
+    }
+    .stat-row .big-label {
+      font-size: 0.78rem; color: var(--text-secondary);
+      max-width: 160px; line-height: 1.4;
+    }
+
+    /* ══ DIVIDER LABEL ══ */
+    .divider-label {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+    .divider-label::before, .divider-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ══ COVER DECORATIONS ══ */
+
+    /* ══ COUNTER-UP NUMBERS ══ */
+    /* Applied via JS: data-count-up="target" on .metric-value or any span */
+    .count-up-el { display: inline-block; }
+
+    /* ══ COVER-STYLE METRIC CARDS (used on slide-cover slides) ══ */
+    .slide-cover .metric-card {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.22);
+      backdrop-filter: blur(4px);
+    }
+    .slide-cover .metric-card:hover { border-color: rgba(255,255,255,0.40); }
+    .slide-cover .metric-card::before { display: none; }  /* no left bar on blue bg */
+    .slide-cover .metric-value { color: #ffffff; }
+    .slide-cover .metric-delta { color: rgba(255,255,255,0.65); }
+    .slide-cover .metric-delta.up   { color: #6ee7b7; }   /* mint on blue */
+    .slide-cover .metric-delta.down { color: #fca5a5; }   /* soft red on blue */
+    .slide-cover .metric-delta.flat { color: rgba(255,255,255,0.45); }
+    .slide-cover .metric-note  { color: rgba(255,255,255,0.45); }
+    .slide-cover .label        { color: rgba(255,255,255,0.45); }
+    .slide-cover .metrics-grid {
+      background: rgba(255,255,255,0.08);
+    }
+    .slide-cover .metrics-grid .metric-card { background: rgba(255,255,255,0.10); }
+    .slide-cover .metrics-grid-3 {
+      background: rgba(255,255,255,0.08);
+    }
+    .slide-cover .metrics-grid-3 .metric-card { background: rgba(255,255,255,0.10); }
+    .slide-cover .section-rule { background: rgba(255,255,255,0.18); }
+    .slide-cover h2 { color: #ffffff; }
+
+    /* Fine dot grid — Patch precision */
+    .cover-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, black 30%, transparent 100%);
+      opacity: 0.4;
+    }
+    /* Subtle noise texture overlay */
+    .cover-noise {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025; mix-blend-mode: overlay;
+    }
+    /* Giant ghost number — Snowhouse-style oversized bg type */
+    .cover-number {
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg,
-        rgba(59,130,246,0.08) 0%,
-        rgba(16,185,129,0.04) 50%,
-        rgba(59,130,246,0.06) 100%);
-      background-size: 300% 300%;
-      animation: coverGlow 10s ease infinite;
+      font-family: var(--font-heading);
+      font-size: clamp(200px, 35vw, 380px);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      line-height: 1;
+      color: rgba(255,255,255,0.06);
+      right: -4%;
+      bottom: -14%;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    /* Horizontal rule accent at top — Patch style */
+    .cover-rule {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.45);
       pointer-events: none;
     }
 
-    /* ── Progress bar animated fill ── */
-    .okr-kr-fill.animated {
-      animation: barFill 0.9s cubic-bezier(0.4,0,0.2,1) forwards;
+    /* ══ PRIORITY GRID (Next Quarter) ══ */
+    .priority-card {
+      padding: 22px 20px;
+    }
+    .priority-num {
+      font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.2em;
+      color: var(--text-muted); margin-bottom: 10px; font-weight: 600;
+    }
+    .priority-title {
+      font-weight: 800; font-size: 0.95rem; color: var(--text-primary);
+      letter-spacing: -0.01em; margin-bottom: 8px; line-height: 1.35;
+    }
+    .priority-target {
+      font-size: 0.72rem; color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+    .priorities-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border-strong);
+    }
+    .priorities-grid .priority-card {
+      border-right: 1px solid var(--border);
+    }
+    .priorities-grid .priority-card:last-child { border-right: none; }
+    /* Cover slides override priority card text */
+    .slide-cover .priority-num   { color: rgba(255,255,255,0.4); }
+    .slide-cover .priority-title { color: #ffffff; }
+    .slide-cover .priority-target{ color: rgba(255,255,255,0.55); }
+    .slide-cover .priorities-grid { border-color: rgba(255,255,255,0.25); }
+    .slide-cover .priorities-grid .priority-card { border-color: rgba(255,255,255,0.15); }
+    .slide-cover p { color: rgba(255,255,255,0.45); }
+
+    /* ══ ANIMATIONS ══ */
+    [data-animate] {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-animate="fade"]       { transform: none; }
+    [data-animate="scale"]      { transform: scale(0.95); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.34, 1.2, 0.64, 1); }
+    [data-animate="slide-left"] { transform: translateX(-20px); }
+    [data-animate].visible      { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { [data-animate] { transition: none; } }
+
+    @keyframes barFill  { from { width: 0 !important; } to { width: var(--fill-w); } }
+    @keyframes riseUp   { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fallDown { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+
+    ::view-transition-old(slide-content) { animation: 280ms ease-in  both fallDown; }
+    ::view-transition-new(slide-content) { animation: 280ms ease-out 50ms both riseUp; }
+    .slide { view-transition-name: slide-content; }
+
+    .okr-kr-fill.animated { animation: barFill 0.75s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+    /* ══ NAVIGATION ══ */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: var(--accent);            /* brand blue on white */
+      width: 0%; transition: width 0.3s ease; z-index: 100;
+    }
+    .nav-dots {
+      position: fixed; right: 22px; top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 100;
+    }
+    .nav-dots button {
+      width: 3px; height: 3px; border-radius: 50%;
+      border: none; background: rgba(13,26,58,0.20);
+      cursor: pointer; padding: 0;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-dots button.active {
+      background: var(--accent); transform: scaleY(3.5);
+      border-radius: 1.5px;
+    }
+    .slide-counter {
+      position: fixed; bottom: 22px; right: 24px;
+      font-size: 9px; color: rgba(13,26,58,0.30);
+      z-index: 100; font-family: var(--font-mono); letter-spacing: 0.1em;
+    }
+    #presenterBtn {
+      position: fixed; bottom: 22px; left: 24px;
+      background: transparent; border: 1px solid rgba(13,26,58,0.15);
+      color: rgba(13,26,58,0.35); font-size: 9px; font-family: var(--font-body);
+      padding: 5px 10px; border-radius: 0; cursor: pointer; z-index: 100;
+      letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s;
+    }
+    #presenterBtn:hover { border-color: rgba(13,26,58,0.4); color: rgba(13,26,58,0.7); }
+    .slide-label {
+      position: absolute; top: 26px; right: 30px;
+      font-family: var(--font-mono); font-size: 9px;
+      color: rgba(13,26,58,0.22); z-index: 1; letter-spacing: 0.12em;
+    }
+    /* Cover slides: nav elements stay white */
+    .slide-cover .slide-label { color: rgba(255,255,255,0.25) !important; }
+
+    /* ══ CHART HELPERS ══ */
+    .chart-container { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+    .sc-chart-full   { display:flex; flex-direction:column; gap:16px; width:80%; max-width:740px; }
+    .sc-chart-split  { display:grid; grid-template-columns:1fr 1.3fr; gap:52px; align-items:center; width:min(92%,1060px); }
+    .sc-chart-text-col  { display:flex; flex-direction:column; gap:14px; }
+    .sc-chart-chart-col { display:flex; align-items:center; justify-content:center; min-height:260px; }
+    :root {
+      --chart3: var(--chart3-raw, #10b981);
+      --chart4: var(--chart4-raw, #f59e0b);
+      --chart5: var(--chart5-raw, #0ea5e9);
+      --chart6: var(--chart6-raw, #ef4444);
+      --text-primary:   var(--text-primary-override,   #0d1a3a);
+      --text-secondary: var(--text-secondary-override, rgba(13,26,58,0.55));
     }
 
-    /* ── Badge status pulse ── */
-    .badge-green { animation: badgePulse 3s ease-in-out infinite; }
-    .badge-amber { animation: badgePulseAmber 3s ease-in-out infinite; }
-
-    /* ── Navigation ── */
-    .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; transition: width 0.3s ease; z-index: 100; }
-    .nav-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
-    .nav-dots button { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
-    .nav-dots button.active { background: var(--accent); border-color: var(--accent); transform: scale(1.5); }
-    .slide-cover ~ * .nav-dots button { border-color: rgba(255,255,255,0.3); }
-    .slide-counter { position: fixed; bottom: 16px; right: 18px; font-size: 11px; color: var(--text-secondary); z-index: 100; font-family: var(--font-body); }
-    #presenterBtn { position: fixed; bottom: 16px; left: 18px; background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100; }
-    #presenterBtn:hover { border-color: var(--accent); color: var(--text-primary); }
-    .slide-label { position: absolute; top: 20px; right: 24px; font-family: var(--font-body); font-size: 10px; color: var(--text-secondary); opacity: 0.4; z-index: 1; }
-
-    /* ─── Mobile responsive ─────────────────────────────── */
+    /* ══ RESPONSIVE ══ */
     @media (max-width: 900px) {
-      .slide-content.two-col {
-        grid-template-columns: 1fr;
-        gap: 28px;
-      }
-      .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .metrics-grid-3 {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .risk-table { font-size: 0.78rem; }
-      .risk-table th, .risk-table td { padding: 7px 8px; }
+      .slide-content.two-col { grid-template-columns: 1fr; gap: 32px; }
+      .metrics-grid           { grid-template-columns: repeat(2,1fr); }
+      .metrics-grid-3         { grid-template-columns: repeat(2,1fr); }
+      .priorities-grid        { grid-template-columns: 1fr; }
+      .priorities-grid .priority-card { border-right:none; border-bottom: 1px solid var(--border); }
+      .priorities-grid .priority-card:last-child { border-bottom: none; }
+      .sc-chart-split         { grid-template-columns: 1fr; gap: 24px; }
     }
     @media (max-width: 640px) {
       .slide-content { width: 92%; }
       .nav-dots { display: none; }
-      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .metrics-grid   { grid-template-columns: 1fr 1fr; }
       .metrics-grid-3 { grid-template-columns: 1fr; }
-      h1 { font-size: clamp(1.5rem, 7vw, 2rem); }
-      h2 { font-size: clamp(1.1rem, 5vw, 1.6rem); }
-      .metric-value { font-size: clamp(1.4rem, 6vw, 2rem); }
-      .okr-kr-bar { flex: 1; }
+      h1  { font-size: clamp(2rem, 10vw, 3rem); }
+      h2  { font-size: clamp(1.3rem, 7vw, 2rem); }
+      .metric-value { font-size: clamp(1.6rem, 8vw, 2.2rem); }
     }
 
-    /* ─── Print / PDF export ────────────────────────────── */
+    /* ══ PRINT ══ */
     @media print {
       html, body { height: auto; overflow: visible; }
       .slides-container { height: auto; overflow: visible; position: static; }
       .slide {
-        height: 100vh !important;
-        min-height: 100vh;
-        page-break-after: always;
-        page-break-inside: avoid;
-        position: relative !important;
-        transform: none !important;
-        overflow: visible;
+        height: 100vh !important; min-height: 100vh;
+        page-break-after: always; page-break-inside: avoid;
+        position: relative !important; transform: none !important; overflow: visible;
         background: var(--bg) !important;
       }
       .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
@@ -262,64 +576,75 @@
 
 <main class="slides-container" id="slidesContainer" role="main">
 
-  <!-- Slide 1: Cover -->
+  <!-- ═══ Slide 1 : Cover ═══ -->
   <section class="slide slide-cover" role="region" aria-label="Cover"
     data-notes="Quick context: reporting period, audience, what decisions need to be made today.">
-    <span class="slide-label" style="color:rgba(255,255,255,0.3);">01 / 08</span>
-    <div class="slide-content" style="max-width:800px;">
-      <p class="eyebrow" data-animate>[Team / Product Name] · Q[X] [Year]</p>
-      <h1 data-animate>季度业务回顾</h1>
-      <p data-animate style="font-size:clamp(1rem,1.8vw,1.2rem); color:rgba(255,255,255,0.75); margin-top:8px;">
-        [One sentence framing the quarter: the headline result or the central challenge]
+    <span class="slide-label">01 / 08</span>
+    <div class="cover-rule"></div>
+    <div class="cover-grid"></div>
+    <div class="cover-noise"></div>
+    <div class="cover-number">Q4</div>
+    <div class="slide-content" style="max-width:800px; gap:20px;">
+      <div class="eyebrow-line" data-animate>
+        <span>[Team / Product Name] &nbsp;·&nbsp; Q[X] [Year]</span>
+      </div>
+      <h1 data-animate>季度<br>业务回顾</h1>
+      <p data-animate style="font-size:clamp(0.9rem,1.5vw,1.05rem); color:rgba(255,255,255,0.5); max-width:500px; margin-top:2px; line-height:1.65;">
+        [One sentence framing the quarter — the headline result or the central challenge]
       </p>
-      <div data-animate style="margin-top:24px; display:flex; gap:16px; flex-wrap:wrap;">
-        <span class="badge badge-green">[Overall Status: On Track]</span>
-        <span style="font-size:0.85rem; color:rgba(255,255,255,0.5); align-self:center;">[Date] · [Audience]</span>
+      <div data-animate style="display:flex; align-items:center; gap:16px; margin-top:14px; flex-wrap:wrap;">
+        <span class="badge" style="background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.3);">● [Overall Status]</span>
+        <span style="font-size:0.68rem; color:rgba(255,255,255,0.3); font-family:var(--font-mono); letter-spacing:0.06em;">[Date] &nbsp;·&nbsp; [Audience]</span>
       </div>
     </div>
   </section>
 
-  <!-- Slide 2: Executive Summary -->
-  <section class="slide slide-white" role="region" aria-label="Summary"
+  <!-- ═══ Slide 2 : Executive Summary ═══ -->
+  <section class="slide slide-cover" role="region" aria-label="Summary"
     data-notes="The 60-second version. 3 bullets: what happened, what it means, what's next.">
     <span class="slide-label">02</span>
+    <div class="cover-rule"></div>
+    <div class="cover-grid"></div>
+    <div class="cover-noise"></div>
     <div class="slide-content">
-      <p class="eyebrow" data-animate>执行摘要</p>
-      <h2 data-animate>[Quarter in one sentence]</h2>
+      <div class="eyebrow-line" data-animate><span>执行摘要</span></div>
+      <h2 data-animate>[Quarter in one sentence — e.g. "增长加速，但单位经济模型出现分化"]</h2>
+      <div class="section-rule" data-animate="fade"></div>
       <div class="metrics-grid" data-animate>
         <div class="metric-card">
           <p class="label">Revenue / GMV</p>
-          <div class="metric-value">¥[X]M</div>
-          <span class="metric-delta up">↑ [X]% vs last quarter</span>
+          <div class="metric-value">¥<span data-count-up="128" data-suffix="M">0</span></div>
+          <span class="metric-delta up">↑ 23% QoQ</span>
+          <p class="metric-note">连续三季度加速增长</p>
         </div>
         <div class="metric-card">
           <p class="label">Active Users</p>
-          <div class="metric-value">[X]K</div>
-          <span class="metric-delta up">↑ [X]% MoM</span>
+          <div class="metric-value"><span data-count-up="86" data-suffix="K">0</span></div>
+          <span class="metric-delta up">↑ 18% MoM</span>
+          <p class="metric-note">新客留存率创历史新高</p>
         </div>
         <div class="metric-card">
           <p class="label">Net Retention</p>
-          <div class="metric-value">[X]%</div>
-          <span class="metric-delta flat">→ flat</span>
+          <div class="metric-value"><span data-count-up="107" data-suffix="%">0</span></div>
+          <span class="metric-delta up">↑ 4pp YoY</span>
+          <p class="metric-note">扩展收入首次超过流失</p>
         </div>
         <div class="metric-card">
           <p class="label">Headcount</p>
-          <div class="metric-value">[X]</div>
-          <span class="metric-delta up">+[X] this quarter</span>
+          <div class="metric-value"><span data-count-up="142">0</span></div>
+          <span class="metric-delta up">+12 本季度</span>
+          <p class="metric-note">工程 / 销售各+6 人</p>
         </div>
       </div>
-      <!-- Uncomment + add charts.js:
-      <div id="summaryChart" class="chart-container" style="height:180px;" data-animate></div>
-      -->
     </div>
   </section>
 
-  <!-- Slide 3: OKR Status -->
-  <section class="slide slide-surface" role="region" aria-label="OKRs"
+  <!-- ═══ Slide 3 : OKR Status ═══ -->
+  <section class="slide slide-deep" role="region" aria-label="OKRs"
     data-notes="OKR status. Be honest about misses. Red is not failure — lack of honest reporting is.">
     <span class="slide-label">03</span>
     <div class="slide-content">
-      <p class="eyebrow" data-animate>OKR 进展</p>
+      <div class="eyebrow-line" data-animate><span>OKR 进展</span></div>
       <h2 data-animate>Q[X] 目标完成情况</h2>
       <div class="okr-list" data-animate>
         <div class="okr-item">
@@ -328,8 +653,16 @@
             <span class="badge badge-green">On Track</span>
           </div>
           <div class="okr-krs">
-            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:78%"></div></div><span class="okr-kr-pct">78%</span></div>
-            <div class="okr-kr"><span class="okr-kr-label">KR2: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:91%"></div></div><span class="okr-kr-pct">91%</span></div>
+            <div class="okr-kr">
+              <span class="okr-kr-label">KR1: [metric target]</span>
+              <div class="okr-kr-bar"><div class="okr-kr-fill" style="width:78%"></div></div>
+              <span class="okr-kr-pct">78%</span>
+            </div>
+            <div class="okr-kr">
+              <span class="okr-kr-label">KR2: [metric target]</span>
+              <div class="okr-kr-bar"><div class="okr-kr-fill" style="width:91%"></div></div>
+              <span class="okr-kr-pct">91%</span>
+            </div>
           </div>
         </div>
         <div class="okr-item">
@@ -338,8 +671,16 @@
             <span class="badge badge-amber">At Risk</span>
           </div>
           <div class="okr-krs">
-            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:45%; background:var(--accent-amber)"></div></div><span class="okr-kr-pct">45%</span></div>
-            <div class="okr-kr"><span class="okr-kr-label">KR2: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:62%"></div></div><span class="okr-kr-pct">62%</span></div>
+            <div class="okr-kr">
+              <span class="okr-kr-label">KR1: [metric target]</span>
+              <div class="okr-kr-bar"><div class="okr-kr-fill" style="width:45%; background:var(--accent-amber)"></div></div>
+              <span class="okr-kr-pct" style="color:var(--accent-amber)">45%</span>
+            </div>
+            <div class="okr-kr">
+              <span class="okr-kr-label">KR2: [metric target]</span>
+              <div class="okr-kr-bar"><div class="okr-kr-fill" style="width:62%"></div></div>
+              <span class="okr-kr-pct">62%</span>
+            </div>
           </div>
         </div>
         <div class="okr-item">
@@ -348,117 +689,180 @@
             <span class="badge badge-red">Off Track</span>
           </div>
           <div class="okr-krs">
-            <div class="okr-kr"><span class="okr-kr-label">KR1: [metric target]</span><div class="okr-kr-bar"><div class="okr-kr-fill" style="width:28%; background:var(--accent-red)"></div></div><span class="okr-kr-pct">28%</span></div>
+            <div class="okr-kr">
+              <span class="okr-kr-label">KR1: [metric target]</span>
+              <div class="okr-kr-bar"><div class="okr-kr-fill" style="width:28%; background:var(--accent-red)"></div></div>
+              <span class="okr-kr-pct" style="color:var(--accent-red)">28%</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Slide 4: Key Metrics Deep Dive -->
-  <section class="slide slide-white" role="region" aria-label="Metrics"
-    data-notes="The 3 metrics that matter most for your business this quarter. Explain the why behind the numbers.">
+  <!-- ═══ Slide 4 : Key Metrics ═══ -->
+  <section class="slide slide-cover" role="region" aria-label="Metrics"
+    data-notes="The 3 metrics that matter most. Explain the why behind the numbers.">
     <span class="slide-label">04</span>
-    <div class="slide-content">
-      <p class="eyebrow" data-animate>核心指标</p>
+    <div class="cover-rule"></div>
+    <div class="cover-grid"></div>
+    <div class="cover-noise"></div>
+    <div class="slide-content wide">
+      <div class="eyebrow-line" data-animate><span>核心指标</span></div>
       <h2 data-animate>关键数据解读</h2>
-      <!-- Uncomment + add charts.js for a trend chart:
-      <div id="metricsChart" class="chart-container" style="height:240px;" data-animate></div>
-      -->
-      <div class="metrics-grid-3" data-animate>
+      <div class="metrics-grid-3" data-animate style="margin-top:4px;">
         <div class="metric-card">
-          <p class="label">指标 A</p>
-          <div class="metric-value">[value]</div>
-          <span class="metric-delta up">↑ [X]% vs target</span>
-          <p style="margin-top: 8px; font-size: 0.8rem;">[One sentence explaining why this moved]</p>
+          <p class="label">指标 A — 用户增长</p>
+          <div class="metric-value"><span data-count-up="2847" data-suffix="">0</span></div>
+          <span class="metric-delta up">↑ 34% vs target</span>
+          <p class="metric-note">新激活用户超出预期，渠道投放 ROI 提升至 3.2×</p>
         </div>
         <div class="metric-card">
-          <p class="label">指标 B</p>
-          <div class="metric-value">[value]</div>
-          <span class="metric-delta down">↓ [X]% vs target</span>
-          <p style="margin-top: 8px; font-size: 0.8rem;">[Root cause and what you're doing about it]</p>
+          <p class="label">指标 B — 转化率</p>
+          <div class="metric-value"><span data-count-up="68" data-suffix="%">0</span></div>
+          <span class="metric-delta down">↓ 5pp vs target</span>
+          <p class="metric-note">结账流程优化滞后，已立项 Q2 集中攻坚</p>
         </div>
         <div class="metric-card">
-          <p class="label">指标 C</p>
-          <div class="metric-value">[value]</div>
-          <span class="metric-delta flat">→ On target</span>
-          <p style="margin-top: 8px; font-size: 0.8rem;">[Any nuance worth calling out]</p>
+          <p class="label">指标 C — NPS 得分</p>
+          <div class="metric-value"><span data-count-up="61">0</span></div>
+          <span class="metric-delta up">↑ 19pt YoY</span>
+          <p class="metric-note">用户满意度出现明显拐点，口碑传播占比上升</p>
         </div>
+      </div>
+      <div class="callout" style="background:rgba(255,255,255,0.08); border-left-color:rgba(255,255,255,0.50);" data-animate>
+        <strong style="color:#ffffff;">核心洞察：</strong><span style="color:rgba(255,255,255,0.65);">NPS 从 42 升至 61，用户满意度出现拐点，口碑获客占比已达 28%，下季可加大自然增长押注</span>
       </div>
     </div>
   </section>
 
-  <!-- Slide 5: Wins & Misses -->
-  <section class="slide slide-surface" role="region" aria-label="Wins and Misses"
-    data-notes="Be balanced. Too many wins looks like spin; too many misses is demoralizing. 3-4 of each is the sweet spot.">
+  <!-- ═══ Slide 5 : Wins & Misses ═══ -->
+  <section class="slide slide-panel" role="region" aria-label="Wins and Misses"
+    data-notes="Be balanced. Too many wins looks like spin; too many misses is demoralizing. 3-4 of each.">
     <span class="slide-label">05</span>
     <div class="slide-content two-col">
       <div>
-        <p class="eyebrow" data-animate>本季亮点</p>
-        <h3 data-animate style="color: var(--accent-green); font-size: 1.1rem;">Wins</h3>
-        <ul class="item-list wins" style="margin-top: 12px;">
-          <li data-animate>[Win 1: specific outcome, not activity]</li>
-          <li data-animate>[Win 2: customer / revenue / product milestone]</li>
-          <li data-animate>[Win 3: team / process improvement]</li>
+        <div class="eyebrow-line" data-animate><span>本季亮点</span></div>
+        <h3 data-animate style="color:#059669; margin-top:8px; font-size:0.9rem; letter-spacing:0.16em; text-transform:uppercase; font-weight:700;">Wins</h3>
+        <ul class="patch-list wins" style="margin-top:18px;">
+          <li data-animate>
+            <span class="mark">✓</span>
+            <span>[Win 1 — specific outcome, not activity. Include a number if possible]</span>
+          </li>
+          <li data-animate>
+            <span class="mark">✓</span>
+            <span>[Win 2 — customer / revenue / product milestone]</span>
+          </li>
+          <li data-animate>
+            <span class="mark">✓</span>
+            <span>[Win 3 — team / process improvement that will compound]</span>
+          </li>
         </ul>
       </div>
       <div>
-        <p class="eyebrow" data-animate>待改进项</p>
-        <h3 data-animate style="color: var(--accent-amber); font-size: 1.1rem;">Misses</h3>
-        <ul class="item-list misses" style="margin-top: 12px;">
-          <li data-animate>[Miss 1: what happened and root cause]</li>
-          <li data-animate>[Miss 2: what you'll do differently]</li>
-          <li data-animate>[Miss 3: systemic issue or one-time event?]</li>
+        <div class="eyebrow-line" data-animate><span>待改进项</span></div>
+        <h3 data-animate style="color:#d97706; margin-top:8px; font-size:0.9rem; letter-spacing:0.16em; text-transform:uppercase; font-weight:700;">Misses</h3>
+        <ul class="patch-list misses" style="margin-top:18px;">
+          <li data-animate>
+            <span class="mark">△</span>
+            <span>[Miss 1 — what happened + root cause, not just the result]</span>
+          </li>
+          <li data-animate>
+            <span class="mark">△</span>
+            <span>[Miss 2 — what you'll do differently next time]</span>
+          </li>
+          <li data-animate>
+            <span class="mark">△</span>
+            <span>[Miss 3 — systemic issue or one-time event?]</span>
+          </li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- Slide 6: Key Initiatives Status -->
-  <section class="slide slide-white" role="region" aria-label="Initiatives"
-    data-notes="What are the 3-5 big bets? What's their status? What decisions need to be made?">
+  <!-- ═══ Slide 6 : Key Initiatives ═══ -->
+  <section class="slide" role="region" aria-label="Initiatives"
+    data-notes="3-5 big bets. Status + what decisions need to be made.">
     <span class="slide-label">06</span>
-    <div class="slide-content">
-      <p class="eyebrow" data-animate>重点项目进展</p>
+    <div class="slide-content wide">
+      <div class="eyebrow-line" data-animate><span>重点项目进展</span></div>
       <h2 data-animate>Q[X] 战略举措</h2>
-      <table class="risk-table" data-animate>
-        <thead><tr><th>Initiative</th><th>Owner</th><th>Status</th><th>Next milestone</th></tr></thead>
+      <table class="patch-table" data-animate>
+        <thead>
+          <tr>
+            <th style="width:35%">Initiative</th>
+            <th style="width:12%">Owner</th>
+            <th style="width:14%">Status</th>
+            <th>Next Milestone</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>[Initiative 1]</td><td>[Name]</td><td><span class="badge badge-green">On Track</span></td><td>[Next milestone + date]</td></tr>
-          <tr><td>[Initiative 2]</td><td>[Name]</td><td><span class="badge badge-amber">At Risk</span></td><td>[What needs to change]</td></tr>
-          <tr><td>[Initiative 3]</td><td>[Name]</td><td><span class="badge badge-blue">Exploring</span></td><td>[Decision date / go/no-go]</td></tr>
-          <tr><td>[Initiative 4]</td><td>[Name]</td><td><span class="badge badge-green">On Track</span></td><td>[Shipped to X% of users]</td></tr>
+          <tr>
+            <td>[Initiative 1 — one sentence description]</td>
+            <td style="color:var(--text-secondary)">[Name]</td>
+            <td><span class="badge badge-green">On Track</span></td>
+            <td>[Next milestone + date]</td>
+          </tr>
+          <tr>
+            <td>[Initiative 2 — why it's at risk]</td>
+            <td style="color:var(--text-secondary)">[Name]</td>
+            <td><span class="badge badge-amber">At Risk</span></td>
+            <td>[What needs to change by when]</td>
+          </tr>
+          <tr>
+            <td>[Initiative 3 — exploring stage]</td>
+            <td style="color:var(--text-secondary)">[Name]</td>
+            <td><span class="badge badge-blue">Exploring</span></td>
+            <td>[Decision date / go—no-go]</td>
+          </tr>
+          <tr>
+            <td>[Initiative 4 — shipped or near done]</td>
+            <td style="color:var(--text-secondary)">[Name]</td>
+            <td><span class="badge badge-white">Completed</span></td>
+            <td>[Impact achieved]</td>
+          </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- Slide 7: Risks & Blockers -->
-  <section class="slide slide-surface" role="region" aria-label="Risks"
-    data-notes="Escalations and blockers. What do you need from leadership? Be specific about what decision you're asking for.">
+  <!-- ═══ Slide 7 : Risks & Blockers ═══ -->
+  <section class="slide slide-deep" role="region" aria-label="Risks"
+    data-notes="Escalations and blockers. What do you need from leadership? Be specific.">
     <span class="slide-label">07</span>
-    <div class="slide-content">
-      <p class="eyebrow" data-animate>风险与依赖</p>
+    <div class="slide-content wide">
+      <div class="eyebrow-line" data-animate><span>风险与依赖</span></div>
       <h2 data-animate>需要关注的事项</h2>
-      <table class="risk-table" data-animate>
-        <thead><tr><th>Risk / Blocker</th><th>Impact</th><th>Mitigation</th><th>Ask</th></tr></thead>
+      <table class="patch-table" data-animate>
+        <thead>
+          <tr>
+            <th style="width:30%">Risk / Blocker</th>
+            <th style="width:11%">Impact</th>
+            <th style="width:13%">Likelihood</th>
+            <th>Mitigation</th>
+            <th>Ask</th>
+          </tr>
+        </thead>
         <tbody>
           <tr>
-            <td>[Risk description]</td>
+            <td>[Risk description — be specific, not vague]</td>
             <td><span class="badge badge-red">High</span></td>
+            <td><span class="badge badge-amber">Medium</span></td>
             <td>[What you're already doing]</td>
             <td>[Specific ask from leadership]</td>
           </tr>
           <tr>
-            <td>[Dependency on another team]</td>
+            <td>[Dependency on another team or vendor]</td>
             <td><span class="badge badge-amber">Medium</span></td>
+            <td><span class="badge badge-red">High</span></td>
             <td>[Workaround in progress]</td>
             <td>[Escalation needed by date]</td>
           </tr>
           <tr>
-            <td>[Technical debt / scalability]</td>
+            <td>[Technical / operational risk]</td>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td>[Monitoring / alerting]</td>
+            <td><span class="badge badge-blue">Low</span></td>
+            <td>[Monitoring / alerting in place]</td>
             <td>[Resource allocation decision]</td>
           </tr>
         </tbody>
@@ -466,31 +870,35 @@
     </div>
   </section>
 
-  <!-- Slide 8: Next Quarter Plan -->
+  <!-- ═══ Slide 8 : Next Quarter ═══ -->
   <section class="slide slide-cover" role="region" aria-label="Next Quarter"
-    data-notes="Set expectations for Q[X+1]. Top 3 priorities. What success looks like. Any major assumptions.">
-    <span class="slide-label" style="color:rgba(255,255,255,0.3);">08</span>
-    <div class="slide-content" style="max-width:900px;">
-      <p class="eyebrow" data-animate>Q[X+1] 展望</p>
-      <h2 data-animate>[Next quarter headline]</h2>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:8px;">
-        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
-          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 1</p>
-          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P1 initiative]</p>
-          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+    data-notes="Set expectations for Q[X+1]. Top 3 priorities. What success looks like.">
+    <span class="slide-label" style="color:rgba(255,255,255,0.2)">08</span>
+    <div class="cover-rule"></div>
+    <div class="cover-grid"></div>
+    <div class="cover-noise"></div>
+    <div class="cover-number" style="font-size:clamp(160px,28vw,320px); right:-3%; bottom:-12%;">Q5</div>
+    <div class="slide-content" style="max-width:880px; gap:30px;">
+      <div class="eyebrow-line" data-animate><span>Q[X+1] 展望</span></div>
+      <h2 data-animate style="color:#ffffff;">[Next quarter headline — e.g. "从增长规模化到增长效率"]</h2>
+      <div class="priorities-grid" data-animate>
+        <div class="priority-card">
+          <p class="priority-num">Priority 01</p>
+          <p class="priority-title">[P1 initiative — the most important thing]</p>
+          <p class="priority-target">[Target metric / success signal]</p>
         </div>
-        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
-          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 2</p>
-          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P2 initiative]</p>
-          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+        <div class="priority-card">
+          <p class="priority-num">Priority 02</p>
+          <p class="priority-title">[P2 initiative]</p>
+          <p class="priority-target">[Target metric / success signal]</p>
         </div>
-        <div data-animate style="background:rgba(255,255,255,0.08); border-radius:10px; padding:18px 20px; border:1px solid rgba(255,255,255,0.12);">
-          <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.5); margin-bottom:8px;">Priority 3</p>
-          <p style="color:#fff; font-size:0.95rem; font-weight:600;">[P3 initiative]</p>
-          <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:6px;">[Target metric]</p>
+        <div class="priority-card">
+          <p class="priority-num">Priority 03</p>
+          <p class="priority-title">[P3 initiative]</p>
+          <p class="priority-target">[Target metric / success signal]</p>
         </div>
       </div>
-      <p data-animate style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:12px;">
+      <p data-animate style="color:rgba(255,255,255,0.28); font-size:0.78rem; border-top:1px solid rgba(255,255,255,0.15); padding-top:16px;">
         Key assumption: [the most important thing that needs to be true for this plan to work]
       </p>
     </div>
@@ -505,24 +913,44 @@
   slides.forEach((s,i)=>{s.style.transform='translateY('+(i*100)+'vh)';});
   const dotsEl=document.getElementById('navDots'); slides.forEach((_,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',`Slide ${i+1}`);b.onclick=()=>goTo(i);dotsEl.appendChild(b);});
   function updateChrome(i){current=i;document.getElementById('currentSlide').textContent=i+1;const pct=total>1?(i/(total-1))*100:100;document.getElementById('progressBar').style.width=pct+'%';dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false'));if(bc)bc.postMessage({type:'slide-change',payload:{index:i,total,notes:slides[i]?.dataset?.notes||''}});}
-  // ── Animate OKR progress bars on slide enter ──────────
-  function animateOKRBars(slideEl) {
-    const fills = slideEl.querySelectorAll('.okr-kr-fill');
-    fills.forEach((fill, i) => {
-      const targetW = fill.style.width || '0%';
-      fill.style.setProperty('--fill-w', targetW);
-      fill.style.width = '0%';
-      fill.classList.remove('animated');
-      setTimeout(() => {
-        fill.classList.add('animated');
-        // After animation ends, lock the final width
-        setTimeout(() => { fill.style.width = targetW; fill.classList.remove('animated'); }, 950);
-      }, 350 + i * 150);
+
+  function animateOKRBars(slideEl){
+    const fills=slideEl.querySelectorAll('.okr-kr-fill');
+    fills.forEach((fill,i)=>{
+      const targetW=fill.style.width||'0%';
+      fill.style.setProperty('--fill-w',targetW);
+      fill.style.width='0%';fill.classList.remove('animated');
+      setTimeout(()=>{fill.classList.add('animated');setTimeout(()=>{fill.style.width=targetW;fill.classList.remove('animated');},850);},300+i*120);
     });
   }
 
-  function goTo(i){i=Math.max(0,Math.min(i,total-1));if(i===current&&!navigating)return;navigating=true;slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';});slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{el.classList.remove('visible');setTimeout(()=>el.classList.add('visible'),j*100);});animateOKRBars(slides[i]);updateChrome(i);setTimeout(()=>{navigating=false;},650);}
-  updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*100));animateOKRBars(slides[0]);},200);
+  /* ── Count-up animation: data-count-up="target" data-suffix="%" ── */
+  function countUpNumbers(slideEl){
+    slideEl.querySelectorAll('[data-count-up]').forEach((el,idx)=>{
+      const target=parseFloat(el.getAttribute('data-count-up'))||0;
+      const suffix=el.getAttribute('data-suffix')||'';
+      const duration=1200; const startDelay=400+idx*120;
+      el.textContent='0'+suffix;
+      setTimeout(()=>{
+        const startTime=performance.now();
+        const isInt=Number.isInteger(target);
+        function tick(now){
+          const elapsed=now-startTime;
+          const progress=Math.min(elapsed/duration,1);
+          /* easeOutCubic */
+          const ease=1-Math.pow(1-progress,3);
+          const val=target*ease;
+          el.textContent=(isInt?Math.round(val):val.toFixed(1))+suffix;
+          if(progress<1)requestAnimationFrame(tick);
+          else el.textContent=(isInt?target:target.toFixed(1))+suffix;
+        }
+        requestAnimationFrame(tick);
+      },startDelay);
+    });
+  }
+
+  function goTo(i){i=Math.max(0,Math.min(i,total-1));if(i===current&&!navigating)return;navigating=true;slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';});slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{el.classList.remove('visible');setTimeout(()=>el.classList.add('visible'),j*80);});animateOKRBars(slides[i]);countUpNumbers(slides[i]);updateChrome(i);setTimeout(()=>{navigating=false;},600);}
+  updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),80+i*80));animateOKRBars(slides[0]);countUpNumbers(slides[0]);},150);
   document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}else if(e.key==='Home'){e.preventDefault();goTo(0);}else if(e.key==='End'){e.preventDefault();goTo(total-1);}else if(e.key.toLowerCase()==='p')openPresenter();else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}});
   let touchY=0; container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true}); container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
   container.addEventListener('wheel',e=>{e.preventDefault();if(navigating)return;goTo(current+(e.deltaY>0?1:-1));},{passive:false});
@@ -542,28 +970,16 @@
     if(e.data?.type==='blackout')toggleBlackout(e.data.payload.active);
   });
 
-  // ── Laser pointer relay ──────────────────────────────────────
   let laserDot=null;
-  function relayPointer({x,y}){
-    if(!laserDot){laserDot=document.createElement('div');laserDot.style.cssText='position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,0.85);box-shadow:0 0 12px 4px rgba(220,40,40,0.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';document.body.appendChild(laserDot);}
-    laserDot.style.left=(x*window.innerWidth)+'px';laserDot.style.top=(y*window.innerHeight)+'px';laserDot.style.display='block';
-    clearTimeout(laserDot._hide);laserDot._hide=setTimeout(()=>{if(laserDot)laserDot.style.display='none';},3000);
-  }
+  function relayPointer({x,y}){if(!laserDot){laserDot=document.createElement('div');laserDot.style.cssText='position:fixed;width:14px;height:14px;border-radius:50%;background:rgba(255,230,30,0.95);box-shadow:0 0 12px 4px rgba(255,230,30,0.5);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';document.body.appendChild(laserDot);}laserDot.style.left=(x*window.innerWidth)+'px';laserDot.style.top=(y*window.innerHeight)+'px';laserDot.style.display='block';clearTimeout(laserDot._hide);laserDot._hide=setTimeout(()=>{if(laserDot)laserDot.style.display='none';},3000);}
 
-  // ── Blackout relay ──────────────────────────────────────────
   let blackoutEl=null;
-  function toggleBlackout(active){
-    if(active){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.title='点击退出黑屏';blackoutEl.addEventListener('click',()=>toggleBlackout(false));document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}
-    else if(blackoutEl){blackoutEl.style.display='none';}
-  }
+  function toggleBlackout(active){if(active){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.title='点击退出黑屏';blackoutEl.addEventListener('click',()=>toggleBlackout(false));document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}else if(blackoutEl){blackoutEl.style.display='none';}}
 
-  // postMessage bridge — Presenter view iframe drives navigation on this page
-  window.addEventListener('message', e => {
-    if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);
-  });
+  window.addEventListener('message', e => {if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);});
 </script>
 
-<!-- ══ Inline Presenter View Template v2 (bidirectional nav + laser + blackout) ══ -->
+<!-- ══ Inline Presenter View Template ══ -->
 <script id="presenter-view-html" type="text/plain">
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -573,35 +989,37 @@
   <title>演讲者视图</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d0d18; color: #e0e0f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
-    #topbar { background: #111120; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #7c3aed; cursor: pointer; user-select: none; transition: color 0.2s; }
-    #timer:hover { color: #ec4899; } #timer.warn { color: #f59e0b; } #timer.over { color: #ef4444; }
-    #timer-label { font-size: 10px; color: #555; margin-top: 2px; }
-    #slide-counter { margin-left: auto; font-size: 13px; color: #888; }
-    #slide-counter strong { color: #fff; font-size: 15px; }
-    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
-    .nav-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.12); color: #ccc; font-size: 16px; width: 36px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
-    .nav-btn:hover { background: #282840; border-color: rgba(124,58,237,0.5); color: #fff; }
-    .tool-btn { background: #1c1c2e; border: 1px solid rgba(255,255,255,0.1); color: #999; font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .tool-btn:hover { border-color: rgba(124,58,237,0.5); color: #fff; }
-    .tool-btn.active { background: rgba(124,58,237,0.25); border-color: #7c3aed; color: #c4b5fd; }
-    .tool-btn.blackout-active { background: rgba(0,0,0,0.6); border-color: #555; color: #888; }
+    body { background: #110080; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+    #topbar { background: #0d0060; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ffffff; cursor: pointer; user-select: none; transition: color 0.2s; }
+    #timer:hover { color: rgba(255,255,255,0.7); }
+    #timer.warn { color: #ffb930; }
+    #timer.over { color: #ff4d6a; }
+    #timer-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+    #slide-counter { margin-left: auto; font-size: 13px; color: rgba(255,255,255,0.5); }
+    #slide-counter strong { color: #ffffff; font-size: 15px; }
+    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
+    .nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-size: 16px; width: 36px; height: 32px; border-radius: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .nav-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.5); color: #ffffff; }
+    .tool-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-size: 11px; padding: 4px 10px; border-radius: 0; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .tool-btn:hover { border-color: rgba(255,255,255,0.4); color: #ffffff; }
+    .tool-btn.active { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.6); color: #ffffff; }
+    .tool-btn.blackout-active { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
     #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
-    #current-pane { grid-row: 1 / 3; background: #1a1a2e; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(124,58,237,0.4); box-shadow: 0 0 20px rgba(124,58,237,0.15); }
-    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #7c3aed; font-weight: 600; background: rgba(124,58,237,0.08); }
+    #current-pane { grid-row: 1 / 3; background: #0d0060; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(255,255,255,0.5); }
+    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.6); font-weight: 600; background: rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.12); }
     #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
     #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
-    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(220,40,40,0.9); box-shadow: 0 0 10px 3px rgba(220,40,40,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
-    #next-pane { background: #111120; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); }
-    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #777; font-weight: 500; }
+    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(255,230,30,0.95); box-shadow: 0 0 12px 4px rgba(255,230,30,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
+    #next-pane { background: #0d0060; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.15); }
+    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.3); font-weight: 500; }
     #next-preview { flex: 1; position: relative; overflow: hidden; }
-    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.65; }
-    #notes-pane { background: #111120; border-radius: 10px; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); }
-    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #555; margin-bottom: 8px; font-weight: 500; }
-    #notes-text { font-size: 13px; line-height: 1.7; color: #b8b8d8; }
-    #notes-text.empty { color: #3a3a5a; font-style: italic; }
-    #progress { position: fixed; bottom: 0; left: 0; height: 3px; background: #7c3aed; transition: width 0.3s ease; }
+    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.55; }
+    #notes-pane { background: #0d0060; border-radius: 0; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.12); }
+    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.3); margin-bottom: 8px; font-weight: 500; }
+    #notes-text { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.65); }
+    #notes-text.empty { color: rgba(255,255,255,0.2); font-style: italic; }
+    #progress { position: fixed; bottom: 0; left: 0; height: 2px; background: rgba(255,255,255,0.85); transition: width 0.3s ease; }
   </style>
 </head>
 <body>

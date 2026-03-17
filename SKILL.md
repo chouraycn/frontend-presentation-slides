@@ -692,7 +692,7 @@ The full implementation is in `assets/demos/presenter-mode-demo.html`. The key p
 
 **1. Add the BroadcastChannel broadcaster to the main SlidePresentation class:**
 ```js
-const presenterChannel = new BroadcastChannel('slide-sync');
+const presenterChannel = new BroadcastChannel('slides-presenter-sync');
 
 // In goToSlide():
 presenterChannel.postMessage({ type: 'slide-change', index: newIndex, total: slides.length });

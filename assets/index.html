@@ -314,14 +314,19 @@
       background: linear-gradient(135deg, #7c3aed, #ec4899);
     }
 
-    /* Clean Minimal — warm white, blue */
-    .thumb-clean-minimal {
-      background: linear-gradient(135deg, #fafaf8 0%, #f0ede6 100%);
+    /* Royal Blue × White — #1458ea cover + white content */
+    .thumb-cobalt-tech {
+      background: linear-gradient(145deg, #1458ea 0%, #0d40c4 100%);
     }
-    .thumb-clean-minimal .thumb-bar { background: #2563eb; }
-    .thumb-clean-minimal .thumb-bar.mid { background: rgba(37,99,235,0.3); }
-    .thumb-clean-minimal .thumb-dot { background: #1c1917; }
-    .thumb-clean-minimal .thumb-accent-block { background: #2563eb; }
+    .thumb-cobalt-tech .thumb-bar { background: #ffffff; }
+    .thumb-cobalt-tech .thumb-bar.mid { background: rgba(255,255,255,0.55); }
+    .thumb-cobalt-tech .thumb-bar.short { background: #0ea5e9; }
+    .thumb-cobalt-tech .thumb-dot { background: rgba(255,255,255,0.7); }
+    .thumb-cobalt-tech .thumb-accent-block {
+      background: linear-gradient(135deg, rgba(255,255,255,0.20), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 0;
+    }
 
     /* Claude Warmth — cream, terracotta */
     .thumb-claude-warmth {
@@ -383,7 +388,7 @@
     /* ── 10. Tag color variants ── */
     .tag-dark    { color: #c9a84c; border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.08); }
     .tag-vibrant { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
-    .tag-clean   { color: #60a5fa; border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+    .tag-cobalt  { color: #38efff; border-color: rgba(56,239,255,0.3); background: rgba(56,239,255,0.08); }
     .tag-claude  { color: #DA7756; border-color: rgba(218,119,86,0.3); background: rgba(218,119,86,0.08); }
     .tag-warm    { color: #fbbf24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); }
     .tag-forai   { color: #e85d26; border-color: rgba(232,93,38,0.3); background: rgba(232,93,38,0.08); }
@@ -634,12 +639,13 @@
       </div>
     </a>
 
-    <!-- 3. Clean Minimal -->
+    <!-- 3. Royal Blue × White -->
     <a class="card" href="style-previews/style-preview-quarterly-report.html" target="_blank">
       <div class="card-thumbnail">
-        <div class="thumb thumb-clean-minimal">
+        <div class="thumb thumb-cobalt-tech">
           <div class="thumb-bar wide"></div>
           <div class="thumb-bar mid"></div>
+          <div class="thumb-bar short"></div>
           <div class="thumb-accent-block"></div>
           <div class="thumb-dots">
             <div class="thumb-dot"></div>
@@ -650,14 +656,14 @@
       </div>
       <div class="card-body">
         <div class="card-header-row">
-          <div class="card-name">Clean Minimal</div>
-          <span class="card-tag tag-clean">Focused</span>
+          <div class="card-name">Royal Blue × White</div>
+          <span class="card-tag tag-cobalt">Tech</span>
         </div>
-        <div class="card-desc">Warm off-white with crisp blue accents. Data-forward layout, maximum readability.</div>
+        <div class="card-desc">#1458ea royal-blue cover with animated glow · white content slides with dark type · Patch hairlines.</div>
         <div class="card-meta">
-          <span class="meta-pill">Business Review</span>
-          <span class="meta-pill">OKR Report</span>
-          <span class="meta-pill">Internal</span>
+          <span class="meta-pill">QBR Report</span>
+          <span class="meta-pill">OKR Review</span>
+          <span class="meta-pill">Data-Forward</span>
         </div>
         <div class="card-cta">
           <span class="btn btn-primary">Preview ↗</span>

@@ -1,1 +1,235 @@
-{"title": "Clean Minimal — Q[X] 2025 业务回顾", "template": "quarterly-report", "lang": "zh-CN", "slides": [{"type": "title", "eyebrow": "Q[X] · 2025", "title": "季度业务回顾", "subtitle": "[团队名称 / 产品线]", "date": "[月份] [年份]", "notes": "封面简洁即可。开场用一句话定调本季度整体表现，然后进入全局摘要。"}, {"type": "summary", "title": "[Quarter in one sentence — e.g. '营收破历史新高，但增长引擎出现分化']", "stats": [{"value": "[X]%", "label": "收入同比增长", "trend": "up"}, {"value": "$[X]M", "label": "ARR / MRR", "trend": "up"}, {"value": "[X]%", "label": "目标完成率", "trend": "neutral"}], "notes": "三个数字定义本季度。选最能说明整体健康度的指标，而不是最好看的数字。如果整体下滑，要坦诚说明原因。"}, {"type": "okr", "title": "Q[X] 目标完成情况", "objectives": [{"label": "O1: [Objective statement]", "score": "[0.0–1.0]", "key_results": [{"kr": "[KR1 description]", "target": "[target]", "actual": "[actual]", "status": "hit"}, {"kr": "[KR2 description]", "target": "[target]", "actual": "[actual]", "status": "miss"}, {"kr": "[KR3 description]", "target": "[target]", "actual": "[actual]", "status": "partial"}]}, {"label": "O2: [Objective statement]", "score": "[0.0–1.0]", "key_results": [{"kr": "[KR1 description]", "target": "[target]", "actual": "[actual]", "status": "hit"}, {"kr": "[KR2 description]", "target": "[target]", "actual": "[actual]", "status": "hit"}]}], "notes": "OKR 评分要实事求是。0.7 是 Google 定义的「良好」。不要为了好看把所有 KR 打满。对未达成的 KR 要有一句根因说明。"}, {"type": "metrics", "title": "关键数据解读", "charts": [{"type": "line", "title": "收入趋势 (MRR / ARR)", "labels": ["M1", "M2", "M3"], "values": ["[v1]", "[v2]", "[v3]"]}, {"type": "bar", "title": "用户增长", "labels": ["M1", "M2", "M3"], "values": ["[v1]", "[v2]", "[v3]"]}], "callout": "[最重要的一个数据洞察，一句话：e.g. 'NPS 从 42 升至 61，用户满意度出现拐点']", "notes": "图表只展示最重要的 2–3 个趋势。每张图配一个洞察句，不要让观众自己解读。如果某个数字很反直觉，主动解释。"}, {"type": "wins_misses", "title": "本季度的亮点与教训", "wins": ["[Win 1 — 具体成果 + 量化影响]", "[Win 2 — 超出预期的事]", "[Win 3 — 团队能力的体现]"], "misses": ["[Miss 1 — 未达成什么，根本原因是什么]", "[Miss 2 — 我们低估了什么]", "[Miss 3 — 如果重来会怎么做]"], "notes": "失误部分先于亮点，建立可信度。每个 Miss 必须有根因，不能只是结果陈述。最好的季度回顾是让下个季度的团队能从这一页里学到东西。"}, {"type": "initiatives", "title": "Q[X] 战略举措", "items": [{"label": "[举措名称 1]", "status": "on-track", "owner": "[负责人]", "desc": "[一句话说明做什么、为什么重要、进展如何]"}, {"label": "[举措名称 2]", "status": "at-risk", "owner": "[负责人]", "desc": "[说明风险所在，已采取或计划采取的应对措施]"}, {"label": "[举措名称 3]", "status": "completed", "owner": "[负责人]", "desc": "[完成情况和影响]"}, {"label": "[举措名称 4]", "status": "on-track", "owner": "[负责人]", "desc": "[进展描述]"}], "notes": "状态要用颜色区分（绿/黄/红/完成）。At-risk 的举措要有具体的升级计划，不能只亮黄灯。"}, {"type": "risks", "title": "需要关注的事项", "items": [{"risk": "[风险描述 1]", "impact": "High", "likelihood": "Medium", "mitigation": "[缓解措施或应急预案]"}, {"risk": "[风险描述 2]", "impact": "Medium", "likelihood": "High", "mitigation": "[缓解措施]"}, {"risk": "[决策需求 — 需要领导层拍板的事项]", "impact": "High", "likelihood": "High", "mitigation": "[需要的决策内容和时间节点]"}], "notes": "风险列表应该让听众感到你对问题有清晰认知，而不是制造焦虑。每个风险必须有对应的 mitigation。如果有需要当场决策的事项，在这里明确提出。"}, {"type": "next_quarter", "title": "[Next quarter headline — e.g. '从增长规模化到增长效率']", "priorities": ["[Q[X+1] 优先级 1 — 最重要的一件事]", "[Q[X+1] 优先级 2]", "[Q[X+1] 优先级 3]"], "ask": "[需要的资源或决策 — 如果有的话]", "notes": "下季度的幻灯片要呼应本季度的教训。如果本季度某个 Miss 会影响下季度，要明确说明对策。结束时用一句话激励团队，但要真实，不要空洞的加油口号。"}]}
+{
+  "title": "Deep Ocean Blue — Q4 2025 季度业务回顾",
+  "template": "quarterly-report",
+  "lang": "zh-CN",
+  "slides": [
+    {
+      "type": "title",
+      "eyebrow": "Q4 · 2025",
+      "title": "季度业务回顾",
+      "subtitle": "[团队名称 / 产品线]",
+      "badge": "On Track",
+      "date": "2025 年 12 月",
+      "audience": "Leadership Team",
+      "tagline": "[One sentence framing the quarter — the headline result or the central challenge]",
+      "notes": "封面简洁即可。开场用一句话定调本季度整体表现，然后进入全局摘要。"
+    },
+    {
+      "type": "summary",
+      "eyebrow": "执行摘要",
+      "title": "营收破历史新高，但增长引擎出现分化",
+      "stats": [
+        {
+          "value": "¥42M",
+          "label": "季度收入",
+          "trend": "up",
+          "delta": "↑ 28% QoQ",
+          "accent": "green",
+          "note": "企业客户贡献占比首次超过 60%"
+        },
+        {
+          "value": "186K",
+          "label": "月活用户",
+          "trend": "up",
+          "delta": "↑ 14% MoM",
+          "accent": "green",
+          "note": "Q4 新增用户主要来自口碑裂变"
+        },
+        {
+          "value": "112%",
+          "label": "净收入留存",
+          "trend": "neutral",
+          "delta": "— Flat",
+          "accent": "neutral",
+          "note": "扩展收入抵消了 8% 流失率"
+        },
+        {
+          "value": "47",
+          "label": "团队人数",
+          "trend": "up",
+          "delta": "+5 this quarter",
+          "accent": "blue",
+          "note": "新增工程师 3 名、销售 2 名"
+        }
+      ],
+      "notes": "三到四个数字定义本季度。选最能说明整体健康度的指标，而不是最好看的数字。如果整体下滑，要坦诚说明原因。"
+    },
+    {
+      "type": "okr",
+      "eyebrow": "OKR 进展",
+      "title": "Q4 目标完成情况",
+      "objectives": [
+        {
+          "label": "O1: 建立可规模化的企业销售引擎",
+          "status": "on-track",
+          "badge": "On Track",
+          "key_results": [
+            { "kr": "KR1: 企业客户新签 ≥ 20 家", "target": "20", "actual": "18", "pct": 90, "status": "hit" },
+            { "kr": "KR2: 平均合同金额 ≥ ¥180K", "target": "¥180K", "actual": "¥196K", "pct": 100, "status": "hit" },
+            { "kr": "KR3: 销售周期压缩至 30 天内", "target": "30d", "actual": "38d", "pct": 62, "status": "partial" }
+          ]
+        },
+        {
+          "label": "O2: 将核心产品 NPS 提升至 60+",
+          "status": "at-risk",
+          "badge": "At Risk",
+          "key_results": [
+            { "kr": "KR1: NPS ≥ 60", "target": "60", "actual": "51", "pct": 45, "status": "miss" },
+            { "kr": "KR2: 功能满意度 ≥ 4.2/5", "target": "4.2", "actual": "4.0", "pct": 62, "status": "partial" }
+          ]
+        },
+        {
+          "label": "O3: 搭建数据驱动的运营基础设施",
+          "status": "off-track",
+          "badge": "Off Track",
+          "key_results": [
+            { "kr": "KR1: 核心指标仪表板上线", "target": "100%", "actual": "30%", "pct": 28, "status": "miss" }
+          ]
+        }
+      ],
+      "notes": "OKR 评分要实事求是。0.7 是 Google 定义的良好。不要为了好看把所有 KR 打满。对未达成的 KR 要有一句根因说明。"
+    },
+    {
+      "type": "metrics",
+      "eyebrow": "核心指标",
+      "title": "关键数据解读",
+      "metrics": [
+        {
+          "label": "月度经常性收入 MRR",
+          "value": "¥14M",
+          "delta": "↑ 22% vs target",
+          "trend": "up",
+          "accent": "green",
+          "note": "企业版升级推动 MRR 加速，预计 Q1 将突破 ¥18M"
+        },
+        {
+          "label": "用户激活率",
+          "value": "61%",
+          "delta": "↓ 8% vs target",
+          "trend": "down",
+          "accent": "red",
+          "note": "新用户引导流程摩擦过高，Onboarding v2 计划 1 月上线"
+        },
+        {
+          "label": "毛利率",
+          "value": "74%",
+          "delta": "— On target",
+          "trend": "neutral",
+          "accent": "neutral",
+          "note": "基础设施成本如期下降，符合全年 73-75% 区间目标"
+        }
+      ],
+      "callout": "核心洞察：企业客户 ARR 贡献从 38% 升至 61%，Mid-Market 策略正在起效，但 SMB 侧出现流失加速信号需要警惕。",
+      "chart": {
+        "type": "line",
+        "title": "MRR 趋势",
+        "labels": ["7月", "8月", "9月", "10月", "11月", "12月"],
+        "datasets": [
+          { "label": "实际 MRR", "values": [8.2, 9.1, 10.4, 11.8, 12.9, 14.0] },
+          { "label": "目标 MRR", "values": [8.0, 9.0, 10.0, 11.0, 12.0, 13.0] }
+        ]
+      },
+      "notes": "图表只展示最重要的趋势。每张图配一个洞察句，不要让观众自己解读。"
+    },
+    {
+      "type": "wins_misses",
+      "wins": [
+        "签下本季度最大单客户（¥2.4M ARR），验证了企业市场策略可行",
+        "产品国际化版本如期上线，首月吸引 3 家东南亚客户试用",
+        "研发交付提速 40%，P0 Bug 响应时间从 48h 压缩至 4h"
+      ],
+      "misses": [
+        "NPS 目标未达成（51 vs 60+），根因是 Q3 新功能引入了学习成本但 UX 未同步优化",
+        "数据基础设施延期：低估了数据清洗的复杂度，三个数据源存在格式不兼容问题",
+        "SMB 流失加速至 12%（目标 <8%），定价调整引发了部分低价值客户的集中流失"
+      ],
+      "notes": "失误部分先于亮点，建立可信度。每个 Miss 必须有根因，不能只是结果陈述。"
+    },
+    {
+      "type": "initiatives",
+      "eyebrow": "重点项目进展",
+      "title": "Q4 战略举措",
+      "items": [
+        {
+          "label": "Enterprise 2.0 权限与合规模块",
+          "status": "on-track",
+          "owner": "李明",
+          "desc": "已完成 SOC2 审计预备清单 80%，计划 1 月 15 日正式提交认证申请"
+        },
+        {
+          "label": "AI 摘要功能 Beta",
+          "status": "at-risk",
+          "owner": "张磊",
+          "desc": "延迟 2 周，原因是 LLM API 成本超预算 3x，正在评估替代方案"
+        },
+        {
+          "label": "移动端 App 2.0",
+          "status": "exploring",
+          "owner": "王芳",
+          "desc": "用户调研显示移动使用场景以查看为主，决策点：是否值得投入 Native 重写"
+        },
+        {
+          "label": "销售 CRM 全面迁移",
+          "status": "completed",
+          "owner": "陈浩",
+          "desc": "历时 6 周完成迁移，销售团队报告工作效率提升约 30%"
+        }
+      ],
+      "notes": "状态要用颜色区分。At-risk 的举措要有具体的升级计划，不能只亮黄灯。"
+    },
+    {
+      "type": "risks",
+      "eyebrow": "风险与依赖",
+      "title": "需要关注的事项",
+      "items": [
+        {
+          "risk": "关键工程师离职风险：核心架构师收到竞争 Offer，预估影响 3 个 Q1 项目",
+          "impact": "High",
+          "likelihood": "Medium",
+          "mitigation": "已启动薪酬对标，准备 Retention Package",
+          "ask": "HR 授权超出 Band 20% 的特殊保留方案"
+        },
+        {
+          "risk": "主要数据供应商 API 变更计划，将影响现有 3 个核心功能",
+          "impact": "Medium",
+          "likelihood": "High",
+          "mitigation": "已开始评估替代数据源，预计 2 周内完成 POC",
+          "ask": "提前告知客户潜在服务中断，需要 CMO 协调沟通话术"
+        },
+        {
+          "risk": "Q1 招聘计划：若工程团队扩招延迟，Q2 路线图将出现滑期",
+          "impact": "Medium",
+          "likelihood": "Low",
+          "mitigation": "已在多个渠道同步启动，目前管道健康",
+          "ask": "批准提前锁定 2 名外包工程师作为 Buffer"
+        }
+      ],
+      "notes": "风险列表应该让听众感到你对问题有清晰认知，而不是制造焦虑。每个风险必须有对应的 mitigation。"
+    },
+    {
+      "type": "next_quarter",
+      "eyebrow": "Q1 2026 展望",
+      "title": "从增长规模化到增长效率",
+      "priorities": [
+        {
+          "num": "Priority 01",
+          "title": "修复 Onboarding：将用户激活率从 61% 提升至 75%",
+          "target": "目标：新用户 7 日激活率 ≥ 75%"
+        },
+        {
+          "num": "Priority 02",
+          "title": "完成 SOC2 认证，解锁 Enterprise 合规销售通道",
+          "target": "目标：3 月底完成认证，新增 5 家 Fortune 500 进入管道"
+        },
+        {
+          "num": "Priority 03",
+          "title": "数据基础设施上线：让每个决策都有数据背书",
+          "target": "目标：核心指标实时仪表板上线，覆盖 100% 关键指标"
+        }
+      ],
+      "assumption": "关键假设：工程团队 Q1 扩招 3 人如期到位；若未完成，Priority 03 将顺延至 Q2",
+      "ask": "需要的资源：批准 ¥2M 的 AI 基础设施预算，支持 AI 摘要功能从 Beta 推进到 GA",
+      "notes": "下季度的幻灯片要呼应本季度的教训。结束时用一句话激励团队，但要真实，不要空洞的加油口号。"
+    }
+  ]
+}

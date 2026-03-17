@@ -16,6 +16,10 @@
  *   SlideCharts.radar(container, data, options)       → ChartInstance
  *   SlideCharts.sankey(container, data, options)      → ChartInstance
  *   SlideCharts.treemap(container, data, options)     → ChartInstance
+ *   SlideCharts.waterfall(container, data, options)   → ChartInstance
+ *   SlideCharts.bullet(container, data, options)      → ChartInstance
+ *   SlideCharts.scatter(container, data, options)     → ChartInstance
+ *   SlideCharts.gauge(container, data, options)       → ChartInstance
  *
  * ── v2.0 Dynamic Update API ───────────────────────────────────────────────
  *
@@ -159,6 +163,48 @@ const SlideCharts = (() => {
       }
       .sc-updating { animation: sc-updatePulse 0.4s ease; }
 
+      /* ── Tooltip ── */
+      .sc-tooltip {
+        position: fixed; z-index: 9999; pointer-events: none;
+        background: var(--sc-tooltip-bg, rgba(20,20,30,0.93));
+        color: var(--sc-tooltip-color, #f0f0f0);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 7px;
+        padding: 7px 11px;
+        font-family: var(--font-body, system-ui, sans-serif);
+        font-size: 12px;
+        line-height: 1.55;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+        backdrop-filter: blur(4px);
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateY(4px) scale(0.97);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        max-width: 200px;
+        white-space: normal;
+      }
+      .sc-tooltip.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      .sc-tooltip-label {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .sc-tooltip-value {
+        color: var(--accent, #6366f1);
+        font-weight: 700;
+      }
+
+      /* ── Legend interactive filter ── */
+      .sc-legend-item {
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+        user-select: none;
+      }
+      .sc-legend-item:hover  { opacity: 0.75; }
+      .sc-legend-item.hidden { opacity: 0.3; text-decoration: line-through; }
+
       @media (prefers-reduced-motion: reduce) {
         .sc-bar-rect, .sc-line-path, .sc-donut-arc, .sc-progress-fill,
         .sc-hbar-rect { animation: none !important; transition: none !important; }
@@ -176,6 +222,178 @@ const SlideCharts = (() => {
     'var(--chart5,  #3b82f6)',
     'var(--chart6,  #ef4444)',
   ];
+
+  // ── Tooltip singleton ─────────────────────────────────────────────────────
+
+  let _tooltipEl = null;
+  let _tooltipHideTimer = null;
+
+  function getTooltip() {
+    if (!_tooltipEl) {
+      _tooltipEl = document.createElement('div');
+      _tooltipEl.className = 'sc-tooltip';
+      document.body.appendChild(_tooltipEl);
+    }
+    return _tooltipEl;
+  }
+
+  /**
+   * Show the shared tooltip near the cursor.
+   * @param {MouseEvent} event
+   * @param {string}     label   — e.g. "Q3"
+   * @param {string}     value   — e.g. "91K"
+   * @param {string}     [color] — swatch color
+   */
+  function showTooltip(event, label, value, color) {
+    clearTimeout(_tooltipHideTimer);
+    const tip = getTooltip();
+    const swatch = color ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:5px;flex-shrink:0;"></span>` : '';
+    tip.innerHTML = `
+      <div class="sc-tooltip-label">${swatch}${label}</div>
+      <div class="sc-tooltip-value">${value}</div>
+    `;
+    positionTooltip(event);
+    tip.classList.add('visible');
+  }
+
+  function positionTooltip(event) {
+    const tip = getTooltip();
+    const W = window.innerWidth, H = window.innerHeight;
+    const tw = tip.offsetWidth || 140, th = tip.offsetHeight || 50;
+    let left = event.clientX + 14;
+    let top  = event.clientY - th / 2;
+    if (left + tw > W - 8) left = event.clientX - tw - 14;
+    if (top < 8) top = 8;
+    if (top + th > H - 8) top = H - th - 8;
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  }
+
+  function hideTooltip() {
+    clearTimeout(_tooltipHideTimer);
+    _tooltipHideTimer = setTimeout(() => {
+      const tip = getTooltip();
+      tip.classList.remove('visible');
+    }, 80);
+  }
+
+  /**
+   * Attach hover tooltip to an SVG element.
+   * @param {SVGElement} el
+   * @param {string}     label
+   * @param {string|number} value
+   * @param {string}     [color]
+   */
+  function attachTooltip(el, label, value, color) {
+    el.style.cursor = 'default';
+    el.addEventListener('mouseenter', (e) => showTooltip(e, label, String(value), color));
+    el.addEventListener('mousemove',  (e) => positionTooltip(e));
+    el.addEventListener('mouseleave', hideTooltip);
+  }
+
+  // ── Legend filter helper ──────────────────────────────────────────────────
+
+  /**
+   * Make a legend interactive: clicking a legend item hides/shows
+   * the corresponding SVG elements with class `sc-legend-target-{index}`.
+   *
+   * @param {HTMLElement} legendEl  — .sc-legend wrapper
+   * @param {SVGElement}  svgEl     — the chart SVG
+   * @param {function}    [onToggle] — optional callback(index, isHidden)
+   */
+  function makeLegendFilterable(legendEl, chartSvg, onToggle) {
+    const items = Array.from(legendEl.querySelectorAll('.sc-legend-item'));
+    items.forEach((item, idx) => {
+      item.addEventListener('click', () => {
+        const isHidden = item.classList.toggle('hidden');
+        // Toggle visibility of matching elements in the SVG
+        if (chartSvg) {
+          const targets = chartSvg.querySelectorAll(`.sc-series-${idx}`);
+          targets.forEach(t => {
+            t.style.transition = 'opacity 0.25s ease';
+            t.style.opacity = isHidden ? '0.05' : '';
+            t.style.pointerEvents = isHidden ? 'none' : '';
+          });
+        }
+        if (onToggle) onToggle(idx, isHidden);
+      });
+    });
+  }
+
+  // ── Poll ↔ Chart binding ──────────────────────────────────────────────────
+
+  /**
+   * Bind a SlideCharts instance to a live poll data source.
+   *
+   * Usage:
+   *   const chart = SlideCharts.bar('#myChart', initialData);
+   *   SlideCharts.pollBind(chart, '#voteEl', {
+   *     options: ['Option A', 'Option B', 'Option C'],
+   *     color: 'var(--accent)',
+   *   });
+   *
+   * Whenever the vote tallies update (via CustomEvent 'poll:update' on voteEl,
+   * or via postMessage { type: 'poll:votes', options: [...], votes: [...] }),
+   * the chart is updated with a smooth animation.
+   *
+   * @param {ChartInstance} chartInstance
+   * @param {string|Element} pollContainer  — element that emits 'poll:update' events
+   * @param {Object} config
+   *   @param {string[]} config.options  — option labels
+   *   @param {string}   [config.color]  — bar/segment color
+   *   @param {string}   [config.chartType='bar']  — 'bar' | 'donut' | 'horizontalBar'
+   */
+  function pollBind(chartInstance, pollContainer, config = {}) {
+    const { options = [], color, chartType = 'bar' } = config;
+    const pollEl = resolve(pollContainer);
+
+    function applyVotes(votes) {
+      if (chartType === 'donut') {
+        chartInstance.update({
+          segments: options.map((opt, i) => ({
+            label: opt,
+            value: votes[i] || 0,
+            color: color || undefined,
+          })),
+        });
+      } else if (chartType === 'horizontalBar') {
+        chartInstance.update({
+          items: options.map((opt, i) => ({
+            label: opt,
+            value: votes[i] || 0,
+            color: color || undefined,
+          })),
+        });
+      } else {
+        // bar (default)
+        chartInstance.update({
+          labels: options,
+          datasets: [{
+            label: 'Votes',
+            values: options.map((_, i) => votes[i] || 0),
+            color: color || undefined,
+          }],
+        });
+      }
+    }
+
+    // Listen for CustomEvent 'poll:update' on the poll element
+    if (pollEl) {
+      pollEl.addEventListener('poll:update', (e) => {
+        const votes = e.detail?.votes || [];
+        applyVotes(votes);
+      });
+    }
+
+    // Listen for window.postMessage { type: 'poll:votes', options, votes }
+    window.addEventListener('message', (e) => {
+      if (!e.data || e.data.type !== 'poll:votes') return;
+      const votes = e.data.votes || [];
+      applyVotes(votes);
+    });
+
+    return { applyVotes };
+  }
 
   function getColor(index, override) {
     return override || PALETTE[index % PALETTE.length];
@@ -424,8 +642,9 @@ const SlideCharts = (() => {
         const barH = Math.abs(((value - scale.min) / yRange) * H - ((0 - scale.min) / yRange) * H);
         const barX = groupX + di * barW;
         const barY = H - ((Math.max(value, 0) - scale.min) / yRange) * H;
-        const rect = svgEl('rect', { x: barX, y: barY, width: barW * 0.85, height: Math.max(barH, 1), rx: barRadius, ry: barRadius, fill: `url(#${gradIds[di]})`, class: 'sc-bar-rect', 'transform-origin': `${barX + barW * 0.4}px ${barY + barH}px` });
+        const rect = svgEl('rect', { x: barX, y: barY, width: barW * 0.85, height: Math.max(barH, 1), rx: barRadius, ry: barRadius, fill: `url(#${gradIds[di]})`, class: `sc-bar-rect sc-series-${di}`, 'transform-origin': `${barX + barW * 0.4}px ${barY + barH}px` });
         if (!prefersReducedMotion()) rect.style.animation = `sc-growY ${animDuration}ms cubic-bezier(0.34,1.56,0.64,1) ${gi * (delay * 0.5)}ms both`;
+        attachTooltip(rect, `${label} — ${ds.label || ''}`, fmt(value), getColor(di, ds.color));
         g.appendChild(rect);
         if (showValues && barH > 12) {
           const vLabel = svgEl('text', { x: barX + barW * 0.4, y: barY - 5, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '10', opacity: '0' });
@@ -455,6 +674,7 @@ const SlideCharts = (() => {
         item.appendChild(dot); item.appendChild(document.createTextNode(ds.label)); legend.appendChild(item);
       });
       wrap.appendChild(legend);
+      makeLegendFilterable(legend, svg);
     }
     el.innerHTML = '';
     el.appendChild(wrap);
@@ -570,8 +790,9 @@ const SlideCharts = (() => {
 
       if (dots) {
         points.forEach((p, i) => {
-          const circle = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: 'var(--bg, #0d0d1a)', stroke: color, 'stroke-width': '2', class: 'sc-dot' });
+          const circle = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: 'var(--bg, #0d0d1a)', stroke: color, 'stroke-width': '2', class: `sc-dot sc-series-${di}` });
           if (!prefersReducedMotion()) circle.style.animation = `sc-fadeIn 0.3s ease ${di * 150 + animDuration * 0.6 + i * 40}ms both`;
+          attachTooltip(circle, `${data.labels[i]} — ${ds.label || ''}`, fmt(ds.values[i]), color);
           g.appendChild(circle);
           if (showValues) {
             const vt = svgEl('text', { x: p.x, y: p.y - 10, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '10' });
@@ -581,6 +802,9 @@ const SlideCharts = (() => {
           }
         });
       }
+
+      // Also make the line path itself hoverable for the series
+      pathEl.classList.add(`sc-series-${di}`);
     });
 
     const wrap = document.createElement('div');
@@ -594,6 +818,7 @@ const SlideCharts = (() => {
         item.appendChild(dot); item.appendChild(document.createTextNode(ds.label)); legend.appendChild(item);
       });
       wrap.appendChild(legend);
+      makeLegendFilterable(legend, svg);
     }
     el.innerHTML = '';
     el.appendChild(wrap);
@@ -649,12 +874,13 @@ const SlideCharts = (() => {
       let d;
       if (pie || innerRadius === 0) d = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
       else d = `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} L ${xi1} ${yi1} A ${r} ${r} 0 ${largeArc} 0 ${xi2} ${yi2} Z`;
-      const path = svgEl('path', { d, fill: color, class: 'sc-donut-arc', 'aria-label': `${seg.label}: ${fmt(seg.value)} (${(pct * 100).toFixed(1)}%)` });
+      const path = svgEl('path', { d, fill: color, class: `sc-donut-arc sc-series-${i}`, 'aria-label': `${seg.label}: ${fmt(seg.value)} (${(pct * 100).toFixed(1)}%)` });
       if (!prefersReducedMotion()) {
         path.style.opacity = '0'; path.style.transform = 'scale(0.8)'; path.style.transformOrigin = `${cx}px ${cy}px`;
         path.style.transition = `opacity 0.4s ease ${i * (animDuration / data.segments.length)}ms, transform 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * (animDuration / data.segments.length)}ms`;
         requestAnimationFrame(() => requestAnimationFrame(() => { path.style.opacity = '1'; path.style.transform = 'scale(1)'; }));
       }
+      attachTooltip(path, seg.label, `${fmt(seg.value)} (${(pct * 100).toFixed(1)}%)`, color);
       g.appendChild(path);
       if (showPercentages && pct > 0.05) {
         const midAngle = cumulativeAngle + angle / 2, midRad = (midAngle * Math.PI) / 180;
@@ -682,6 +908,7 @@ const SlideCharts = (() => {
         item.appendChild(dot); item.appendChild(document.createTextNode(seg.label)); legend.appendChild(item);
       });
       wrap.appendChild(legend);
+      makeLegendFilterable(legend, svg);
     }
     el.innerHTML = ''; el.appendChild(wrap);
     el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
@@ -738,8 +965,9 @@ const SlideCharts = (() => {
       grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': '1' }));
       defs.appendChild(grad);
       const barX = rankW + labelW + gap;
-      const fillRect = svgEl('rect', { x: barX, y, width: fillW, height: barHeight, rx: barRadius, fill: `url(#${gradId})`, class: 'sc-hbar-rect', 'transform-origin': `${barX}px ${y}px` });
+      const fillRect = svgEl('rect', { x: barX, y, width: fillW, height: barHeight, rx: barRadius, fill: `url(#${gradId})`, class: `sc-hbar-rect sc-series-${i}`, 'transform-origin': `${barX}px ${y}px` });
       if (!prefersReducedMotion()) fillRect.style.animation = `sc-growX ${animDuration}ms cubic-bezier(0.4,0,0.2,1) ${i * 80}ms both`;
+      attachTooltip(fillRect, item.label, fmt(item.value), color);
       svg.appendChild(fillRect);
       if (showValues) {
         const vt = svgEl('text', { x: rankW + labelW + gap + barW + gap, y: y + barHeight / 2 + 4, 'text-anchor': 'start', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '11' });
@@ -865,13 +1093,14 @@ const SlideCharts = (() => {
         if (!prefersReducedMotion()) fillPath.style.animation = `sc-fadeIn ${animDuration}ms ease ${di * 150}ms both`;
         g.appendChild(fillPath);
       }
-      const strokePath = svgEl('path', { d: pathD, fill: 'none', stroke: color, 'stroke-width': '2', 'stroke-linejoin': 'round', class: 'sc-radar-stroke' });
+      const strokePath = svgEl('path', { d: pathD, fill: 'none', stroke: color, 'stroke-width': '2', 'stroke-linejoin': 'round', class: `sc-radar-stroke sc-series-${di}` });
       if (!prefersReducedMotion()) strokePath.style.animation = `sc-fadeIn ${animDuration * 0.8}ms ease ${di * 150}ms both`;
       g.appendChild(strokePath);
       if (showDots) {
         points.forEach((p, pi) => {
-          const dot = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: 'var(--bg, #0d0d1a)', stroke: color, 'stroke-width': '2', class: 'sc-radar-dot' });
+          const dot = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: 'var(--bg, #0d0d1a)', stroke: color, 'stroke-width': '2', class: `sc-radar-dot sc-series-${di}` });
           if (!prefersReducedMotion()) dot.style.animation = `sc-fadeIn 0.3s ease ${di * 150 + animDuration * 0.6 + pi * 40}ms both`;
+          attachTooltip(dot, `${axes[pi]} — ${ds.label || ''}`, fmt(ds.values[pi]), color);
           g.appendChild(dot);
         });
       }
@@ -886,6 +1115,7 @@ const SlideCharts = (() => {
         item.appendChild(dot); item.appendChild(document.createTextNode(ds.label)); legend.appendChild(item);
       });
       wrap.appendChild(legend);
+      makeLegendFilterable(legend, svg);
     }
     el.innerHTML = ''; el.appendChild(wrap);
     el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
@@ -1088,6 +1318,7 @@ const SlideCharts = (() => {
         path.style.transition = `opacity ${animDuration * 0.6}ms ease ${li * 50}ms`;
         requestAnimationFrame(() => requestAnimationFrame(() => { path.style.opacity = '1'; }));
       }
+      attachTooltip(path, `${lk.source} → ${lk.target}`, fmt(lk.value), color);
       g.appendChild(path);
     });
 
@@ -1115,6 +1346,7 @@ const SlideCharts = (() => {
           rect.style.transform = 'scaleY(1)';
         }));
       }
+      attachTooltip(rect, name, fmt(nodeValue[i]), color);
       g.appendChild(rect);
 
       // Node label — left of leftmost column, right of rightmost, else inline
@@ -1365,6 +1597,7 @@ const SlideCharts = (() => {
           rect.style.transform = 'scale(1)';
         }));
       }
+      attachTooltip(rect, node.label, fmt(node.value), color);
       svg.appendChild(rect);
 
       // Children (level-2 tiles)
@@ -1489,9 +1722,643 @@ const SlideCharts = (() => {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Public API
+  // WATERFALL CHART
   // ─────────────────────────────────────────────────────────────────────────
 
-  return { bar, line, area, donut, horizontalBar, progress, radar, sankey, treemap };
+  /**
+   * Renders a waterfall (bridge) chart showing incremental value changes.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{label:string, value:number, type?:'start'|'end'|'delta', color?:string}>} data.items
+   *     - type 'start'  → absolute opening bar (e.g. "开始"/"Start")
+   *     - type 'end'    → absolute closing bar  (e.g. "合计"/"Total")
+   *     - type 'delta'  → incremental change (default, positive=up, negative=down)
+   * @param {Object} [options]
+   *   @param {number}  [options.width=640]
+   *   @param {number}  [options.height=360]
+   *   @param {boolean} [options.showValues=true]
+   *   @param {boolean} [options.showConnectors=true]  draw floating dotted connector lines
+   *   @param {string}  [options.colorPositive]  default var(--chart3, #10b981)
+   *   @param {string}  [options.colorNegative]  default var(--chart6, #ef4444)
+   *   @param {string}  [options.colorTotal]     default var(--accent, #6366f1)
+   *   @param {number}  [options.animDuration=700]
+   *   @param {string}  [options.title]
+   * @returns {ChartInstance}
+   *
+   * Data format example:
+   *   {
+   *     items: [
+   *       { label: '期初余额',  value: 5000, type: 'start' },
+   *       { label: '销售收入',  value: 3200 },
+   *       { label: '退款',      value: -480 },
+   *       { label: '运营成本',  value: -1200 },
+   *       { label: '净利润',    value: 820, type: 'end' },
+   *     ]
+   *   }
+   */
+  function waterfall(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) { console.warn(`[SlideCharts] waterfall: container not found — "${container}"`); return _noopInstance; }
+    _renderWaterfall(el, data, options);
+    return makeInstance(el, _renderWaterfall, data, options);
+  }
+
+  function _renderWaterfall(el, data, options = {}) {
+    const {
+      width = 640, height = 360,
+      showValues = true, showConnectors = true,
+      colorPositive = 'var(--chart3, #10b981)',
+      colorNegative = 'var(--chart6, #ef4444)',
+      colorTotal    = 'var(--accent, #6366f1)',
+      animDuration = 700, title,
+    } = options;
+
+    const margin = { top: title ? 52 : 24, right: 24, bottom: 56, left: 56 };
+    const W = width  - margin.left - margin.right;
+    const H = height - margin.top  - margin.bottom;
+
+    // ── Compute running totals ────────────────────────────────────────────────
+    const items = data.items || [];
+    const computed = []; // { label, value, base, type, color }
+    let running = 0;
+
+    items.forEach((item, i) => {
+      const type = item.type || 'delta';
+      let base, barValue;
+
+      if (type === 'start') {
+        base = 0;
+        barValue = item.value;
+        running = item.value;
+      } else if (type === 'end') {
+        base = 0;
+        barValue = running;
+      } else {
+        // delta
+        base = item.value >= 0 ? running : running + item.value;
+        barValue = Math.abs(item.value);
+        running += item.value;
+      }
+
+      const color = item.color || (
+        type === 'start' || type === 'end' ? colorTotal :
+        item.value >= 0 ? colorPositive : colorNegative
+      );
+      computed.push({ label: item.label, value: item.value, base, barValue, type, color });
+    });
+
+    // ── Y scale ───────────────────────────────────────────────────────────────
+    const allPoints = computed.flatMap(c => [c.base, c.base + c.barValue]);
+    const scale = niceScale(Math.min(0, ...allPoints), Math.max(...allPoints));
+    const yRange = scale.max - scale.min;
+
+    // ── SVG ───────────────────────────────────────────────────────────────────
+    const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, class: 'sc-svg', role: 'img', 'aria-label': title || 'Waterfall chart' });
+    const defs = svgEl('defs'); svg.appendChild(defs);
+    const g = svgEl('g', { transform: `translate(${margin.left},${margin.top})` }); svg.appendChild(g);
+
+    if (title) {
+      const t = svgEl('text', { x: width / 2, y: -margin.top / 2 + 12, 'text-anchor': 'middle', class: 'sc-title', fill: 'var(--text-primary, #fff)', 'font-size': '14' });
+      t.textContent = title; g.appendChild(t);
+    }
+
+    // Grid lines + Y axis labels
+    scale.ticks.forEach(tick => {
+      const y = H - ((tick - scale.min) / yRange) * H;
+      g.appendChild(svgEl('line', { x1: 0, y1: y, x2: W, y2: y, stroke: 'var(--text-secondary, #555)', 'stroke-opacity': '0.2', 'stroke-width': '1', 'stroke-dasharray': tick === 0 ? 'none' : '4 4' }));
+      const lbl = svgEl('text', { x: -8, y: y + 4, 'text-anchor': 'end', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '11' });
+      lbl.textContent = fmt(tick); g.appendChild(lbl);
+    });
+
+    const n = computed.length;
+    const groupW = W / n;
+    const barPad = groupW * 0.18;
+    const barW = groupW - barPad * 2;
+    const delay = prefersReducedMotion() ? 0 : animDuration / n;
+
+    computed.forEach((c, i) => {
+      const barX = i * groupW + barPad;
+      const baseY = H - ((c.base + c.barValue - scale.min) / yRange) * H;
+      const barH  = Math.max((c.barValue / yRange) * H, 1);
+      const topY  = baseY; // top of bar in SVG coords
+
+      // Gradient
+      const gradId = uid('wfg');
+      const grad = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
+      grad.appendChild(svgEl('stop', { offset: '0%',   'stop-color': c.color, 'stop-opacity': '1' }));
+      grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': c.color, 'stop-opacity': '0.65' }));
+      defs.appendChild(grad);
+
+      const rect = svgEl('rect', { x: barX, y: topY, width: barW, height: barH, rx: 3, fill: `url(#${gradId})`, class: 'sc-wf-bar', 'transform-origin': `${barX + barW / 2}px ${topY + barH}px` });
+      if (!prefersReducedMotion()) rect.style.animation = `sc-growY ${animDuration}ms cubic-bezier(0.34,1.56,0.64,1) ${i * delay * 0.5}ms both`;
+      const sign = c.type === 'delta' && c.value < 0 ? '−' : (c.type === 'delta' && c.value > 0 ? '+' : '');
+      attachTooltip(rect, c.label, sign + fmt(Math.abs(c.value)), c.color);
+      g.appendChild(rect);
+
+      // Connector line to next bar (dashed, at top of this bar)
+      if (showConnectors && i < n - 1 && c.type !== 'start') {
+        const nextBarX = (i + 1) * groupW + barPad;
+        const connY = H - (((c.base + c.barValue) - scale.min) / yRange) * H;
+        g.appendChild(svgEl('line', { x1: barX + barW, y1: connY, x2: nextBarX, y2: connY, stroke: c.color, 'stroke-width': '1', 'stroke-dasharray': '4 3', 'stroke-opacity': '0.5' }));
+      }
+
+      // Value label
+      if (showValues) {
+        const sign = c.type === 'delta' && c.value < 0 ? '−' : (c.type === 'delta' && c.value > 0 ? '+' : '');
+        const vLbl = svgEl('text', { x: barX + barW / 2, y: topY - 6, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '10', opacity: '0' });
+        vLbl.textContent = sign + fmt(Math.abs(c.value));
+        if (!prefersReducedMotion()) vLbl.style.animation = `sc-fadeIn 0.4s ease ${i * delay * 0.5 + animDuration * 0.7}ms forwards`;
+        else vLbl.setAttribute('opacity', '1');
+        g.appendChild(vLbl);
+      }
+
+      // X axis label
+      const xLbl = svgEl('text', { x: barX + barW / 2, y: H + 20, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '11' });
+      xLbl.textContent = c.label.length > 6 ? c.label.slice(0, 5) + '…' : c.label;
+      g.appendChild(xLbl);
+    });
+
+    // Zero line
+    const zeroY = H - ((0 - scale.min) / yRange) * H;
+    g.appendChild(svgEl('line', { x1: 0, y1: zeroY, x2: W, y2: zeroY, stroke: 'var(--text-secondary, #555)', 'stroke-width': '1.5' }));
+
+    const wrap = document.createElement('div'); wrap.className = 'sc-wrap'; wrap.appendChild(svg);
+    el.innerHTML = ''; el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // BULLET CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a bullet chart (target vs actual with qualitative bands).
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{
+   *     label: string,
+   *     value: number,          actual value
+   *     target: number,         target / reference marker
+   *     max?: number,           axis max (default: auto)
+   *     ranges?: number[],      up to 3 qualitative band boundaries [bad, ok, good]
+   *     color?: string
+   *   }>} data.items
+   * @param {Object} [options]
+   *   @param {number}  [options.width=560]
+   *   @param {number}  [options.barHeight=28]
+   *   @param {boolean} [options.showValues=true]
+   *   @param {number}  [options.animDuration=650]
+   *   @param {string}  [options.title]
+   * @returns {ChartInstance}
+   *
+   * Data format example:
+   *   {
+   *     items: [
+   *       { label: '销售额',   value: 270, target: 300, max: 400, ranges: [150, 220, 310] },
+   *       { label: '用户增长', value: 85,  target: 80,  max: 100, ranges: [40,  60,  90]  },
+   *     ]
+   *   }
+   */
+  function bullet(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) { console.warn(`[SlideCharts] bullet: container not found — "${container}"`); return _noopInstance; }
+    _renderBullet(el, data, options);
+    return makeInstance(el, _renderBullet, data, options);
+  }
+
+  function _renderBullet(el, data, options = {}) {
+    const {
+      width = 560,
+      barHeight = 28,
+      showValues = true,
+      animDuration = 650,
+      title,
+    } = options;
+
+    const items = data.items || [];
+    const labelW = 100, valueW = showValues ? 52 : 0, gap = 12;
+    const barW = width - labelW - valueW - gap * 2;
+    const rowH = barHeight + 20;
+    const marginTop = title ? 44 : 12;
+    const svgH = marginTop + items.length * rowH + 12;
+
+    const svg = svgEl('svg', { viewBox: `0 0 ${width} ${svgH}`, class: 'sc-svg', role: 'img', 'aria-label': title || 'Bullet chart' });
+    const defs = svgEl('defs'); svg.appendChild(defs);
+
+    if (title) {
+      const t = svgEl('text', { x: width / 2, y: 22, 'text-anchor': 'middle', class: 'sc-title', fill: 'var(--text-primary, #fff)', 'font-size': '14' });
+      t.textContent = title; svg.appendChild(t);
+    }
+
+    items.forEach((item, i) => {
+      const max = item.max || Math.max(item.value, item.target) * 1.25;
+      const scale = barW / max;
+      const y = marginTop + i * rowH;
+      const color = getColor(i, item.color);
+
+      // Label
+      const lbl = svgEl('text', { x: gap, y: y + barHeight / 2 + 4, 'text-anchor': 'start', class: 'sc-label', fill: 'var(--text-primary, #eee)', 'font-size': '12' });
+      lbl.textContent = item.label.length > 12 ? item.label.slice(0, 11) + '…' : item.label;
+      svg.appendChild(lbl);
+
+      const barX = labelW + gap;
+
+      // Qualitative background bands
+      const ranges = item.ranges || [max * 0.4, max * 0.7, max];
+      const bandColors = ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', 'rgba(255,255,255,0.17)'];
+      let prevX = barX;
+      ranges.forEach((r, ri) => {
+        const bw = Math.min(r, max) * scale - (prevX - barX);
+        if (bw <= 0) return;
+        svg.appendChild(svgEl('rect', { x: prevX, y: y + barHeight * 0.1, width: bw, height: barHeight * 0.8, fill: bandColors[ri] || bandColors[bandColors.length - 1], rx: 2 }));
+        prevX = barX + Math.min(r, max) * scale;
+      });
+
+      // Actual value bar (narrow, centered vertically)
+      const actualW = Math.min(item.value, max) * scale;
+      const bh = barHeight * 0.45;
+      const by = y + (barHeight - bh) / 2;
+
+      const gradId = uid('bltg');
+      const grad = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '1', y2: '0' });
+      grad.appendChild(svgEl('stop', { offset: '0%',   'stop-color': color, 'stop-opacity': '0.8' }));
+      grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': '1' }));
+      defs.appendChild(grad);
+
+      const actualRect = svgEl('rect', { x: barX, y: by, width: actualW, height: bh, rx: 2, fill: `url(#${gradId})`, class: 'sc-bullet-bar', 'transform-origin': `${barX}px ${by}px` });
+      if (!prefersReducedMotion()) actualRect.style.animation = `sc-growX ${animDuration}ms cubic-bezier(0.4,0,0.2,1) ${i * 100}ms both`;
+      attachTooltip(actualRect, item.label, `${fmt(item.value)} / ${fmt(item.target)} (${Math.round((item.value / item.target) * 100)}%)`, color);
+      svg.appendChild(actualRect);
+
+      // Target marker (vertical tick)
+      const targetX = Math.min(item.target, max) * scale + barX;
+      const tickH = barHeight * 0.85;
+      const tickY = y + (barHeight - tickH) / 2;
+      const tick = svgEl('rect', { x: targetX - 1.5, y: tickY, width: 3, height: tickH, fill: 'var(--text-primary, #fff)', rx: 1.5, class: 'sc-bullet-target', opacity: '0' });
+      if (!prefersReducedMotion()) tick.style.animation = `sc-fadeIn 0.4s ease ${animDuration * 0.6 + i * 100}ms forwards`;
+      else tick.setAttribute('opacity', '0.9');
+      svg.appendChild(tick);
+
+      // Values
+      if (showValues) {
+        const vx = barX + barW + gap;
+        const vt = svgEl('text', { x: vx, y: y + barHeight / 2 + 4, 'text-anchor': 'start', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '11' });
+        const pct = Math.round((item.value / item.target) * 100);
+        vt.textContent = `${fmt(item.value)} / ${fmt(item.target)}`;
+        if (!prefersReducedMotion()) vt.style.animation = `sc-fadeIn 0.4s ease ${animDuration * 0.7 + i * 100}ms both`;
+        svg.appendChild(vt);
+      }
+    });
+
+    const wrap = document.createElement('div'); wrap.className = 'sc-wrap'; wrap.appendChild(svg);
+    el.innerHTML = ''; el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SCATTER / BUBBLE CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a scatter plot (optionally with bubble sizing).
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{
+   *     label?: string,
+   *     points: Array<{x:number, y:number, r?:number, label?:string}>
+   *     color?: string
+   *   }>} data.datasets
+   * @param {Object} [options]
+   *   @param {number}  [options.width=560]
+   *   @param {number}  [options.height=360]
+   *   @param {boolean} [options.showGrid=true]
+   *   @param {boolean} [options.showLabels=false]   label each point
+   *   @param {boolean} [options.showLegend=true]
+   *   @param {number}  [options.dotRadius=6]        default dot radius (when r is absent)
+   *   @param {boolean} [options.bubble=false]       enable bubble mode (use point.r for size)
+   *   @param {string}  [options.xLabel]
+   *   @param {string}  [options.yLabel]
+   *   @param {number}  [options.animDuration=700]
+   *   @param {string}  [options.title]
+   * @returns {ChartInstance}
+   */
+  function scatter(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) { console.warn(`[SlideCharts] scatter: container not found — "${container}"`); return _noopInstance; }
+    _renderScatter(el, data, options);
+    return makeInstance(el, _renderScatter, data, options);
+  }
+
+  function _renderScatter(el, data, options = {}) {
+    const {
+      width = 560, height = 360,
+      showGrid = true, showLabels = false, showLegend = true,
+      dotRadius = 6, bubble = false,
+      xLabel, yLabel,
+      animDuration = 700, title,
+    } = options;
+
+    const margin = { top: title ? 52 : 24, right: 24, bottom: xLabel ? 64 : 48, left: yLabel ? 64 : 52 };
+    const W = width  - margin.left - margin.right;
+    const H = height - margin.top  - margin.bottom;
+
+    const allX = data.datasets.flatMap(ds => ds.points.map(p => p.x));
+    const allY = data.datasets.flatMap(ds => ds.points.map(p => p.y));
+    const allR = bubble ? data.datasets.flatMap(ds => ds.points.map(p => p.r || dotRadius)) : [dotRadius];
+
+    const xScale = niceScale(Math.min(...allX), Math.max(...allX));
+    const yScale = niceScale(Math.min(...allY), Math.max(...allY));
+    const maxR   = bubble ? Math.max(...allR) : dotRadius;
+
+    const toSvgX = (x) => ((x - xScale.min) / (xScale.max - xScale.min)) * W;
+    const toSvgY = (y) => H - ((y - yScale.min) / (yScale.max - yScale.min)) * H;
+
+    const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, class: 'sc-svg', role: 'img', 'aria-label': title || 'Scatter chart' });
+    const defs = svgEl('defs'); svg.appendChild(defs);
+    const g = svgEl('g', { transform: `translate(${margin.left},${margin.top})` }); svg.appendChild(g);
+
+    if (title) {
+      const t = svgEl('text', { x: width / 2, y: -margin.top / 2 + 12, 'text-anchor': 'middle', class: 'sc-title', fill: 'var(--text-primary, #fff)', 'font-size': '14' });
+      t.textContent = title; g.appendChild(t);
+    }
+
+    // Grid lines
+    if (showGrid) {
+      yScale.ticks.forEach(tick => {
+        const y = toSvgY(tick);
+        g.appendChild(svgEl('line', { x1: 0, y1: y, x2: W, y2: y, stroke: 'var(--text-secondary, #555)', 'stroke-opacity': '0.15', 'stroke-width': '1', 'stroke-dasharray': '4 4' }));
+        const lbl = svgEl('text', { x: -8, y: y + 4, 'text-anchor': 'end', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '10' });
+        lbl.textContent = fmt(tick); g.appendChild(lbl);
+      });
+      xScale.ticks.forEach(tick => {
+        const x = toSvgX(tick);
+        g.appendChild(svgEl('line', { x1: x, y1: 0, x2: x, y2: H, stroke: 'var(--text-secondary, #555)', 'stroke-opacity': '0.15', 'stroke-width': '1', 'stroke-dasharray': '4 4' }));
+        const lbl = svgEl('text', { x, y: H + 16, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '10' });
+        lbl.textContent = fmt(tick); g.appendChild(lbl);
+      });
+    }
+
+    // Axis labels
+    if (xLabel) {
+      const xl = svgEl('text', { x: W / 2, y: H + (xLabel ? 40 : 28), 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '12' });
+      xl.textContent = xLabel; g.appendChild(xl);
+    }
+    if (yLabel) {
+      const yl = svgEl('text', { x: -H / 2, y: -margin.left + 14, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '12', transform: 'rotate(-90)' });
+      yl.textContent = yLabel; g.appendChild(yl);
+    }
+
+    // Axes
+    g.appendChild(svgEl('line', { x1: 0, y1: H, x2: W, y2: H, stroke: 'var(--text-secondary, #555)', 'stroke-width': '1.5' }));
+    g.appendChild(svgEl('line', { x1: 0, y1: 0, x2: 0, y2: H, stroke: 'var(--text-secondary, #555)', 'stroke-width': '1.5' }));
+
+    // Points
+    let pointCount = 0;
+    data.datasets.forEach((ds, di) => {
+      const color = getColor(di, ds.color);
+      ds.points.forEach((p, pi) => {
+        const cx = toSvgX(p.x);
+        const cy = toSvgY(p.y);
+        const r  = bubble ? Math.max(3, (p.r || dotRadius) / maxR * 28) : dotRadius;
+        const circle = svgEl('circle', {
+          cx, cy, r,
+          fill: color,
+          'fill-opacity': '0.75',
+          stroke: color,
+          'stroke-width': '1',
+          'stroke-opacity': '0.9',
+          class: `sc-scatter-dot sc-series-${di}`,
+          'aria-label': p.label || `(${p.x}, ${p.y})`,
+        });
+        if (!prefersReducedMotion()) {
+          circle.style.opacity = '0';
+          circle.style.transform = 'scale(0)';
+          circle.style.transformOrigin = `${cx}px ${cy}px`;
+          circle.style.transition = `opacity 0.3s ease ${pointCount * 30}ms, transform 0.35s cubic-bezier(0.34,1.56,0.64,1) ${pointCount * 30}ms`;
+          requestAnimationFrame(() => requestAnimationFrame(() => { circle.style.opacity = '1'; circle.style.transform = 'scale(1)'; }));
+        }
+        attachTooltip(circle, p.label || `${ds.label || ''} (${p.x}, ${p.y})`, bubble ? `r=${p.r || dotRadius}` : `(${p.x}, ${p.y})`, color);
+        g.appendChild(circle);
+
+        if (showLabels && p.label) {
+          const lt = svgEl('text', { x: cx, y: cy - r - 4, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': '9' });
+          lt.textContent = p.label;
+          if (!prefersReducedMotion()) lt.style.animation = `sc-fadeIn 0.3s ease ${pointCount * 30 + 300}ms both`;
+          g.appendChild(lt);
+        }
+        pointCount++;
+      });
+    });
+
+    const wrap = document.createElement('div'); wrap.className = 'sc-wrap'; wrap.appendChild(svg);
+    if (showLegend && data.datasets.length > 1) {
+      const legend = document.createElement('div'); legend.className = 'sc-legend';
+      data.datasets.forEach((ds, i) => {
+        const item = document.createElement('div'); item.className = 'sc-legend-item';
+        const dot = document.createElement('span'); dot.className = 'sc-legend-dot'; dot.style.background = getColor(i, ds.color);
+        item.appendChild(dot); item.appendChild(document.createTextNode(ds.label || `Series ${i + 1}`)); legend.appendChild(item);
+      });
+      wrap.appendChild(legend);
+      makeLegendFilterable(legend, svg);
+    }
+    el.innerHTML = ''; el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GAUGE / SPEEDOMETER CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a gauge (half-circle speedometer) chart.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {number}   data.value          current value
+   *   @param {number}   [data.min=0]        minimum value
+   *   @param {number}   [data.max=100]      maximum value
+   *   @param {string}   [data.label]        center label text
+   *   @param {string}   [data.unit]         unit suffix (e.g. '%', 'ms')
+   *   @param {Array<{value:number, color:string, label?:string}>} [data.zones]
+   *     Up to 4 color zones. Each zone spans from the previous zone's value to this one's value.
+   *     If omitted, a single accent color arc is used.
+   * @param {Object} [options]
+   *   @param {number}  [options.width=320]
+   *   @param {number}  [options.thickness=22]   arc stroke width
+   *   @param {boolean} [options.showNeedle=true]
+   *   @param {boolean} [options.showMinMax=true]
+   *   @param {number}  [options.animDuration=900]
+   *   @param {string}  [options.title]
+   * @returns {ChartInstance}
+   *
+   * Data format example:
+   *   {
+   *     value: 72, min: 0, max: 100, label: '满意度', unit: '%',
+   *     zones: [
+   *       { value: 40,  color: 'var(--chart6, #ef4444)',  label: '差' },
+   *       { value: 70,  color: 'var(--chart4, #f59e0b)',  label: '中' },
+   *       { value: 100, color: 'var(--chart3, #10b981)',  label: '优' },
+   *     ]
+   *   }
+   */
+  function gauge(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) { console.warn(`[SlideCharts] gauge: container not found — "${container}"`); return _noopInstance; }
+    _renderGauge(el, data, options);
+    return makeInstance(el, _renderGauge, data, options);
+  }
+
+  function _renderGauge(el, data, options = {}) {
+    const {
+      width = 320,
+      thickness = 22,
+      showNeedle = true,
+      showMinMax = true,
+      animDuration = 900,
+      title,
+    } = options;
+
+    const height = width * 0.6 + (title ? 32 : 0);
+    const titleH = title ? 30 : 0;
+    const cx = width / 2;
+    const cy = height - 20 + titleH * 0.5;
+    const R  = (width / 2) - thickness - 12;
+
+    const min = data.min ?? 0;
+    const max = data.max ?? 100;
+    const value = Math.min(max, Math.max(min, data.value));
+    const pct = (value - min) / (max - min); // 0..1
+
+    // Gauge spans from -180° to 0° (left → right half circle)
+    const START_DEG = -180;
+    const END_DEG   = 0;
+    const TOTAL_DEG = END_DEG - START_DEG; // 180
+
+    function degToXY(deg, r) {
+      const rad = (deg * Math.PI) / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+
+    function arcPath(startDeg, endDeg, r, thick) {
+      const s = degToXY(startDeg, r);
+      const e = degToXY(endDeg,   r);
+      const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+      return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`;
+    }
+
+    const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, class: 'sc-svg', role: 'img', 'aria-label': title || 'Gauge chart' });
+    const defs = svgEl('defs'); svg.appendChild(defs);
+
+    if (title) {
+      const t = svgEl('text', { x: cx, y: 20, 'text-anchor': 'middle', class: 'sc-title', fill: 'var(--text-primary, #fff)', 'font-size': '14' });
+      t.textContent = title; svg.appendChild(t);
+    }
+
+    // Background track
+    const trackPath = arcPath(START_DEG, END_DEG, R, thickness);
+    svg.appendChild(svgEl('path', { d: trackPath, fill: 'none', stroke: 'var(--surface, #222)', 'stroke-width': thickness, 'stroke-linecap': 'round' }));
+
+    // Zones (or single arc)
+    const zones = data.zones && data.zones.length > 0
+      ? data.zones
+      : [{ value: max, color: 'var(--accent, #6366f1)' }];
+
+    let prevZoneVal = min;
+    zones.forEach(zone => {
+      const zStart = START_DEG + ((prevZoneVal - min) / (max - min)) * TOTAL_DEG;
+      const zEnd   = START_DEG + ((Math.min(zone.value, max) - min) / (max - min)) * TOTAL_DEG;
+      if (zEnd <= zStart) { prevZoneVal = zone.value; return; }
+      const zPath = arcPath(zStart, zEnd, R, thickness);
+      svg.appendChild(svgEl('path', { d: zPath, fill: 'none', stroke: zone.color, 'stroke-width': thickness, 'stroke-linecap': 'butt', class: 'sc-gauge-zone' }));
+      prevZoneVal = zone.value;
+    });
+
+    // Animated value arc
+    const valueDeg = START_DEG + pct * TOTAL_DEG;
+    const valuePath = arcPath(START_DEG, valueDeg - 0.01, R, thickness * 0.55);
+    const circumference = Math.PI * R;
+    const valueLen = (pct * circumference);
+
+    const valueArc = svgEl('path', {
+      d: valuePath,
+      fill: 'none',
+      stroke: 'var(--text-primary, #fff)',
+      'stroke-width': thickness * 0.55,
+      'stroke-linecap': 'round',
+      'stroke-opacity': '0',
+      class: 'sc-gauge-value',
+    });
+    if (!prefersReducedMotion()) {
+      valueArc.style.transition = `stroke-opacity 0.2s ease`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { valueArc.style.strokeOpacity = '0.9'; }));
+    } else {
+      valueArc.setAttribute('stroke-opacity', '0.9');
+    }
+    svg.appendChild(valueArc);
+
+    // Needle
+    if (showNeedle) {
+      const needleDeg = START_DEG + pct * TOTAL_DEG;
+      const needleRad = (needleDeg * Math.PI) / 180;
+      const nx = cx + (R - thickness * 0.5) * Math.cos(needleRad);
+      const ny = cy + (R - thickness * 0.5) * Math.sin(needleRad);
+      const needle = svgEl('line', {
+        x1: cx, y1: cy, x2: nx, y2: ny,
+        stroke: 'var(--text-primary, #fff)',
+        'stroke-width': '2.5',
+        'stroke-linecap': 'round',
+        class: 'sc-gauge-needle',
+      });
+      if (!prefersReducedMotion()) {
+        needle.style.transformOrigin = `${cx}px ${cy}px`;
+        needle.style.transform = `rotate(${START_DEG - needleDeg}deg)`;
+        needle.style.transition = `transform ${animDuration}ms cubic-bezier(0.4,0,0.2,1)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => { needle.style.transform = 'rotate(0deg)'; }));
+      }
+      svg.appendChild(needle);
+      // Center cap
+      svg.appendChild(svgEl('circle', { cx, cy, r: thickness * 0.4, fill: 'var(--text-primary, #fff)', class: 'sc-gauge-cap' }));
+    }
+
+    // Value label
+    const displayVal = fmt(value) + (data.unit || '');
+    const valText = svgEl('text', { x: cx, y: cy - R * 0.22, 'text-anchor': 'middle', class: 'sc-title', fill: 'var(--text-primary, #fff)', 'font-size': String(Math.round(R * 0.28)) });
+    valText.textContent = displayVal;
+    if (!prefersReducedMotion()) valText.style.animation = `sc-fadeIn 0.5s ease ${animDuration * 0.5}ms both`;
+    svg.appendChild(valText);
+
+    if (data.label) {
+      const lblText = svgEl('text', { x: cx, y: cy + R * 0.12, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #aaa)', 'font-size': String(Math.round(R * 0.14)) });
+      lblText.textContent = data.label;
+      if (!prefersReducedMotion()) lblText.style.animation = `sc-fadeIn 0.5s ease ${animDuration * 0.6}ms both`;
+      svg.appendChild(lblText);
+    }
+
+    // Min / Max labels
+    if (showMinMax) {
+      const minPt = degToXY(START_DEG, R + thickness + 8);
+      const maxPt = degToXY(END_DEG,   R + thickness + 8);
+      const minLbl = svgEl('text', { x: minPt.x, y: minPt.y + 4, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '10' });
+      minLbl.textContent = fmt(min); svg.appendChild(minLbl);
+      const maxLbl = svgEl('text', { x: maxPt.x, y: maxPt.y + 4, 'text-anchor': 'middle', class: 'sc-label', fill: 'var(--text-secondary, #888)', 'font-size': '10' });
+      maxLbl.textContent = fmt(max); svg.appendChild(maxLbl);
+    }
+
+    const wrap = document.createElement('div'); wrap.className = 'sc-wrap'; wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+    wrap.appendChild(svg);
+    el.innerHTML = ''; el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+
+
+  return { bar, line, area, donut, horizontalBar, progress, radar, sankey, treemap, waterfall, bullet, scatter, gauge };
 
 })();

@@ -933,7 +933,10 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
     chart_data   = json.dumps(s.get('chart_data', {}))
     chart_options = json.dumps(s.get('chart_options', {}))
     notes        = s.get('notes', '')
+    body         = he(s.get('body', ''))   # optional text panel for chart-split
+    layout       = s.get('layout', 'chart-full')  # chart-full | chart-split
     bg           = _resolve_bg('chart', idx, palette, s.get('bg'))
+    is_dark      = _is_dark_bg(bg, palette)
     label        = _slide_label_html(palette, idx + 1, total)
     chart_id     = f"chart_{abs(hash(title + chart_type)) % 100000}"
     method_map   = {
@@ -941,19 +944,15 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
         'donut': 'donut', 'hbar': 'horizontalBar',
         'progress': 'progress', 'radar': 'radar', 'sankey': 'sankey',
         'treemap': 'treemap',
+        # v2.1 new chart types
+        'waterfall': 'waterfall', 'bullet': 'bullet',
+        'scatter': 'scatter', 'bubble': 'scatter', 'gauge': 'gauge',
     }
     method = method_map.get(chart_type, 'bar')
+    sub_cls = 'subtitle-dark' if is_dark else 'subtitle'
 
-    # Use IntersectionObserver for lazy-trigger: chart only renders when its
-    # slide enters the viewport. This avoids initialising all charts at once
-    # on page load (which would misalign entrance animations on earlier slides).
-    return dedent(f"""\
-{_render_slide_open(bg, label, f'{title} chart', notes)}
-    <div class="slide-content" style="display:flex;flex-direction:column;gap:16px;width:80%;max-width:740px;">
-      <h2 data-animate>{title}</h2>
-      <div id="{chart_id}" class="chart-container" style="height:300px;" data-animate></div>
-    </div>
-  </section>
+    # Chart init script (shared between layouts)
+    init_script = dedent(f"""\
   <script>
     (function(){{
       var _rendered_{chart_id} = false;
@@ -963,7 +962,6 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
         _rendered_{chart_id}=true;
         SlideCharts.{method}('#{chart_id}', {chart_data}, {chart_options});
       }}
-      // Lazy-render: wait until the parent slide enters the viewport
       (function(){{
         var el=document.getElementById('{chart_id}');
         if(!el)return;
@@ -976,6 +974,33 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
       }})();
     }})();
   </script>""")
+
+    if layout == 'chart-split' and body:
+        # Two-column: text left, chart right
+        return dedent(f"""\
+{_render_slide_open(bg, label, f'{title} chart', notes)}
+    <div class="slide-content sc-chart-split">
+      <div class="sc-chart-text-col">
+        <h2 data-animate>{title}</h2>
+        <div class="divider" data-animate></div>
+        <p class="{sub_cls}" data-animate style="font-size:clamp(0.88rem,1.5vw,1rem);line-height:1.8;">{body}</p>
+      </div>
+      <div class="sc-chart-chart-col">
+        <div id="{chart_id}" class="chart-container" style="height:100%;min-height:260px;" data-animate></div>
+      </div>
+    </div>
+  </section>
+{init_script}""")
+
+    # Default: chart-full
+    return dedent(f"""\
+{_render_slide_open(bg, label, f'{title} chart', notes)}
+    <div class="slide-content sc-chart-full" style="display:flex;flex-direction:column;gap:16px;width:80%;max-width:740px;">
+      <h2 data-animate>{title}</h2>
+      <div id="{chart_id}" class="chart-container" style="height:300px;" data-animate></div>
+    </div>
+  </section>
+{init_script}""")
 
 
 def render_image(s: dict, palette: dict, idx: int, total: int) -> str:
@@ -1301,6 +1326,18 @@ def _build_minimal_html(slides_html: str, template_name: str, lang: str) -> str:
     .orb{{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:0.25;}}
     .orb-terracotta{{background:#DA7756;width:340px;height:340px;top:-80px;right:-80px;}}
     .chart-container{{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}}
+    /* ── SlideCharts layout helpers ── */
+    .sc-chart-full{{display:flex;flex-direction:column;gap:16px;width:80%;max-width:740px;}}
+    .sc-chart-split{{display:grid;grid-template-columns:1fr 1.3fr;gap:52px;align-items:center;width:min(92%,1060px);}}
+    .sc-chart-text-col{{display:flex;flex-direction:column;gap:14px;}}
+    .sc-chart-chart-col{{display:flex;align-items:center;justify-content:center;min-height:260px;}}
+    /* ── charts.js compat: light-theme overrides ── */
+    :root{{
+      --chart3:  #10b981;
+      --chart4:  #f59e0b;
+      --chart5:  #3b82f6;
+      --chart6:  #ef4444;
+    }}
     [data-animate]{{opacity:0;transform:translateY(22px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1);}}
     [data-animate="scale"]{{transform:scale(.88);}}
     [data-animate="slide-left"]{{opacity:0;transform:translateX(-32px);}}
@@ -1448,6 +1485,15 @@ def main():
     if args.verbose:
         print(f'  ↳ {len(content.get("slides",[]))} slides')
 
+    # ── Direction 5: Smart Chart Enrichment ──────────────────────────────────
+    # Automatically insert companion chart slides after numeric stats slides.
+    # Can be suppressed per-slide with "skip_chart": true in the JSON.
+    _before = len(content.get('slides', []))
+    content['slides'] = _enrich_charts(content.get('slides', []))
+    _after = len(content.get('slides', []))
+    if args.verbose and _after > _before:
+        print(f'  ↳ _enrich_charts: inserted {_after - _before} companion chart slide(s)')
+
     # Generate
     html = generate(content, args.template, args.title, args.lang, args.verbose)
 
@@ -1490,6 +1536,11 @@ def _expand_topic(topic: str, n_slides: int, template: str | None,
     slide_types = (
         '"title","text","bullets","two-col","stats","features","quote","chart","image","cta","divider"'
     )
+    chart_types_hint = (
+        'chart_type choices: bar|line|area|donut|hbar|progress|radar|sankey|treemap|waterfall|bullet|scatter|gauge. '
+        'For financial delta analysis use waterfall; for target-vs-actual KPI use bullet; '
+        'for correlation data use scatter; for single metric completion use gauge.'
+    )
     template_hint = f'Preferred template: "{template}".' if template else ''
     prompt = dedent(f"""\
         You are a professional presentation designer. Create a complete slide deck outline in JSON.
@@ -1498,6 +1549,8 @@ def _expand_topic(topic: str, n_slides: int, template: str | None,
         Slides: exactly {n_slides}
         {lang_hint}
         {template_hint}
+
+        {chart_types_hint}
 
         Return ONLY valid JSON — no markdown fences, no explanations.
         The JSON must follow this schema exactly:
@@ -1522,7 +1575,14 @@ def _expand_topic(topic: str, n_slides: int, template: str | None,
             // divider example:
             {{"type":"divider","label":"Section Title"}},
             // cta example:
-            {{"type":"cta","title":"Get Started","subtitle":"Ready?","primary_cta":"Start Now"}}
+            {{"type":"cta","title":"Get Started","subtitle":"Ready?","primary_cta":"Start Now"}},
+            // chart-full example (chart fills the slide):
+            {{"type":"chart","title":"Revenue Growth","chart_type":"bar","layout":"chart-full",
+              "chart_data":{{"labels":["Q1","Q2","Q3","Q4"],"datasets":[{{"label":"Revenue","values":[42,68,55,91]}}]}}}},
+            // chart-split example (text left, chart right — great for storytelling):
+            {{"type":"chart","title":"Revenue Growth","chart_type":"line","layout":"chart-split",
+              "body":"说明文字或分析洞察写在这里，最多 80 字。",
+              "chart_data":{{"labels":["Q1","Q2","Q3","Q4"],"datasets":[{{"label":"Revenue","values":[42,68,55,91]}}]}}}}
           ]
         }}
 
@@ -1534,6 +1594,8 @@ def _expand_topic(topic: str, n_slides: int, template: str | None,
         - For Chinese topics, use Chinese content throughout
         - Items arrays should have 3-5 items max
         - Body text max 80 characters per paragraph
+        - When a "stats" or "comparison" slide would benefit from a data visualization, prefer "chart" type with appropriate chart_type
+        - Use "chart-split" layout when you want to pair a chart with an insight sentence
     """).strip()
 
     raw = None
@@ -1979,6 +2041,149 @@ def _normalise_pptx(raw_slides: list) -> list:
                 entry['body'] = ''
 
         result.append(entry)
+
+    return result
+
+
+def _enrich_charts(slides: list) -> list:
+    """
+    Direction 5 — Smart Chart Enrichment
+    ═══════════════════════════════════════════════════════════════════════════════
+    Scans the slide list for "stats" slides that contain parseable numeric values
+    and automatically inserts a companion chart slide immediately after each one.
+
+    Rules:
+    - Only applies to slides with type == "stats"
+    - Requires at least 3 stat items where the value is a pure number (int/float),
+      possibly with common suffixes like K/M/B/% — but NOT percentage suffix alone,
+      because percentage bars are already shown in progress-style stats layouts
+    - Auto-selects chart type:
+        · All values are percentages (%) → donut chart
+        · Otherwise → horizontal bar chart (hbar), great for labelled comparisons
+    - The companion slide is flagged with "_auto_chart": True so the caller can
+      identify and optionally suppress it
+    - If the stats slide already has a "chart_data" key, skip (user-defined chart)
+    - If the stats slide has "skip_chart": True, skip it
+
+    Returns a new list with companion chart slides injected.
+    """
+    import re as _re
+
+    _pure_num_pat = _re.compile(
+        r'^(?P<num>[\d,]+(?:\.\d+)?)(?P<suffix>\s*[KMBkmb%]|\s*万|\s*亿)?$',
+        _re.UNICODE,
+    )
+
+    def _parse_numeric(value_str: str):
+        """
+        Try to parse a stat value string into a float.
+        Returns (float_val, suffix) or (None, None) if not parseable.
+        """
+        v = str(value_str).strip().replace(',', '')
+        m = _pure_num_pat.match(v)
+        if not m:
+            return None, None
+        num = float(m.group('num'))
+        suffix = (m.group('suffix') or '').strip().lower()
+        # Scale multipliers
+        scale = {'k': 1e3, 'm': 1e6, 'b': 1e9, '万': 1e4, '亿': 1e8}.get(suffix, 1)
+        return num * scale, suffix
+
+    result = []
+    for slide in slides:
+        result.append(slide)
+
+        # Only process stats slides without a user-defined chart override
+        if slide.get('type') != 'stats':
+            continue
+        if slide.get('chart_data'):
+            continue
+        if slide.get('skip_chart'):
+            continue
+
+        stats = slide.get('stats', [])
+        if not stats:
+            continue
+
+        # Parse all stat values
+        parsed = []
+        for st in stats:
+            val_str = str(st.get('value', '')).strip()
+            num, suffix = _parse_numeric(val_str)
+            if num is not None:
+                parsed.append({'label': st.get('label', val_str), 'num': num, 'suffix': suffix, 'raw': val_str})
+
+        # Need at least 3 parseable numeric stats
+        if len(parsed) < 3:
+            continue
+
+        # Decide chart type
+        all_pct = all(p['suffix'] == '%' for p in parsed)
+        has_pct = any(p['suffix'] == '%' for p in parsed)
+
+        # Mixed units (some % some absolute) → not meaningful to chart, skip
+        if has_pct and not all_pct:
+            continue
+
+        if all_pct:
+            chart_type = 'donut'
+        else:
+            # Check value spread: if max/min > 1000x, use progress (relative %)
+            # rather than hbar where one bar would dwarf all others
+            vals = [p['num'] for p in parsed]
+            v_min = min(v for v in vals if v > 0) if any(v > 0 for v in vals) else 1
+            v_max = max(vals)
+            if v_max / v_min > 1000:
+                # Values too spread: normalise to relative percentages, use progress
+                chart_type = 'progress'
+                total_sum = sum(vals) or 1
+                # Override values to percentage of total
+                for p in parsed:
+                    p['display_pct'] = round(p['num'] / total_sum * 100, 1)
+            else:
+                chart_type = 'hbar'
+
+        # Build chart_data
+        labels = [p['label'] or p['raw'] for p in parsed]
+
+        if chart_type == 'donut':
+            values = [p['num'] for p in parsed]
+            chart_data = {
+                'labels': labels,
+                'datasets': [{'label': slide.get('title', ''), 'values': values}],
+            }
+        elif chart_type == 'progress':
+            # Normalised to percentage of total sum
+            values = [p['display_pct'] for p in parsed]
+            chart_data = {
+                'labels': labels,
+                'datasets': [{'label': slide.get('title', ''), 'values': values}],
+            }
+        else:
+            # hbar — horizontal bar, great for labelled stat comparisons
+            values = [p['num'] for p in parsed]
+            chart_data = {
+                'labels': labels,
+                'datasets': [{'label': slide.get('title', ''), 'values': values}],
+            }
+
+        # Build the companion chart slide
+        chart_slide = {
+            'type': 'chart',
+            'title': slide.get('title', ''),
+            'chart_type': chart_type,
+            'chart_data': chart_data,
+            'chart_options': {'showGrid': True},
+            'layout': 'chart-full',
+            '_auto_chart': True,   # marker so callers can identify auto-generated slides
+        }
+        # Carry over notes and bg if set
+        if slide.get('notes'):
+            chart_slide['notes'] = slide['notes']
+        if slide.get('bg'):
+            chart_slide['bg'] = slide['bg']
+
+        result.append(chart_slide)
 
     return result
 

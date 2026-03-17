@@ -41,6 +41,25 @@
  *   //   window.postMessage({ type: 'chart:data', id: 'myChart', data: {...} }, '*')
  *   chart.listenPostMessage();
  *
+ * ── Theme Integration ────────────────────────────────────────────────────
+ *
+ *   This library integrates seamlessly with charts-theme-adapter.js for
+ *   automatic theme color detection and palette generation:
+ *
+ *   <script src="charts.js"></script>
+ *   <script src="charts-theme-adapter.js"></script>
+ *
+ *   // Auto-detect template theme and apply colors:
+ *   SlideChartsTheme.applyToCharts();
+ *
+ *   // Or manually specify theme and style:
+ *   const palette = SlideChartsTheme.getPalette({
+ *     theme: 'pash-orange',
+ *     style: 'monochrome',
+ *     count: 6
+ *   });
+ *   SlideChartsTheme.updateChartsPalette(palette);
+ *
  * ── All charts ────────────────────────────────────────────────────────────
  *   - Are pure SVG + CSS — zero dependencies
  *   - Animate on first render (respects prefers-reduced-motion)
@@ -2359,6 +2378,10 @@ const SlideCharts = (() => {
 
 
 
-  return { bar, line, area, donut, horizontalBar, progress, radar, sankey, treemap, waterfall, bullet, scatter, gauge };
+  return {
+    bar, line, area, donut, horizontalBar, progress, radar, sankey, treemap, waterfall, bullet, scatter, gauge,
+    // Export palette for theme adapter integration
+    PALETTE: PALETTE,
+  };
 
 })();

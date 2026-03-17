@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全图表动画展示 — Frontend Slides</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── 1. CSS Custom Properties (Theme: Vibrant Energy) ── */
+    :root {
+      --bg:             #0f0f23;
+      --surface:        #1a1030;
+      --accent:         #7c3aed;
+      --accent2:        #ec4899;
+      --chart3:         #10b981;
+      --chart4:         #f59e0b;
+      --chart5:         #3b82f6;
+      --chart6:         #ef4444;
+      --text-primary:   #ffffff;
+      --text-secondary: #a1a1c4;
+      --font-heading:   'Space Grotesk', system-ui, sans-serif;
+      --font-body:      'DM Sans', system-ui, sans-serif;
+    }
+
+    /* ── 2. Base Reset & Typography ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
+    
+    /* ── 3. Layout ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .header-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #a78bfa, #6c63ff, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── 4. Chart Grid ── */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── 5. Chart Card ── */
+    .chart-card {
+      background: rgba(26,16,48,0.85);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .chart-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-card-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .chart-card-type {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent2);
+      font-weight: 600;
+      padding: 4px 10px;
+      background: rgba(236,72,153,0.1);
+      border-radius: 999px;
+    }
+
+    .chart-card-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .chart-wrapper {
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .chart-wrapper svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    /* ── 6. Control Bar ── */
+    .control-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,15,35,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-left: 16px;
+    }
+
+    /* ── 7. Animation Controls ── */
+    .playing .chart-wrapper svg * {
+      animation-play-state: running !important;
+    }
+
+    /* ── 8. Accessibility ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-badge">
+      <span class="dot"></span>
+      Frontend Slides · Chart Library
+    </div>
+    <h1>6 种图表 <span>动画展示</span></h1>
+    <p class="subtitle">零依赖纯 SVG 图表引擎 · 自动播放动画 · 主题自适应 · 完全响应式</p>
+  </header>
+
+  <!-- Charts Grid -->
+  <div class="chart-grid">
+
+    <!-- 1. Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">柱状图</h2>
+        <span class="chart-card-type">SlideCharts.bar()</span>
+      </div>
+      <p class="chart-card-desc">双数据集对比 · 渐变填充 · 交错入场动画</p>
+      <div class="chart-wrapper" id="barChart"></div>
+    </div>
+
+    <!-- 2. Line Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">折线图</h2>
+        <span class="chart-card-type">SlideCharts.line()</span>
+      </div>
+      <p class="chart-card-desc">平滑贝塞尔曲线 · 描线动画 · 数据点标记</p>
+      <div class="chart-wrapper" id="lineChart"></div>
+    </div>
+
+    <!-- 3. Area Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">面积图</h2>
+        <span class="chart-card-type">SlideCharts.area()</span>
+      </div>
+      <p class="chart-card-desc">填充区域渐变 · 路径动画 · 多数据集支持</p>
+      <div class="chart-wrapper" id="areaChart"></div>
+    </div>
+
+    <!-- 4. Donut Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">环形图</h2>
+        <span class="chart-card-type">SlideCharts.donut()</span>
+      </div>
+      <p class="chart-card-desc">中心标签 · 百分比标注 · 分段缩放动画</p>
+      <div class="chart-wrapper" id="donutChart"></div>
+    </div>
+
+    <!-- 5. Horizontal Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">横向柱状图</h2>
+        <span class="chart-card-type">SlideCharts.horizontalBar()</span>
+      </div>
+      <p class="chart-card-desc">排名徽章 · 从左展开 · 自动配色</p>
+      <div class="chart-wrapper" id="hbarChart"></div>
+    </div>
+
+    <!-- 6. Progress Bars -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-card-title">进度条</h2>
+        <span class="chart-card-type">SlideCharts.progress()</span>
+      </div>
+      <p class="chart-card-desc">动画填充 · 副标签 · 多维度指标</p>
+      <div class="chart-wrapper" id="progressChart"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Control Bar -->
+<div class="control-bar">
+  <button class="btn btn-primary" id="playBtn">
+    <span id="playIcon">▶</span> 播放动画
+  </button>
+  <button class="btn btn-secondary" id="resetBtn">
+    ↺ 重置
+  </button>
+  <span class="status" id="status">点击播放按钮查看所有动画</span>
+</div>
+
+<!-- charts.js inlined below -->
+<script>
+/**
+ * charts.js — Zero-dependency SVG chart engine for frontend-slides skill
+ *
+ * Usage: Include this script inline in your presentation HTML (copy-paste the
+ * whole file into a <script> block), then call the chart functions to inject
+ * charts into container elements.
+ *
+ * Chart types:
+ *   SlideCharts.bar(container, data, options)
+ *   SlideCharts.line(container, data, options)
+ *   SlideCharts.donut(container, data, options)
+ *   SlideCharts.horizontalBar(container, data, options)
+ *   SlideCharts.progress(container, data, options)
+ *   SlideCharts.area(container, data, options)
+ *
+ * All charts:
+ *   - Are pure SVG + CSS — zero dependencies
+ *   - Animate on first render (respects prefers-reduced-motion)
+ *   - Use CSS custom properties for theming (inherit from :root)
+ *   - Are fully responsive via viewBox
+ *   - Emit a 'chart:ready' CustomEvent on the container when done
+ *
+ * ─── Quick Example ────────────────────────────────────────────────────────────
+ *
+ * <div id="myChart" class="chart-container"></div>
+ * <script>
+ *   SlideCharts.bar('#myChart', {
+ *     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+ *     datasets: [{ label: 'Revenue', values: [42, 68, 55, 91], color: 'var(--accent)' }]
+ *   });
+ * </script>
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+const SlideCharts = (() => {
+  'use strict';
+
+  // ── Utility helpers ──────────────────────────────────────────────────────
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  /** Create an SVG element with attributes */
+  function svgEl(tag, attrs = {}) {
+    const el = document.createElementNS(svgNS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+
+  /** Resolve a selector or element reference to a DOM node */
+  function resolve(container) {
+    return typeof container === 'string'
+      ? document.querySelector(container)
+      : container;
+  }
+
+  /** Check user motion preference */
+  function prefersReducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /** Lerp between two values */
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  /** Format numbers compactly: 1200 → "1.2k", 1500000 → "1.5M" */
+  function fmt(n) {
+    if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+
+  /** Generate a unique ID for clip paths / gradients */
+  let _uid = 0;
+  function uid(prefix = 'sc') { return `${prefix}-${++_uid}`; }
+
+  /** Inject shared CSS once */
+  let _cssInjected = false;
+  function injectCSS() {
+    if (_cssInjected) return;
+    _cssInjected = true;
+    const style = document.createElement('style');
+    style.textContent = `
+      /* ── SlideCharts shared styles ── */
+      .sc-wrap { width: 100%; height: 100%; }
+      .sc-svg   { overflow: visible; display: block; }
+      .sc-label { font-family: var(--font-body, system-ui, sans-serif); }
+      .sc-title { font-family: var(--font-heading, system-ui, sans-serif); font-weight: 700; }
+      .sc-legend { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+                   margin-top: 12px; font-family: var(--font-body, system-ui, sans-serif); }
+      .sc-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px;
+                        color: var(--text-secondary, #888); }
+      .sc-legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+      /* Bar animation */
+      @keyframes sc-growY {
+        from { transform: scaleY(0); }
+        to   { transform: scaleY(1); }
+      }
+      @keyframes sc-growX {
+        from { transform: scaleX(0); }
+        to   { transform: scaleX(1); }
+      }
+      @keyframes sc-fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes sc-drawLine {
+        from { stroke-dashoffset: var(--sc-len, 1000); }
+        to   { stroke-dashoffset: 0; }
+      }
+      @keyframes sc-donutSpin {
+        from { stroke-dashoffset: var(--sc-circumference, 314); }
+        to   { stroke-dashoffset: var(--sc-target, 0); }
+      }
+      @keyframes sc-progressFill {
+        from { width: 0%; }
+        to   { width: var(--sc-pct, 0%); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sc-bar-rect, .sc-line-path, .sc-donut-arc, .sc-progress-fill,
+        .sc-hbar-rect { animation: none !important; transition: none !important; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ── Default palette (falls back to CSS vars, then hardcoded) ─────────────
+  const PALETTE = [
+    'var(--accent,  #6366f1)',
+    'var(--accent2, #ec4899)',
+    'var(--chart3,  #10b981)',
+    'var(--chart4,  #f59e0b)',
+    'var(--chart5,  #3b82f6)',
+    'var(--chart6,  #ef4444)',
+  ];
+
+  function getColor(index, override) {
+    return override || PALETTE[index % PALETTE.length];
+  }
+
+  // ── Shared axis / grid helpers ────────────────────────────────────────────
+
+  /**
+   * Compute nice axis ticks for a value range.
+   * Returns { min, max, step, ticks[] }
+   */
+  function niceScale(dataMin, dataMax, tickCount = 5) {
+    const range = dataMax - dataMin || 1;
+    const roughStep = range / (tickCount - 1);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+    const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude)
+      .find(s => s >= roughStep) || magnitude * 10;
+    const min = Math.floor(dataMin / niceStep) * niceStep;
+    const max = Math.ceil(dataMax / niceStep) * niceStep;
+    const ticks = [];
+    for (let t = min; t <= max + niceStep * 0.01; t += niceStep) {
+      ticks.push(parseFloat(t.toPrecision(10)));
+    }
+    return { min, max, step: niceStep, ticks };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // BAR CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a vertical bar chart.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {string[]} data.labels
+   *   @param {Array<{label:string, values:number[], color?:string}>} data.datasets
+   * @param {Object} [options]
+   *   @param {number}  [options.width=600]
+   *   @param {number}  [options.height=340]
+   *   @param {boolean} [options.showGrid=true]
+   *   @param {boolean} [options.showValues=true]
+   *   @param {boolean} [options.showLegend=true]
+   *   @param {number}  [options.barRadius=4]
+   *   @param {number}  [options.animDuration=700]  ms
+   *   @param {string}  [options.title]
+   */
+  function bar(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) return;
+
+    const {
+      width = 600, height = 340,
+      showGrid = true, showValues = true, showLegend = true,
+      barRadius = 4, animDuration = 700, title,
+    } = options;
+
+    const margin = { top: title ? 48 : 20, right: 20, bottom: 52, left: 48 };
+    const W = width - margin.left - margin.right;
+    const H = height - margin.top - margin.bottom;
+
+    const allValues = data.datasets.flatMap(d => d.values);
+    const scale = niceScale(Math.min(0, ...allValues), Math.max(...allValues));
+    const yRange = scale.max - scale.min;
+
+    // SVG root
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${width} ${height}`,
+      class: 'sc-svg',
+      role: 'img',
+      'aria-label': title || 'Bar chart',
+    });
+
+    const defs = svgEl('defs');
+    svg.appendChild(defs);
+
+    // Optional gradient per dataset
+    const gradIds = data.datasets.map((ds, i) => {
+      const gid = uid('barg');
+      const color = getColor(i, ds.color);
+      const grad = svgEl('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' });
+      const s1 = svgEl('stop', { offset: '0%', 'stop-color': color, 'stop-opacity': '1' });
+      const s2 = svgEl('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': '0.6' });
+      grad.appendChild(s1); grad.appendChild(s2);
+      defs.appendChild(grad);
+      return gid;
+    });
+
+    const g = svgEl('g', { transform: `translate(${margin.left},${margin.top})` });
+    svg.appendChild(g);
+
+    // Title
+    if (title) {
+      const t = svgEl('text', {
+        x: width / 2, y: -margin.top / 2 + 10,
+        'text-anchor': 'middle',
+        class: 'sc-title',
+        fill: 'var(--text-primary, #fff)',
+        'font-size': '14',
+      });
+      t.textContent = title;
+      g.appendChild(t);
+    }
+
+    // Grid lines + Y axis labels
+    scale.ticks.forEach(tick => {
+      const y = H - ((tick - scale.min) / yRange) * H;
+      if (showGrid) {
+        g.appendChild(svgEl('line', {
+          x1: 0, y1: y, x2: W, y2: y,
+          stroke: 'var(--text-secondary, #555)',
+          'stroke-opacity': '0.2',
+          'stroke-width': '1',
+          'stroke-dasharray': tick === 0 ? 'none' : '4 4',
+        }));
+      }
+      const label = svgEl('text', {
+        x: -8, y: y + 4,
+        'text-anchor': 'end',
+        class: 'sc-label',
+        fill: 'var(--text-secondary, #888)',
+        'font-size': '11',
+      });
+      label.textContent = fmt(tick);
+      g.appendChild(label);
+    });
+
+    // Bars
+    const nGroups = data.labels.length;
+    const nSets = data.datasets.length;
+    const groupW = W / nGroups;
+    const barPad = groupW * 0.15;
+    const barW = (groupW - barPad * 2) / nSets;
+    const delay = prefersReducedMotion() ? 0 : animDuration / nGroups;
+
+    data.labels.forEach((label, gi) => {
+      const groupX = gi * groupW + barPad;
+
+      data.datasets.forEach((ds, di) => {
+        const value = ds.values[gi] ?? 0;
+        const barH = Math.abs(((value - scale.min) / yRange) * H - ((0 - scale.min) / yRange) * H);
+        const barX = groupX + di * barW;
+        const barY = H - ((Math.max(value, 0) - scale.min) / yRange) * H;
+
+        const rect = svgEl('rect', {
+          x: barX,
+          y: barY,
+          width: barW * 0.85,
+          height: Math.max(barH, 1),
+          rx: barRadius,
+          ry: barRadius,
+          fill: `url(#${gradIds[di]})`,
+          class: 'sc-bar-rect',
+          'transform-origin': `${barX + barW * 0.4}px ${barY + barH}px`,
+        });
+
+        if (!prefersReducedMotion()) {
+          rect.style.animation = `sc-growY ${animDuration}ms cubic-bezier(0.34,1.56,0.64,1) ${gi * (delay * 0.5)}ms both`;
+        }
+
+        g.appendChild(rect);
+
+        // Value label on top
+        if (showValues && barH > 12) {
+          const vLabel = svgEl('text', {
+            x: barX + barW * 0.4,
+            y: barY - 5,
+            'text-anchor': 'middle',
+            class: 'sc-label',
+            fill: 'var(--text-secondary, #aaa)',
+            'font-size': '10',
+            opacity: '0',
+          });
+          vLabel.textContent = fmt(value);
+          if (!prefersReducedMotion()) {
+            vLabel.style.animation = `sc-fadeIn 0.4s ease ${gi * (delay * 0.5) + animDuration * 0.7}ms forwards`;
+          } else {
+            vLabel.setAttribute('opacity', '1');
+          }
+          g.appendChild(vLabel);
+        }
+      });
+
+      // X axis label
+      const xLabel = svgEl('text', {
+        x: gi * groupW + groupW / 2,
+        y: H + 20,
+        'text-anchor': 'middle',
+        class: 'sc-label',
+        fill: 'var(--text-secondary, #888)',
+        'font-size': '11',
+      });
+      xLabel.textContent = label;
+      g.appendChild(xLabel);
+    });
+
+    // Zero line
+    const zeroY = H - ((0 - scale.min) / yRange) * H;
+    g.appendChild(svgEl('line', {
+      x1: 0, y1: zeroY, x2: W, y2: zeroY,
+      stroke: 'var(--text-secondary, #555)',
+      'stroke-width': '1.5',
+    }));
+
+    // Legend
+    const wrap = document.createElement('div');
+    wrap.className = 'sc-wrap';
+    wrap.appendChild(svg);
+
+    if (showLegend && data.datasets.length > 1) {
+      const legend = document.createElement('div');
+      legend.className = 'sc-legend';
+      data.datasets.forEach((ds, i) => {
+        const item = document.createElement('div');
+        item.className = 'sc-legend-item';
+        const dot = document.createElement('span');
+        dot.className = 'sc-legend-dot';
+        dot.style.background = getColor(i, ds.color);
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(ds.label));
+        legend.appendChild(item);
+      });
+      wrap.appendChild(legend);
+    }
+
+    el.innerHTML = '';
+    el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // LINE / AREA CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a line chart (optionally with filled area).
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {string[]} data.labels
+   *   @param {Array<{label:string, values:number[], color?:string}>} data.datasets
+   * @param {Object} [options]
+   *   @param {boolean} [options.filled=false]  — fill area under line
+   *   @param {boolean} [options.smooth=true]   — cubic bezier curves
+   *   @param {boolean} [options.dots=true]     — show data point dots
+   *   @param {number}  [options.strokeWidth=2.5]
+   *   @param {number}  [options.animDuration=900]
+   */
+  function line(container, data, options = {}) {
+    return _lineImpl(container, data, { ...options, filled: false });
+  }
+
+  function area(container, data, options = {}) {
+    return _lineImpl(container, data, { ...options, filled: true });
+  }
+
+  function _lineImpl(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) return;
+
+    const {
+      width = 600, height = 320,
+      filled = false, smooth = true, dots = true,
+      strokeWidth = 2.5, animDuration = 900,
+      showGrid = true, showValues = false, showLegend = true, title,
+    } = options;
+
+    const margin = { top: title ? 48 : 20, right: 24, bottom: 52, left: 48 };
+    const W = width - margin.left - margin.right;
+    const H = height - margin.top - margin.bottom;
+
+    const allValues = data.datasets.flatMap(d => d.values);
+    const scale = niceScale(Math.min(0, ...allValues), Math.max(...allValues));
+    const yRange = scale.max - scale.min;
+    const nPoints = data.labels.length;
+
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${width} ${height}`,
+      class: 'sc-svg',
+      role: 'img',
+      'aria-label': title || 'Line chart',
+    });
+
+    const defs = svgEl('defs');
+    svg.appendChild(defs);
+
+    const g = svgEl('g', { transform: `translate(${margin.left},${margin.top})` });
+    svg.appendChild(g);
+
+    if (title) {
+      const t = svgEl('text', {
+        x: width / 2, y: -margin.top / 2 + 10,
+        'text-anchor': 'middle', class: 'sc-title',
+        fill: 'var(--text-primary, #fff)', 'font-size': '14',
+      });
+      t.textContent = title;
+      g.appendChild(t);
+    }
+
+    // Grid + Y labels
+    scale.ticks.forEach(tick => {
+      const y = H - ((tick - scale.min) / yRange) * H;
+      if (showGrid) {
+        g.appendChild(svgEl('line', {
+          x1: 0, y1: y, x2: W, y2: y,
+          stroke: 'var(--text-secondary, #555)',
+          'stroke-opacity': '0.2', 'stroke-width': '1',
+          'stroke-dasharray': tick === 0 ? 'none' : '4 4',
+        }));
+      }
+      const label = svgEl('text', {
+        x: -8, y: y + 4, 'text-anchor': 'end', class: 'sc-label',
+        fill: 'var(--text-secondary, #888)', 'font-size': '11',
+      });
+      label.textContent = fmt(tick);
+      g.appendChild(label);
+    });
+
+    // X labels
+    data.labels.forEach((label, i) => {
+      const x = (i / (nPoints - 1)) * W;
+      const t = svgEl('text', {
+        x, y: H + 20, 'text-anchor': 'middle', class: 'sc-label',
+        fill: 'var(--text-secondary, #888)', 'font-size': '11',
+      });
+      t.textContent = label;
+      g.appendChild(t);
+    });
+
+    // Each dataset
+    data.datasets.forEach((ds, di) => {
+      const color = getColor(di, ds.color);
+      const points = ds.values.map((v, i) => ({
+        x: (i / (nPoints - 1)) * W,
+        y: H - ((v - scale.min) / yRange) * H,
+      }));
+
+      // Build path string (smooth cubic bezier or straight)
+      function buildPath(pts, close = false) {
+        if (pts.length === 0) return '';
+        let d = `M ${pts[0].x} ${pts[0].y}`;
+        if (smooth && pts.length > 2) {
+          for (let i = 1; i < pts.length; i++) {
+            const prev = pts[i - 1];
+            const curr = pts[i];
+            const cpX = (prev.x + curr.x) / 2;
+            d += ` C ${cpX} ${prev.y} ${cpX} ${curr.y} ${curr.x} ${curr.y}`;
+          }
+        } else {
+          pts.slice(1).forEach(p => { d += ` L ${p.x} ${p.y}`; });
+        }
+        if (close) {
+          d += ` L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`;
+        }
+        return d;
+      }
+
+      // Area fill
+      if (filled) {
+        const areaId = uid('areag');
+        const aGrad = svgEl('linearGradient', { id: areaId, x1: '0', y1: '0', x2: '0', y2: '1' });
+        aGrad.appendChild(svgEl('stop', { offset: '0%', 'stop-color': color, 'stop-opacity': '0.35' }));
+        aGrad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': '0.02' }));
+        defs.appendChild(aGrad);
+
+        const areaPath = svgEl('path', {
+          d: buildPath(points, true),
+          fill: `url(#${areaId})`,
+          class: 'sc-area-fill',
+        });
+        if (!prefersReducedMotion()) {
+          areaPath.style.animation = `sc-fadeIn ${animDuration}ms ease ${di * 120}ms both`;
+        }
+        g.appendChild(areaPath);
+      }
+
+      // Line stroke
+      const pathEl = svgEl('path', {
+        d: buildPath(points),
+        fill: 'none',
+        stroke: color,
+        'stroke-width': strokeWidth,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        class: 'sc-line-path',
+      });
+
+      if (!prefersReducedMotion()) {
+        // Measure path length for draw animation
+        // We can't measure before appending, so use a generous estimate
+        const pathLen = W * 1.5;
+        pathEl.style.setProperty('--sc-len', pathLen);
+        pathEl.style.strokeDasharray = pathLen;
+        pathEl.style.strokeDashoffset = pathLen;
+        pathEl.style.animation = `sc-drawLine ${animDuration}ms cubic-bezier(0.4,0,0.2,1) ${di * 150}ms forwards`;
+      }
+
+      g.appendChild(pathEl);
+
+      // After SVG is in DOM, correct the path length
+      requestAnimationFrame(() => {
+        const len = pathEl.getTotalLength?.() || W * 1.5;
+        pathEl.style.setProperty('--sc-len', len);
+        pathEl.style.strokeDasharray = len;
+        if (prefersReducedMotion()) {
+          pathEl.style.strokeDashoffset = 0;
+        } else {
+          pathEl.style.strokeDashoffset = len;
+        }
+      });
+
+      // Dots
+      if (dots) {
+        points.forEach((p, i) => {
+          const circle = svgEl('circle', {
+            cx: p.x, cy: p.y, r: 4,
+            fill: 'var(--bg, #0d0d1a)',
+            stroke: color,
+            'stroke-width': '2',
+            class: 'sc-dot',
+          });
+          if (!prefersReducedMotion()) {
+            circle.style.animation = `sc-fadeIn 0.3s ease ${di * 150 + animDuration * 0.6 + i * 40}ms both`;
+          }
+          g.appendChild(circle);
+
+          if (showValues) {
+            const vt = svgEl('text', {
+              x: p.x, y: p.y - 10,
+              'text-anchor': 'middle', class: 'sc-label',
+              fill: 'var(--text-secondary, #aaa)', 'font-size': '10',
+            });
+            vt.textContent = fmt(ds.values[i]);
+            if (!prefersReducedMotion()) {
+              vt.style.animation = `sc-fadeIn 0.3s ease ${di * 150 + animDuration * 0.8 + i * 40}ms both`;
+            }
+            g.appendChild(vt);
+          }
+        });
+      }
+    });
+
+    // Legend
+    const wrap = document.createElement('div');
+    wrap.className = 'sc-wrap';
+    wrap.appendChild(svg);
+
+    if (showLegend && data.datasets.length > 1) {
+      const legend = document.createElement('div');
+      legend.className = 'sc-legend';
+      data.datasets.forEach((ds, i) => {
+        const item = document.createElement('div');
+        item.className = 'sc-legend-item';
+        const dot = document.createElement('span');
+        dot.className = 'sc-legend-dot';
+        dot.style.background = getColor(i, ds.color);
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(ds.label));
+        legend.appendChild(item);
+      });
+      wrap.appendChild(legend);
+    }
+
+    el.innerHTML = '';
+    el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DONUT / PIE CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a donut or pie chart.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{label:string, value:number, color?:string}>} data.segments
+   * @param {Object} [options]
+   *   @param {boolean} [options.pie=false]       — full pie (no hole)
+   *   @param {number}  [options.innerRadius=0.55] — hole size, 0 = pie
+   *   @param {string}  [options.centerLabel]      — text in the center hole
+   *   @param {string}  [options.centerValue]      — large number in center
+   *   @param {boolean} [options.showLegend=true]
+   *   @param {boolean} [options.showPercentages=true]
+   *   @param {number}  [options.animDuration=800]
+   */
+  function donut(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) return;
+
+    const {
+      width = 360, height = 360,
+      pie = false,
+      innerRadius = pie ? 0 : 0.55,
+      centerLabel, centerValue,
+      showLegend = true, showPercentages = true,
+      animDuration = 800, title,
+    } = options;
+
+    const cx = width / 2, cy = height / 2;
+    const R = Math.min(width, height) / 2 - 16;
+    const r = R * innerRadius;
+    const circumference = 2 * Math.PI * R;
+
+    const total = data.segments.reduce((s, d) => s + d.value, 0);
+
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${width} ${height}`,
+      class: 'sc-svg',
+      role: 'img',
+      'aria-label': title || 'Donut chart',
+    });
+
+    const defs = svgEl('defs');
+    svg.appendChild(defs);
+    const g = svgEl('g');
+    svg.appendChild(g);
+
+    if (title) {
+      const t = svgEl('text', {
+        x: width / 2, y: 18,
+        'text-anchor': 'middle', class: 'sc-title',
+        fill: 'var(--text-primary, #fff)', 'font-size': '14',
+      });
+      t.textContent = title;
+      g.appendChild(t);
+    }
+
+    // Draw arcs using stroke-dasharray technique on circles
+    let cumulativeAngle = -90; // Start from top
+
+    data.segments.forEach((seg, i) => {
+      const color = getColor(i, seg.color);
+      const pct = seg.value / total;
+      const angle = pct * 360;
+
+      // Convert to SVG arc path for proper donut rendering
+      const startRad = (cumulativeAngle * Math.PI) / 180;
+      const endRad = ((cumulativeAngle + angle) * Math.PI) / 180;
+
+      const x1 = cx + R * Math.cos(startRad);
+      const y1 = cy + R * Math.sin(startRad);
+      const x2 = cx + R * Math.cos(endRad);
+      const y2 = cy + R * Math.sin(endRad);
+
+      const xi1 = cx + r * Math.cos(endRad);
+      const yi1 = cy + r * Math.sin(endRad);
+      const xi2 = cx + r * Math.cos(startRad);
+      const yi2 = cy + r * Math.sin(startRad);
+
+      const largeArc = angle > 180 ? 1 : 0;
+
+      let d;
+      if (pie || innerRadius === 0) {
+        d = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+      } else {
+        d = `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2}
+             L ${xi1} ${yi1} A ${r} ${r} 0 ${largeArc} 0 ${xi2} ${yi2} Z`;
+      }
+
+      const path = svgEl('path', {
+        d, fill: color,
+        class: 'sc-donut-arc',
+        'aria-label': `${seg.label}: ${fmt(seg.value)} (${(pct * 100).toFixed(1)}%)`,
+      });
+
+      if (!prefersReducedMotion()) {
+        path.style.opacity = '0';
+        path.style.transform = 'scale(0.8)';
+        path.style.transformOrigin = `${cx}px ${cy}px`;
+        path.style.transition = `opacity 0.4s ease ${i * (animDuration / data.segments.length)}ms,
+                                  transform 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * (animDuration / data.segments.length)}ms`;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          path.style.opacity = '1';
+          path.style.transform = 'scale(1)';
+        }));
+      }
+
+      g.appendChild(path);
+
+      // Percentage label on arc midpoint
+      if (showPercentages && pct > 0.05) {
+        const midAngle = cumulativeAngle + angle / 2;
+        const midRad = (midAngle * Math.PI) / 180;
+        const labelR = pie ? R * 0.65 : (R + r) / 2;
+        const lx = cx + labelR * Math.cos(midRad);
+        const ly = cy + labelR * Math.sin(midAngle);
+
+        const lt = svgEl('text', {
+          x: lx, y: ly + 4,
+          'text-anchor': 'middle', class: 'sc-label',
+          fill: '#fff', 'font-size': '11', 'font-weight': '600',
+        });
+        lt.textContent = `${Math.round(pct * 100)}%`;
+        if (!prefersReducedMotion()) {
+          lt.style.animation = `sc-fadeIn 0.4s ease ${i * (animDuration / data.segments.length) + 300}ms both`;
+        }
+        g.appendChild(lt);
+      }
+
+      cumulativeAngle += angle;
+    });
+
+    // Center labels (donut only)
+    if (!pie && (centerValue || centerLabel)) {
+      if (centerValue) {
+        const cv = svgEl('text', {
+          x: cx, y: cy + 6,
+          'text-anchor': 'middle', class: 'sc-title',
+          fill: 'var(--text-primary, #fff)', 'font-size': '28',
+        });
+        cv.textContent = centerValue;
+        g.appendChild(cv);
+      }
+      if (centerLabel) {
+        const cl = svgEl('text', {
+          x: cx, y: cy + (centerValue ? 22 : 6),
+          'text-anchor': 'middle', class: 'sc-label',
+          fill: 'var(--text-secondary, #aaa)', 'font-size': '12',
+        });
+        cl.textContent = centerLabel;
+        g.appendChild(cl);
+      }
+    }
+
+    // Legend
+    const wrap = document.createElement('div');
+    wrap.className = 'sc-wrap';
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    wrap.style.alignItems = 'center';
+    wrap.appendChild(svg);
+
+    if (showLegend) {
+      const legend = document.createElement('div');
+      legend.className = 'sc-legend';
+      data.segments.forEach((seg, i) => {
+        const item = document.createElement('div');
+        item.className = 'sc-legend-item';
+        const dot = document.createElement('span');
+        dot.className = 'sc-legend-dot';
+        dot.style.background = getColor(i, seg.color);
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(seg.label));
+        legend.appendChild(item);
+      });
+      wrap.appendChild(legend);
+    }
+
+    el.innerHTML = '';
+    el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // HORIZONTAL BAR CHART
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders a horizontal bar chart — ideal for ranking / comparison slides.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{label:string, value:number, color?:string}>} data.items
+   *   @param {number} [data.max]  — override max value (default: auto)
+   * @param {Object} [options]
+   *   @param {boolean} [options.showValues=true]
+   *   @param {boolean} [options.showRank=false]
+   *   @param {number}  [options.barHeight=28]
+   *   @param {number}  [options.barRadius=4]
+   *   @param {number}  [options.animDuration=600]
+   */
+  function horizontalBar(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) return;
+
+    const {
+      width = 560, height,
+      showValues = true, showRank = false,
+      barHeight = 28, barRadius = 4,
+      animDuration = 600, title,
+    } = options;
+
+    const items = data.items;
+    const maxVal = data.max || Math.max(...items.map(d => d.value));
+
+    const labelW = 100;
+    const valueW = showValues ? 48 : 0;
+    const rankW = showRank ? 28 : 0;
+    const gap = 10;
+    const barW = width - labelW - valueW - rankW - gap * 3;
+
+    const rowH = barHeight + 16;
+    const marginTop = title ? 44 : 16;
+    const computedH = height || marginTop + items.length * rowH + 16;
+
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${width} ${computedH}`,
+      class: 'sc-svg',
+      role: 'img',
+      'aria-label': title || 'Horizontal bar chart',
+    });
+
+    const defs = svgEl('defs');
+    svg.appendChild(defs);
+
+    if (title) {
+      const t = svgEl('text', {
+        x: width / 2, y: 22,
+        'text-anchor': 'middle', class: 'sc-title',
+        fill: 'var(--text-primary, #fff)', 'font-size': '14',
+      });
+      t.textContent = title;
+      svg.appendChild(t);
+    }
+
+    items.forEach((item, i) => {
+      const y = marginTop + i * rowH;
+      const color = getColor(i, item.color);
+      const pct = item.value / maxVal;
+      const fillW = pct * barW;
+
+      // Rank
+      if (showRank) {
+        const rankT = svgEl('text', {
+          x: rankW / 2, y: y + barHeight / 2 + 4,
+          'text-anchor': 'middle', class: 'sc-label',
+          fill: 'var(--text-secondary, #888)', 'font-size': '11', 'font-weight': '600',
+        });
+        rankT.textContent = `#${i + 1}`;
+        svg.appendChild(rankT);
+      }
+
+      // Label
+      const labelT = svgEl('text', {
+        x: rankW + gap,
+        y: y + barHeight / 2 + 4,
+        'text-anchor': 'start', class: 'sc-label',
+        fill: 'var(--text-primary, #eee)', 'font-size': '12',
+      });
+      labelT.textContent = item.label.length > 14 ? item.label.slice(0, 13) + '…' : item.label;
+      svg.appendChild(labelT);
+
+      // Background track
+      svg.appendChild(svgEl('rect', {
+        x: rankW + labelW + gap, y,
+        width: barW, height: barHeight,
+        rx: barRadius, fill: 'var(--surface, #222)', opacity: '0.5',
+      }));
+
+      // Fill bar
+      const gradId = uid('hbarg');
+      const grad = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '1', y2: '0' });
+      grad.appendChild(svgEl('stop', { offset: '0%', 'stop-color': color, 'stop-opacity': '0.8' }));
+      grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': '1' }));
+      defs.appendChild(grad);
+
+      const barX = rankW + labelW + gap;
+      const fillRect = svgEl('rect', {
+        x: barX, y,
+        width: fillW, height: barHeight,
+        rx: barRadius,
+        fill: `url(#${gradId})`,
+        class: 'sc-hbar-rect',
+        'transform-origin': `${barX}px ${y}px`,
+      });
+
+      if (!prefersReducedMotion()) {
+        fillRect.style.animation = `sc-growX ${animDuration}ms cubic-bezier(0.4,0,0.2,1) ${i * 80}ms both`;
+      }
+      svg.appendChild(fillRect);
+
+      // Value label
+      if (showValues) {
+        const vt = svgEl('text', {
+          x: rankW + labelW + gap + barW + gap,
+          y: y + barHeight / 2 + 4,
+          'text-anchor': 'start', class: 'sc-label',
+          fill: 'var(--text-secondary, #aaa)', 'font-size': '11',
+        });
+        vt.textContent = fmt(item.value);
+        if (!prefersReducedMotion()) {
+          vt.style.animation = `sc-fadeIn 0.4s ease ${i * 80 + animDuration * 0.6}ms both`;
+        }
+        svg.appendChild(vt);
+      }
+    });
+
+    el.innerHTML = '';
+    el.appendChild(svg);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // PROGRESS BARS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Renders animated progress bars — great for skills, KPIs, completion rates.
+   *
+   * @param {string|Element} container
+   * @param {Object} data
+   *   @param {Array<{label:string, value:number, max?:number, color?:string, sublabel?:string}>} data.items
+   * @param {Object} [options]
+   *   @param {number}  [options.barHeight=12]
+   *   @param {number}  [options.barRadius=6]
+   *   @param {boolean} [options.showPercentage=true]
+   *   @param {number}  [options.animDuration=700]
+   */
+  function progress(container, data, options = {}) {
+    injectCSS();
+    const el = resolve(container);
+    if (!el) return;
+
+    const {
+      barHeight = 12, barRadius = 6,
+      showPercentage = true, animDuration = 700, title,
+      gap = 20,
+    } = options;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'sc-wrap';
+    wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;gap:' + gap + 'px;width:100%;padding:8px 0;';
+
+    if (title) {
+      const h = document.createElement('p');
+      h.className = 'sc-title';
+      h.style.cssText = 'color:var(--text-primary,#fff);font-size:14px;margin-bottom:4px;';
+      h.textContent = title;
+      wrap.appendChild(h);
+    }
+
+    data.items.forEach((item, i) => {
+      const max = item.max || 100;
+      const pct = Math.min(100, Math.max(0, (item.value / max) * 100));
+      const color = getColor(i, item.color);
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;flex-direction:column;gap:5px;width:100%;';
+
+      // Header row: label + percentage
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;';
+
+      const lbl = document.createElement('span');
+      lbl.style.cssText = 'color:var(--text-primary,#eee);font-size:13px;font-family:var(--font-body,sans-serif);';
+      lbl.textContent = item.label;
+
+      const pctEl = document.createElement('span');
+      pctEl.style.cssText = 'color:var(--text-secondary,#aaa);font-size:11px;font-family:var(--font-body,sans-serif);';
+      pctEl.textContent = showPercentage ? `${Math.round(pct)}%` : fmt(item.value);
+
+      header.appendChild(lbl);
+      if (showPercentage || item.sublabel) header.appendChild(pctEl);
+      row.appendChild(header);
+
+      // Track
+      const track = document.createElement('div');
+      track.style.cssText = `
+        width:100%; height:${barHeight}px; border-radius:${barRadius}px;
+        background:var(--surface,#1a1a2e); overflow:hidden;
+      `;
+
+      // Fill
+      const fill = document.createElement('div');
+      fill.className = 'sc-progress-fill';
+      fill.style.cssText = `
+        height:100%; border-radius:${barRadius}px;
+        background: linear-gradient(90deg, ${color}99, ${color});
+        --sc-pct: ${pct}%;
+        width: 0%;
+      `;
+
+      if (!prefersReducedMotion()) {
+        fill.style.animation = `sc-progressFill ${animDuration}ms cubic-bezier(0.4,0,0.2,1) ${i * 100}ms forwards`;
+      } else {
+        fill.style.width = `${pct}%`;
+      }
+
+      track.appendChild(fill);
+      row.appendChild(track);
+
+      if (item.sublabel) {
+        const sub = document.createElement('span');
+        sub.style.cssText = 'color:var(--text-secondary,#888);font-size:11px;font-family:var(--font-body,sans-serif);';
+        sub.textContent = item.sublabel;
+        row.appendChild(sub);
+      }
+
+      wrap.appendChild(row);
+    });
+
+    el.innerHTML = '';
+    el.appendChild(wrap);
+    el.dispatchEvent(new CustomEvent('chart:ready', { bubbles: true }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Public API
+  // ─────────────────────────────────────────────────────────────────────────
+
+  return { bar, line, area, donut, horizontalBar, progress };
+
+})();
+
+</script>
+
+<script>
+// ── Initialize All Charts ─────────────────────────────────────────────────────
+
+function initAllCharts() {
+  // 1. Bar Chart
+  SlideCharts.bar('#barChart', {
+    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    datasets: [
+      { label: '2024', values: [42, 58, 55, 71] },
+      { label: '2025', values: [55, 72, 68, 91] }
+    ]
+  }, { animDuration: 700, showGrid: true, showValues: true, width: 520, height: 300 });
+
+  // 2. Line Chart
+  SlideCharts.line('#lineChart', {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      { label: 'Series A', values: [12, 19, 15, 25, 22, 30] },
+      { label: 'Series B', values: [8, 15, 20, 18, 26, 32] }
+    ]
+  }, { smooth: true, dots: true, animDuration: 900, width: 520, height: 280 });
+
+  // 3. Area Chart
+  SlideCharts.area('#areaChart', {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+    datasets: [{ label: 'ARR ($M)', values: [1.2, 1.8, 2.1, 2.9, 3.4, 4.1, 4.8, 5.9] }]
+  }, { smooth: true, dots: true, animDuration: 900, showValues: true, width: 520, height: 280 });
+
+  // 4. Donut Chart
+  SlideCharts.donut('#donutChart', {
+    segments: [
+      { label: 'Us',           value: 34 },
+      { label: 'Competitor A', value: 28 },
+      { label: 'Competitor B', value: 21 },
+      { label: 'Others',       value: 17 }
+    ]
+  }, { centerValue: '34%', centerLabel: 'Market Share', animDuration: 800, width: 320, height: 320 });
+
+  // 5. Horizontal Bar Chart
+  SlideCharts.horizontalBar('#hbarChart', {
+    items: [
+      { label: 'Direct',   value: 480000 },
+      { label: 'Organic',  value: 310000 },
+      { label: 'Referral', value: 224000 },
+      { label: 'Paid',     value: 168000 },
+      { label: 'Social',   value:  94000 }
+    ]
+  }, { showRank: true, barHeight: 30, animDuration: 600, width: 500 });
+
+  // 6. Progress Bars
+  SlideCharts.progress('#progressChart', {
+    items: [
+      { label: 'AI / ML',       value: 92, color: 'var(--accent)',  sublabel: 'Core competency' },
+      { label: 'Cloud Infra',   value: 85, color: 'var(--accent2)', sublabel: 'AWS + GCP' },
+      { label: 'Data Platform', value: 78, sublabel: 'Real-time pipeline' },
+      { label: 'Mobile',        value: 64, sublabel: 'iOS + Android' },
+      { label: 'Blockchain',    value: 41, sublabel: 'Exploring' }
+    ]
+  }, { barHeight: 12, animDuration: 700 });
+}
+
+// ── Animation Controls ───────────────────────────────────────────────────────
+
+const playBtn = document.getElementById('playBtn');
+const resetBtn = document.getElementById('resetBtn');
+const playIcon = document.getElementById('playIcon');
+const status = document.getElementById('status');
+const chartCards = document.querySelectorAll('.chart-card');
+
+let isPlaying = false;
+
+// Initialize charts on load
+initAllCharts();
+
+// Play button - replay all animations
+playBtn.addEventListener('click', () => {
+  if (isPlaying) return;
+  isPlaying = true;
+  
+  playIcon.textContent = '⏳';
+  status.textContent = '播放动画中...';
+  playBtn.disabled = true;
+
+  // Clear all charts and reinitialize
+  document.querySelectorAll('[class^="sc-"], .sc-wrap, .sc-svg, .sc-legend, .sc-legend-item').forEach(el => el.remove());
+  
+  setTimeout(() => {
+    initAllCharts();
+    
+    setTimeout(() => {
+      isPlaying = false;
+      playIcon.textContent = '▶';
+      status.textContent = '动画播放完成';
+      playBtn.disabled = false;
+      
+      setTimeout(() => {
+        status.textContent = '点击播放按钮查看所有动画';
+      }, 3000);
+    }, 1000);
+  }, 100);
+});
+
+// Reset button - reload page
+resetBtn.addEventListener('click', () => {
+  location.reload();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    playBtn.click();
+  }
+  if (e.code === 'KeyR') {
+    resetBtn.click();
+  }
+});
+
+</script>
+
+</body>
+</html>

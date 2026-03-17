@@ -563,6 +563,45 @@
       [data-animate] { transition: none; }
       * { animation: none !important; }
     }
+
+    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
+    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
+    :root {
+      /* Map forai-white's own color tokens → charts.js standard tokens    */
+      /* --accent is #0a0a0a (ink black) — works well as a minimal series1 */
+      --accent2:         var(--accent-cool);     /* #1a56db cool blue → series 2 */
+      --text-primary:    var(--ink);             /* #0a0a0a */
+      --text-secondary:  var(--ink-3);           /* #8c8c8c muted labels */
+      --font-heading:    var(--font-head);       /* DM Serif Display */
+      /* Multi-series chart color palette — restrained, minimal-friendly */
+      --chart3:  #6b7280;
+      --chart4:  #d97706;
+      --chart5:  #2563eb;
+      --chart6:  #dc2626;
+    }
+
+    /* Chart slide layout helpers */
+    .chart-container {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sc-chart-full {
+      display: flex; flex-direction: column;
+      gap: 16px; width: 80%; max-width: 740px;
+    }
+    .sc-chart-split {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 52px;
+      align-items: center;
+      width: min(92%, 1060px);
+    }
+    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
+    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
+    @media (max-width: 768px) {
+      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
+    }
+    /* ─────────────────────────────────────────────────────────────────── */
   </style>
 </head>
 <body>

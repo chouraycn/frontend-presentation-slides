@@ -814,6 +814,45 @@
       }
       .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
     }
+
+    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
+    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
+    :root {
+      /* Map hhart-red's own color tokens → charts.js standard tokens */
+      --accent:          var(--red);            /* crimson red → primary chart color */
+      --accent2:         var(--red-light);       /* lighter red → secondary series */
+      --text-primary:    var(--ink);             /* #F2F0EE on dark slides */
+      --text-secondary:  var(--ink-mid);         /* #888888 labels / axes */
+      --font-heading:    var(--font-display);    /* Barlow Condensed */
+      /* Multi-series chart color palette */
+      --chart3:  #10b981;
+      --chart4:  #f59e0b;
+      --chart5:  #3b82f6;
+      --chart6:  #ef4444;
+    }
+
+    /* Chart slide layout helpers */
+    .chart-container {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sc-chart-full {
+      display: flex; flex-direction: column;
+      gap: 16px; width: 80%; max-width: 740px;
+    }
+    .sc-chart-split {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 52px;
+      align-items: center;
+      width: min(92%, 1060px);
+    }
+    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
+    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
+    @media (max-width: 768px) {
+      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
+    }
+    /* ─────────────────────────────────────────────────────────────────── */
   </style>
 </head>
 <body>

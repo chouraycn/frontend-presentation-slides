@@ -714,16 +714,15 @@
     cursor.className = 'custom-cursor';
     cursor.style.cssText = `
       position: fixed;
-      width: 20px;
-      height: 20px;
+      width: 3px;
+      height: 3px;
       border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px rgba(201,168,76,0.8);
+      background: #c9a84c;
+      box-shadow: 0 0 10px rgba(201,168,76,0.8), 0 0 20px rgba(201,168,76,0.6), 0 0 30px rgba(201,168,76,0.4);
       pointer-events: none;
       z-index: 10000;
       transform: translate(-50%, -50%);
       transition: transform 0.08s ease-out, width 0.2s ease, height 0.2s ease;
-      mix-blend-mode: difference;
     `;
     document.body.appendChild(cursor);
     
@@ -801,12 +800,12 @@
     // 悬停在可点击元素上时放大
     document.querySelectorAll('a, button, .slide').forEach(el => {
       el.addEventListener('mouseenter', () => {
-        cursor.style.width = '40px';
-        cursor.style.height = '40px';
+        cursor.style.width = '6px';
+        cursor.style.height = '6px';
       });
       el.addEventListener('mouseleave', () => {
-        cursor.style.width = '20px';
-        cursor.style.height = '20px';
+        cursor.style.width = '3px';
+        cursor.style.height = '3px';
       });
     });
   })();

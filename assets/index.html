@@ -1486,8 +1486,26 @@
     closeModal();
   });
 
-  /* ── Mouse Follow Glow Effect ─────────────────────────────────── */
-  (function initMouseGlow(){
+  /* ── Custom Cursor ─────────────────────────────────────────────── */
+  (function initCustomCursor(){
+    document.body.style.cursor = 'none';
+    
+    const cursor = document.createElement('div');
+    cursor.className = 'custom-cursor';
+    cursor.style.cssText = `
+      position: fixed;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #0a0a0a;
+      box-shadow: 0 0 10px rgba(10,10,10,0.3), 0 0 20px rgba(108,99,255,0.5);
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s ease-out, width 0.2s ease, height 0.2s ease;
+    `;
+    document.body.appendChild(cursor);
+    
     const glow = document.createElement('div');
     glow.className = 'mouse-glow';
     glow.style.cssText = `
@@ -1506,18 +1524,27 @@
     
     let mouseX = 0, mouseY = 0;
     let glowX = 0, glowY = 0;
+    let cursorX = 0, cursorY = 0;
     let isActive = false;
     let rafId = null;
     
-    function updateGlow() {
+    function updatePositions() {
       if (!isActive) return;
-      const dx = mouseX - glowX;
-      const dy = mouseY - glowY;
-      glowX += dx * 0.12;
-      glowY += dy * 0.12;
+      const glowDx = mouseX - glowX;
+      const glowDy = mouseY - glowY;
+      glowX += glowDx * 0.12;
+      glowY += glowDy * 0.12;
       glow.style.left = glowX + 'px';
       glow.style.top = glowY + 'px';
-      rafId = requestAnimationFrame(updateGlow);
+      
+      const cursorDx = mouseX - cursorX;
+      const cursorDy = mouseY - cursorY;
+      cursorX += cursorDx * 0.35;
+      cursorY += cursorDy * 0.35;
+      cursor.style.left = cursorX + 'px';
+      cursor.style.top = cursorY + 'px';
+      
+      rafId = requestAnimationFrame(updatePositions);
     }
     
     document.addEventListener('mousemove', (e) => {
@@ -1526,14 +1553,34 @@
       if (!isActive) {
         isActive = true;
         glow.style.opacity = '1';
-        updateGlow();
+        cursor.style.opacity = '1';
+        updatePositions();
       }
     }, { passive: true });
     
     document.addEventListener('mouseleave', () => {
       isActive = false;
       glow.style.opacity = '0';
+      cursor.style.opacity = '0';
       if (rafId) cancelAnimationFrame(rafId);
+    });
+    
+    document.addEventListener('mousedown', () => {
+      cursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    });
+    document.addEventListener('mouseup', () => {
+      cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+    });
+    
+    document.querySelectorAll('a, button, .template-card, .file-label').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '6px';
+        cursor.style.height = '6px';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '20px';
+        cursor.style.height = '20px';
+      });
     });
   })();
 </script>

@@ -12,7 +12,6 @@
     1. Edit :root {} constants (colors, fonts)
     2. Replace [PLACEHOLDER] content
     3. Paste scripts/charts.js before </body> for data slides
-    4. Press [P] for presenter mode
 -->
 <html lang="zh-CN">
 <head>
@@ -765,25 +764,6 @@
       text-transform: uppercase;
     }
 
-    #presenterBtn {
-      position: fixed;
-      bottom: 18px;
-      left: 18px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--ink-light);
-      font-family: var(--font-body);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      padding: 5px 10px;
-      cursor: pointer;
-      border-radius: 1px;
-      z-index: 200;
-      transition: border-color 0.2s ease, color 0.2s ease;
-    }
-    #presenterBtn:hover { border-color: var(--red); color: var(--red); }
-
     /* ═══════════════════════════════════════════════════════
        RESPONSIVE
        ═══════════════════════════════════════════════════════ */
@@ -812,7 +792,7 @@
         transform: none !important;
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
-      .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
+      .nav-dots, .progress-bar, .slide-counter { display: none; }
     }
 
     /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
@@ -859,7 +839,6 @@
   <div class="progress-bar" id="progressBar"></div>
   <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
   <div class="slide-counter" id="slideCounter">01 / 09</div>
-  <button id="presenterBtn" aria-label="Open presenter view">Presenter [P]</button>
 
   <main class="slides-container" id="slidesContainer" role="main">
 
@@ -1119,17 +1098,14 @@
         this.current     = 0;
         this.total       = this.slides.length;
         this.animating   = false;
-        this.channel     = new BroadcastChannel('slide-sync');
 
         this._buildDots();
         this._initAnimationObserver();
         this._bindKeys();
         this._bindTouch();
         this._bindWheel();
-        this._bindChannel();
 
         this.goTo(0, false);
-        document.getElementById('presenterBtn').addEventListener('click', () => this._openPresenter());
       }
 
       _buildDots() {
@@ -1192,7 +1168,6 @@
             ' ':        () => this.next(),
             Home:       () => this.goTo(0),
             End:        () => this.goTo(this.total - 1),
-            'p': () => this._openPresenter(), 'P': () => this._openPresenter()
           };
           if (map[e.key]) { e.preventDefault(); map[e.key](); }
           if (e.key === ' ' && e.shiftKey) { e.preventDefault(); this.prev(); }
@@ -1219,154 +1194,9 @@
         }, { passive: false });
       }
 
-      _bindChannel() {
-        this.channel.onmessage = e => {
-          if (e.data.type === 'navigate')     this.goTo(e.data.index);
-          if (e.data.type === 'request-init') {
-            this.channel.postMessage({ type: 'init', index: this.current, total: this.total, sourceUrl: location.href });
-          }
-        };
-        this.channel.postMessage({ type: 'init', index: this.current, total: this.total, sourceUrl: location.href });
-      }
-
-      _openPresenter() {
-        const html = document.getElementById('presenter-view-html').textContent;
-        const win  = window.open('', 'presenterView', 'width=1200,height=700');
-        win.document.write(html);
-        win.document.close();
-      }
     }
 
     const presentation = new SlidePresentation();
-  </script>
-
-  <!-- ── PRESENTER VIEW TEMPLATE ──────────────────────────── -->
-  <script id="presenter-view-html" type="text/plain">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Presenter View — Hhart Red</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0a0a0a;color:#f2f0ee;font-family:'Barlow',sans-serif;height:100vh;display:grid;grid-template-columns:3fr 2fr;grid-template-rows:1fr 1fr;overflow:hidden}
-  #cur-frame{grid-row:1/3;background:#111;border-right:1px solid #1f1f1f;position:relative;overflow:hidden}
-  #cur-frame iframe{width:100%;height:100%;border:none;transform-origin:top left;pointer-events:none}
-  #next-frame{background:#111;border-bottom:1px solid #1f1f1f;position:relative;overflow:hidden}
-  #next-frame iframe{width:100%;height:100%;border:none;transform-origin:top left;pointer-events:none}
-  #notes-panel{padding:20px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
-  .pv-label{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#555;font-family:'Barlow',sans-serif}
-  #notes-text{font-size:13px;line-height:1.7;color:#ccc;flex:1;overflow-y:auto}
-  #timer{font-size:24px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f2f0ee;cursor:pointer;letter-spacing:.04em}
-  #timer.warn{color:#f59e0b}
-  #timer.danger{color:#C8102E}
-  .ctrl-row{display:flex;gap:8px;flex-wrap:wrap}
-  .pv-btn{flex:1;padding:8px 4px;background:transparent;border:1px solid #222;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;border-radius:1px;transition:all .2s;font-family:'Barlow',sans-serif}
-  .pv-btn:hover{border-color:#C8102E;color:#C8102E}
-  .pv-btn.active{background:#C8102E;border-color:#C8102E;color:#fff}
-  #laser-dot{position:fixed;width:14px;height:14px;border-radius:50%;background:#C8102E;box-shadow:0 0 8px rgba(200,16,46,.8);pointer-events:none;display:none;z-index:9999;transform:translate(-50%,-50%)}
-</style>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet">
-</head>
-<body>
-<div id="cur-frame"><iframe id="mainIframe" sandbox="allow-scripts allow-same-origin"></iframe></div>
-<div id="next-frame"><iframe id="nextIframe" sandbox="allow-scripts allow-same-origin"></iframe></div>
-<div id="notes-panel">
-  <div class="pv-label">Speaker Notes</div>
-  <div id="notes-text">—</div>
-  <div class="pv-label">Timer</div>
-  <div id="timer">00:00</div>
-  <div class="ctrl-row">
-    <button class="pv-btn" id="btnPrev">← Prev</button>
-    <button class="pv-btn" id="btnNext">Next →</button>
-  </div>
-  <div class="ctrl-row">
-    <button class="pv-btn" id="btnLaser">Laser</button>
-    <button class="pv-btn" id="btnBlack">Blackout</button>
-  </div>
-</div>
-<div id="laser-dot"></div>
-<script>
-  const ch=new BroadcastChannel('slide-sync');
-  let cur=0,tot=1,src='',started=null,timerInterval=null,laserOn=false,blackOut=false;
-  const main=document.getElementById('mainIframe');
-  const next=document.getElementById('nextIframe');
-  const notes=document.getElementById('notes-text');
-  const timer=document.getElementById('timer');
-  const dot=document.getElementById('laser-dot');
-
-  ch.postMessage({type:'request-init'});
-
-  ch.onmessage=e=>{
-    if(e.data.type==='init'){src=e.data.sourceUrl;tot=e.data.total;setSlide(e.data.index);}
-    if(e.data.type==='slide-change'){setSlide(e.data.index);}
-  };
-
-  function setSlide(n){
-    cur=n;
-    if(src){
-      main.src=src+'#slide-'+(n+1);
-      if(n+1<tot)next.src=src+'#slide-'+(n+2);
-      else next.srcdoc='<body style="background:#0a0a0a;display:flex;align-items:center;justify-content:center;height:100vh;color:#333;font-family:Barlow,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase">End of deck</body>';
-    }
-    if(!started){started=Date.now();timerInterval=setInterval(updateTimer,1000);}
-  }
-
-  function navigate(delta){
-    const n=cur+delta;
-    if(n<0||n>=tot)return;
-    ch.postMessage({type:'navigate',index:n});
-    setSlide(n);
-  }
-
-  function updateTimer(){
-    if(!started)return;
-    const s=Math.floor((Date.now()-started)/1000);
-    const m=Math.floor(s/60),ss=s%60;
-    timer.textContent=(m<10?'0':'')+m+':'+(ss<10?'0':'')+ss;
-    timer.className=s>=1800?'danger':s>=1200?'warn':'';
-  }
-
-  timer.addEventListener('click',()=>{started=Date.now();});
-  document.getElementById('btnPrev').addEventListener('click',()=>navigate(-1));
-  document.getElementById('btnNext').addEventListener('click',()=>navigate(1));
-
-  document.getElementById('btnLaser').addEventListener('click',()=>{
-    laserOn=!laserOn;
-    document.getElementById('btnLaser').classList.toggle('active',laserOn);
-    dot.style.display=laserOn?'block':'none';
-    if(laserOn){
-      main.addEventListener('mousemove',moveLaser);
-      ch.postMessage({type:'laser-on'});
-    } else {
-      main.removeEventListener('mousemove',moveLaser);
-      dot.style.display='none';
-      ch.postMessage({type:'laser-off'});
-    }
-  });
-
-  function moveLaser(e){
-    const r=main.getBoundingClientRect();
-    const x=e.clientX-r.left,y=e.clientY-r.top;
-    dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';
-    ch.postMessage({type:'laser-move',x:x/r.width,y:y/r.height});
-  }
-
-  document.getElementById('btnBlack').addEventListener('click',()=>{
-    blackOut=!blackOut;
-    document.getElementById('btnBlack').classList.toggle('active',blackOut);
-    ch.postMessage({type:blackOut?'blackout-on':'blackout-off'});
-  });
-
-  document.addEventListener('keydown',e=>{
-    if(e.key==='ArrowRight'||e.key===' ')navigate(1);
-    if(e.key==='ArrowLeft')navigate(-1);
-    if(e.key==='l'||e.key==='L')document.getElementById('btnLaser').click();
-    if(e.key==='b'||e.key==='B')document.getElementById('btnBlack').click();
-  });
-<\/script>
-</body>
-</html>
   </script>
 
 </body>

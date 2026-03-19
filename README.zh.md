@@ -10,7 +10,7 @@
 - **PPT/PPTX 转换** — 上传 PowerPoint 文件，获得像素级还原的网页版
 - **8 套精心设计的模板** — 通过视觉风格选择，而非抽象文字描述
 - **智能模板匹配** — 根据内容与配色信号自动选择最合适的模板
-- **演讲者模式** — 内置备注、计时器、全屏导航
+- **全屏导航** — 方向键、滚动、触摸滑动
 - **PDF 导出** — 通过 Puppeteer 或浏览器打印一键导出
 
 ---
@@ -65,7 +65,7 @@ git clone https://github.com/chouraycn/frontend-presentation-slides \
 
 ### 触发词
 
-`制作幻灯片` · `创建演示文稿` · `做PPT` · `生成slides` · `PPT转HTML` · `pitch deck` · `网页版幻灯片` · `演讲者模式` · `presenter mode` · `投资人演讲` · `融资路演` · `技术分享` · `季度报告` · `产品发布`
+`制作幻灯片` · `创建演示文稿` · `做PPT` · `生成slides` · `PPT转HTML` · `pitch deck` · `网页版幻灯片` · `投资人演讲` · `融资路演` · `技术分享` · `季度报告` · `产品发布`
 
 ---
 
@@ -88,7 +88,7 @@ frontend-presentation-slides/
 │   │   ├── template-pash-orange.html
 │   │   └── template-hhart-red.html
 │   ├── style-previews/               # 单页风格预览
-│   └── demos/                        # 功能演示（图表、演讲者模式）
+│   └── demos/                        # 功能演示（图表）
 ├── scripts/
 │   ├── generate_slides.py            # 核心 AI → HTML 生成器
 │   ├── extract_pptx.py               # PPTX → 幻灯片 JSON 提取器

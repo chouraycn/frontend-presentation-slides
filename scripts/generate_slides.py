@@ -1389,7 +1389,6 @@ def _build_minimal_html(slides_html: str, template_name: str, lang: str) -> str:
     .nav-dots button{{width:6px;height:6px;border-radius:50%;border:none;background:rgba(218,119,86,.2);cursor:pointer;transition:background .2s,transform .2s;padding:0;}}
     .nav-dots button.active{{background:var(--accent);transform:scale(1.6);}}
     .slide-counter{{position:fixed;bottom:16px;right:18px;font-size:11px;color:var(--text-tertiary);z-index:100;}}
-    #presenterBtn{{position:fixed;bottom:16px;left:18px;background:rgba(253,250,245,.9);border:1px solid rgba(218,119,86,.2);color:var(--text-secondary);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;z-index:100;}}
     @media (max-width:640px){{.feature-grid,.features-grid{{grid-template-columns:1fr;}}.slide-content.two-col{{grid-template-columns:1fr;}}.stats-row{{gap:28px;}}}}
   </style>
 </head>
@@ -1397,7 +1396,6 @@ def _build_minimal_html(slides_html: str, template_name: str, lang: str) -> str:
 <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
 <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
 <div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
-<button id="presenterBtn">演讲者视图 [P]</button>
 <main class="slides-container" id="slidesContainer" role="main">
 
 {slides_html}
@@ -1408,17 +1406,15 @@ def _build_minimal_html(slides_html: str, template_name: str, lang: str) -> str:
   const slides=Array.from(container.querySelectorAll('.slide'));
   const total=slides.length; let current=0;
   document.getElementById('totalSlides').textContent=total;
-  const CHANNEL='slides-presenter-sync'; let bc=null; try{{bc=new BroadcastChannel(CHANNEL);}}catch(e){{}}
   const dotsEl=document.getElementById('navDots');
   slides.forEach((_,i)=>{{const b=document.createElement('button');b.setAttribute('aria-label',`Slide ${{i+1}}`);b.onclick=()=>goTo(i);dotsEl.appendChild(b);}});
-  function updateChrome(i){{current=i;document.getElementById('currentSlide').textContent=i+1;const pct=total>1?(i/(total-1))*100:100;document.getElementById('progressBar').style.width=pct+'%';dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false'));if(bc)bc.postMessage({{type:'slide-change',payload:{{index:i,total,notes:slides[i]?.dataset?.notes||''}}}});}}
+  function updateChrome(i){{current=i;document.getElementById('currentSlide').textContent=i+1;const pct=total>1?(i/(total-1))*100:100;document.getElementById('progressBar').style.width=pct+'%';dotsEl.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));slides.forEach((s,j)=>s.setAttribute('aria-current',j===i?'true':'false'));}}
   function goTo(i){{const idx=Math.max(0,Math.min(i,total-1));slides[idx].scrollIntoView({{behavior:'smooth'}});}}
   const obs=new IntersectionObserver((entries)=>{{entries.forEach(e=>{{if(!e.isIntersecting)return;const i=slides.indexOf(e.target);if(i<0)return;updateChrome(i);e.target.querySelectorAll('[data-animate]').forEach((el,j)=>{{setTimeout(()=>el.classList.add('visible'),j*130);}});}});}},{{threshold:0.55}});
   slides.forEach(s=>obs.observe(s));
   document.addEventListener('keydown',e=>{{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(['ArrowRight','ArrowDown',' '].includes(e.key)){{e.preventDefault();goTo(current+1);}}else if(['ArrowLeft','ArrowUp'].includes(e.key)){{e.preventDefault();goTo(current-1);}}else if(e.key==='Home'){{e.preventDefault();goTo(0);}}else if(e.key==='End'){{e.preventDefault();goTo(total-1);}}else if(e.key.toLowerCase()==='f'){{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}}}});
   let touchY=0; container.addEventListener('touchstart',e=>{{touchY=e.touches[0].clientY;}},{{passive:true}}); container.addEventListener('touchend',e=>{{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));}},{{passive:true}});
   let wl=false; container.addEventListener('wheel',e=>{{if(wl)return;wl=true;goTo(current+(e.deltaY>0?1:-1));setTimeout(()=>wl=false,800);}},{{passive:true}});
-  if(bc)bc.addEventListener('message',e=>{{if(e.data?.type==='request-init')bc.postMessage({{type:'init',payload:{{index:current,total,notes:slides[current]?.dataset?.notes||''}}}});if(e.data?.type==='navigate')goTo(e.data.payload.index);}});
   updateChrome(0); setTimeout(()=>{{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*130));}},200);
 </script>
 </body>

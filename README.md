@@ -10,7 +10,7 @@
 - **Convert PPT/PPTX** — upload a PowerPoint file, get a pixel-perfect web version
 - **8 handcrafted templates** — choose by visual style, not abstract descriptions
 - **Smart template detection** — automatically picks the best template from content + color signals
-- **Presenter mode** — speaker notes, timer, fullscreen navigation built-in
+- **Fullscreen navigation** — arrow keys, scroll, touch swipe
 - **PDF export** — one-click export via Puppeteer or browser print
 
 ---
@@ -65,7 +65,7 @@ Create a tech talk using the Vibrant Energy template, topic: Rust for beginners
 
 ### Trigger words
 
-`制作幻灯片` · `创建演示文稿` · `做PPT` · `生成slides` · `PPT转HTML` · `pitch deck` · `网页版幻灯片` · `演讲者模式` · `presenter mode` · `投资人演讲` · `融资路演` · `技术分享` · `季度报告` · `产品发布`
+`制作幻灯片` · `创建演示文稿` · `做PPT` · `生成slides` · `PPT转HTML` · `pitch deck` · `网页版幻灯片` · `投资人演讲` · `融资路演` · `技术分享` · `季度报告` · `产品发布`
 
 ---
 
@@ -88,7 +88,7 @@ frontend-presentation-slides/
 │   │   ├── template-pash-orange.html
 │   │   └── template-hhart-red.html
 │   ├── style-previews/               # Single-slide style preview pages
-│   └── demos/                        # Feature demos (charts, presenter mode)
+│   └── demos/                        # Feature demos (charts)
 ├── scripts/
 │   ├── generate_slides.py            # Core AI → HTML generator
 │   ├── extract_pptx.py               # PPTX → slide JSON extractor

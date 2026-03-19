@@ -560,14 +560,6 @@
       font-size: 9px; color: rgba(13,26,58,0.30);
       z-index: 100; font-family: var(--font-mono); letter-spacing: 0.1em;
     }
-    #presenterBtn {
-      position: fixed; bottom: 22px; left: 24px;
-      background: transparent; border: 1px solid rgba(13,26,58,0.15);
-      color: rgba(13,26,58,0.35); font-size: 9px; font-family: var(--font-body);
-      padding: 5px 10px; border-radius: 0; cursor: pointer; z-index: 100;
-      letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s;
-    }
-    #presenterBtn:hover { border-color: rgba(13,26,58,0.4); color: rgba(13,26,58,0.7); }
     .slide-label {
       position: absolute; top: 26px; right: 30px;
       font-family: var(--font-mono); font-size: 9px;
@@ -621,7 +613,7 @@
         position: relative !important; transform: none !important; overflow: visible;
         background: var(--bg) !important;
       }
-      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      .progress-bar, .nav-dots, .slide-counter { display: none !important; }
       [data-animate] { opacity: 1 !important; transform: none !important; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
@@ -632,7 +624,6 @@
 <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
 <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
 <div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">8</span></div>
-<button id="presenterBtn">演讲者视图 [P]</button>
 
 <main class="slides-container" id="slidesContainer" role="main">
 
@@ -967,7 +958,6 @@
 </main>
 
 <script>
-  const CHANNEL='slides-presenter-sync'; let presenterWin=null,bc=null; try{bc=new BroadcastChannel(CHANNEL);}catch(e){}
   const container=document.getElementById('slidesContainer'); const slides=Array.from(container.querySelectorAll('.slide')); const total=slides.length; let current=0; let navigating=false;
   document.getElementById('totalSlides').textContent=total;
   slides.forEach((s,i)=>{s.style.transform='translateY('+(i*100)+'vh)';});
@@ -1011,185 +1001,10 @@
 
   function goTo(i){i=Math.max(0,Math.min(i,total-1));if(i===current&&!navigating)return;navigating=true;slides.forEach((s,j)=>{s.style.transform='translateY('+((j-i)*100)+'vh)';});slides[i].querySelectorAll('[data-animate]').forEach((el,j)=>{el.classList.remove('visible');setTimeout(()=>el.classList.add('visible'),j*80);});animateOKRBars(slides[i]);countUpNumbers(slides[i]);updateChrome(i);setTimeout(()=>{navigating=false;},600);}
   updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),80+i*80));animateOKRBars(slides[0]);countUpNumbers(slides[0]);},150);
-  document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}else if(e.key==='Home'){e.preventDefault();goTo(0);}else if(e.key==='End'){e.preventDefault();goTo(total-1);}else if(e.key.toLowerCase()==='p')openPresenter();else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}});
   let touchY=0; container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true}); container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
   container.addEventListener('wheel',e=>{e.preventDefault();if(navigating)return;goTo(current+(e.deltaY>0?1:-1));},{passive:false});
-  function openPresenter(){
-    if(presenterWin&&!presenterWin.closed){presenterWin.focus();if(bc)bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});return;}
-    const tpl=document.getElementById('presenter-view-html').textContent;
-    presenterWin=window.open('','_blank','width=1100,height=700,menubar=no,toolbar=no,location=no,status=no');
-    if(!presenterWin){alert('请允许弹出窗口以打开演讲者视图。');return;}
-    presenterWin.document.open();presenterWin.document.write(tpl);presenterWin.document.close();
-    setTimeout(()=>{if(bc){bc.postMessage({type:'slide-change',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}},500);
-  }
-  document.getElementById('presenterBtn').addEventListener('click',openPresenter);
-  if(bc)bc.addEventListener('message',e=>{
-    if(e.data?.type==='request-init'){bc.postMessage({type:'init',payload:{index:current,total,notes:slides[current]?.dataset?.notes||''}});bc.postMessage({type:'source-url',payload:{url:window.location.href}});}
-    if(e.data?.type==='navigate')goTo(e.data.payload.index);
-    if(e.data?.type==='pointer-pos')relayPointer(e.data.payload);
-    if(e.data?.type==='blackout')toggleBlackout(e.data.payload.active);
-  });
-
-  let laserDot=null;
-  function relayPointer({x,y}){if(!laserDot){laserDot=document.createElement('div');laserDot.style.cssText='position:fixed;width:14px;height:14px;border-radius:50%;background:rgba(255,230,30,0.95);box-shadow:0 0 12px 4px rgba(255,230,30,0.5);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:left 0.04s,top 0.04s;';document.body.appendChild(laserDot);}laserDot.style.left=(x*window.innerWidth)+'px';laserDot.style.top=(y*window.innerHeight)+'px';laserDot.style.display='block';clearTimeout(laserDot._hide);laserDot._hide=setTimeout(()=>{if(laserDot)laserDot.style.display='none';},3000);}
-
-  let blackoutEl=null;
-  function toggleBlackout(active){if(active){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.title='点击退出黑屏';blackoutEl.addEventListener('click',()=>toggleBlackout(false));document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}else if(blackoutEl){blackoutEl.style.display='none';}}
 
   window.addEventListener('message', e => {if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);});
 </script>
-
-<!-- ══ Inline Presenter View Template ══ -->
-<script id="presenter-view-html" type="text/plain">
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>演讲者视图</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #110080; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
-    #topbar { background: #0d0060; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    #timer { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ffffff; cursor: pointer; user-select: none; transition: color 0.2s; }
-    #timer:hover { color: rgba(255,255,255,0.7); }
-    #timer.warn { color: #ffb930; }
-    #timer.over { color: #ff4d6a; }
-    #timer-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; }
-    #slide-counter { margin-left: auto; font-size: 13px; color: rgba(255,255,255,0.5); }
-    #slide-counter strong { color: #ffffff; font-size: 15px; }
-    .topbar-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
-    .nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-size: 16px; width: 36px; height: 32px; border-radius: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
-    .nav-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.5); color: #ffffff; }
-    .tool-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-size: 11px; padding: 4px 10px; border-radius: 0; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .tool-btn:hover { border-color: rgba(255,255,255,0.4); color: #ffffff; }
-    .tool-btn.active { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.6); color: #ffffff; }
-    .tool-btn.blackout-active { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
-    #main { display: grid; grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; height: 100%; overflow: hidden; }
-    #current-pane { grid-row: 1 / 3; background: #0d0060; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; border: 2px solid rgba(255,255,255,0.5); }
-    #current-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.6); font-weight: 600; background: rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.12); }
-    #current-preview { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
-    #current-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; }
-    #laser-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(255,230,30,0.95); box-shadow: 0 0 12px 4px rgba(255,230,30,0.5); pointer-events: none; z-index: 10; transform: translate(-50%,-50%); display: none; }
-    #next-pane { background: #0d0060; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.15); }
-    #next-label { padding: 7px 13px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.3); font-weight: 500; }
-    #next-preview { flex: 1; position: relative; overflow: hidden; }
-    #next-iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform-origin: top left; opacity: 0.55; }
-    #notes-pane { background: #0d0060; border-radius: 0; padding: 14px 16px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.12); }
-    #notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.3); margin-bottom: 8px; font-weight: 500; }
-    #notes-text { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.65); }
-    #notes-text.empty { color: rgba(255,255,255,0.2); font-style: italic; }
-    #progress { position: fixed; bottom: 0; left: 0; height: 2px; background: rgba(255,255,255,0.85); transition: width 0.3s ease; }
-  
-    /* ── SlideCharts v2.1 compatibility layer ──────────────────────────── */
-    /* Ensures charts.js CSS variables resolve correctly in ALL templates  */
-    :root {
-      --chart3:  var(--chart3-raw, #10b981);
-      --chart4:  var(--chart4-raw, #f59e0b);
-      --chart5:  var(--chart5-raw, #3b82f6);
-      --chart6:  var(--chart6-raw, #ef4444);
-    }
-
-    /* text-primary / text-secondary fallbacks for LIGHT-THEME templates  */
-    /* forai-white uses --ink; quarterly-report uses default dark; etc.   */
-    :root {
-      --text-primary:   var(--text-primary-override,
-                          var(--fg, var(--ink, var(--color-text, #1a1a1a))));
-      --text-secondary: var(--text-secondary-override,
-                          var(--ink-2, var(--muted, var(--color-muted, #666))));
-      --surface:        var(--surface-override,
-                          var(--bg-muted, var(--card-bg, rgba(255,255,255,0.06))));
-      --bg:             var(--bg-override,
-                          var(--background, var(--page-bg, #fff)));
-    }
-
-    /* Chart slide layout helpers */
-    .chart-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sc-chart-full {
-      display: flex; flex-direction: column;
-      gap: 16px; width: 80%; max-width: 740px;
-    }
-    .sc-chart-split {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: 52px;
-      align-items: center;
-      width: min(92%, 1060px);
-    }
-    .sc-chart-text-col  { display: flex; flex-direction: column; gap: 14px; }
-    .sc-chart-chart-col { display: flex; align-items: center; justify-content: center; min-height: 260px; }
-    @media (max-width: 768px) {
-      .sc-chart-split { grid-template-columns: 1fr; gap: 24px; }
-    }
-    /* ─────────────────────────────────────────────────────────────────── */
-</style>
-</head>
-<body>
-<div id="topbar">
-  <div><div id="timer">00:00</div><div id="timer-label">点击重置</div></div>
-  <div class="topbar-divider"></div>
-  <button class="nav-btn" id="prevBtn" title="上一张 (←)">&#8592;</button>
-  <button class="nav-btn" id="nextBtn" title="下一张 (→)">&#8594;</button>
-  <div class="topbar-divider"></div>
-  <button class="tool-btn" id="laserBtn">&#9679; 激光笔</button>
-  <button class="tool-btn" id="blackoutBtn">&#9632; 黑屏</button>
-  <div class="topbar-divider"></div>
-  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
-</div>
-<div id="main">
-  <div id="current-pane">
-    <div id="current-label">当前幻灯片</div>
-    <div id="current-preview">
-      <iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
-      <div id="laser-dot"></div>
-    </div>
-  </div>
-  <div id="next-pane"><div id="next-label">下一张</div><div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div></div>
-  <div id="notes-pane"><div id="notes-label">演讲备注</div><div id="notes-text" class="empty">（此幻灯片无备注）</div></div>
-</div>
-<div id="progress" style="width:0%"></div>
-<script>
-  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null,laserActive=false,blackoutActive=false;
-  const ch=new BroadcastChannel('slides-presenter-sync');
-  ch.addEventListener('message',(e)=>{
-    const{type,payload}=e.data||{};
-    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
-    if(type==='source-url'){const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}}
-  });
-  ch.postMessage({type:'request-init'});
-  function updateUI(p){
-    document.getElementById('pv-current').textContent=currentIndex+1;
-    document.getElementById('pv-total').textContent=totalSlides;
-    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
-    const n=document.getElementById('notes-text'),t=p.notes||'';
-    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
-    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
-    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
-    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
-    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
-    if(!timerRunning)startTimer();
-  }
-  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform=`scale(${s})`;f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
-  function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
-  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=30*60)el.classList.add('over');else if(timerSeconds>=20*60){el.classList.add('warn');el.classList.remove('over');}},1000);}
-  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
-  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
-  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
-  const laserBtn=document.getElementById('laserBtn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
-  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
-  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  const blackoutBtn=document.getElementById('blackoutBtn');
-  blackoutBtn.addEventListener('click',()=>{blackoutActive=!blackoutActive;blackoutBtn.classList.toggle('blackout-active',blackoutActive);blackoutBtn.textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
-  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')laserBtn.click();else if(e.key.toLowerCase()==='b')blackoutBtn.click();});
-  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
-<\/script>
-</body>
 </html>
-</script>
 
-</body>
-</html>

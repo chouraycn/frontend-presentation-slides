@@ -3,7 +3,6 @@
 Eight production-ready, zero-dependency HTML presentation templates. Each is a single self-contained file — open in any browser, no setup required.
 
 All templates include:
-- **Presenter Mode v2** — bidirectional navigation (← →), laser pointer (`L` key), blackout screen (`B` key)
 - **Mobile-responsive CSS** — breakpoints at 900 px and 640 px
 - **Print / PDF styles** — `@media print` with `page-break-after: always` and exact color preservation
 
@@ -416,30 +415,6 @@ All templates use `SlidePresentation` class with:
 - **Swipe** / **scroll** — touch and trackpad support
 - **Click nav dots** — jump to any slide
 
-### Presenter Mode (v2)
-Press `[P]` to open the Presenter View (fully self-contained — no external file dependency).
-
-The Presenter View shows:
-- **Current slide** large preview (left panel)
-- **Next slide** preview (top-right)
-- **Speaker notes** (bottom-right)
-- **Elapsed timer** — click to reset; turns yellow at 20 min, red at 30 min
-
-**Controls from the presenter window:**
-
-| Action | Button | Keyboard |
-|--------|--------|----------|
-| Previous slide | ← | `ArrowLeft` |
-| Next slide | → | `ArrowRight` / `Space` |
-| Toggle laser pointer | 🔴 Laser | `L` |
-| Toggle blackout screen | ⬛ Blackout | `B` |
-
-**Laser pointer**: hover the mouse over the current slide preview to project a red dot onto the audience screen in real time.
-
-**Blackout**: sends a full-screen black overlay to the audience window; click the audience screen or press `B` again to cancel.
-
-Both windows stay in sync via the BroadcastChannel API — no server required. See `assets/demos/presenter-mode-demo.html` for the annotated integration reference.
-
 ### Adding Charts
 Paste the contents of `scripts/charts.js` before `</body>`, then call:
 ```js
@@ -462,8 +437,6 @@ Add `data-notes` to any `.slide` element:
 ```html
 <section class="slide" data-notes="Pause here. Ask audience: who has faced this problem?">
 ```
-
-Notes are displayed in the Presenter View notes panel.
 
 ### Offline / No Internet
 Run `python3 scripts/inline_fonts.py template-pitch-deck.html` to produce an offline-ready version with all fonts Base64-inlined. See `scripts/inline_fonts.py` for full usage.
@@ -525,7 +498,7 @@ Every slide object must have a `type` field. All other fields are optional unles
 | `title` | string ✓ | Main heading (supports `\n` for line breaks) |
 | `subtitle` | string | Subtitle / supporting line |
 | `eyebrow` | string | Small label above the heading (e.g. `"Series A · 2025"`) |
-| `notes` | string | Speaker notes (shown in Presenter View) |
+| `notes` | string | Speaker notes |
 
 ---
 
@@ -642,7 +615,7 @@ Every slide object must have a `type` field. All other fields are optional unles
 | Field | Type | Description |
 |-------|------|-------------|
 | `bg` | string | Override the auto-resolved background CSS class (e.g. `"bg-dark"`, `"slide-cover"`). Bypasses template rhythm logic. Use only when you need a non-default background. |
-| `notes` | string | Speaker notes string. Rendered in the Presenter View notes panel. Supports plain text; avoid HTML. |
+| `notes` | string | Speaker notes string. Supports plain text; avoid HTML. |
 
 ---
 

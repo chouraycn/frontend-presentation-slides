@@ -17,7 +17,6 @@
   HOW TO USE:
     1. Edit :root {} constants (font, accent, bg)
     2. Fill in your actual content
-    3. Press [P] for presenter mode
     4. Paste scripts/charts.js before </body> for data slides
 -->
 <html lang="zh-CN">
@@ -524,20 +523,12 @@
       border-radius: 1px;
     }
 
-    /* ── Slide counter + Presenter button ───────────────────────── */
+    /* ── Slide counter ───────────────────────── */
     .slide-counter {
       position: fixed; bottom: 16px; right: 20px;
       font-size: 11px; color: var(--ink-3); z-index: 100;
       font-family: var(--font-body);
     }
-    #presenterBtn {
-      position: fixed; bottom: 16px; left: 20px;
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--ink-3); font-size: 11px; font-family: var(--font-body);
-      padding: 5px 10px; border-radius: 5px; cursor: pointer; z-index: 100;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    #presenterBtn:hover { border-color: var(--ink-2); color: var(--ink); }
 
     /* ── 8. Responsive ───────────────────────────────────────────── */
     @media (max-width: 900px) {
@@ -555,7 +546,7 @@
     @media print {
       .slides-container { overflow: visible; height: auto; }
       .slide { page-break-after: always; height: 100vh; overflow: hidden; position: relative; transform: none !important; }
-      .nav-dots, .progress-bar, .slide-counter, #presenterBtn { display: none; }
+      .nav-dots, .progress-bar, .slide-counter { display: none; }
     }
 
     /* ── 10. Reduced motion ──────────────────────────────────────── */
@@ -614,9 +605,6 @@
 
 <!-- Slide counter -->
 <div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">9</span></div>
-
-<!-- Presenter mode button -->
-<button id="presenterBtn" title="Presenter view (P)">演讲者视图 [P]</button>
 
 <main class="slides-container" id="slidesContainer" role="main">
 
@@ -1054,17 +1042,7 @@ class SlidePresentation {
           e.preventDefault(); this.prev(); break;
         case 'Home': this.goTo(0); break;
         case 'End': this.goTo(this.slides.length - 1); break;
-        case 'p': case 'P': this._openPresenterView(); break;
       }
-    });
-
-    // Presenter button
-    const presenterBtn = document.getElementById('presenterBtn');
-    if (presenterBtn) presenterBtn.addEventListener('click', () => this._openPresenterView());
-
-    // postMessage bridge — allows Presenter iframe to drive this page
-    window.addEventListener('message', e => {
-      if (e.data && e.data.type === 'goto-slide') this.goTo(e.data.index, true);
     });
 
     // Touch / swipe
@@ -1081,27 +1059,6 @@ class SlidePresentation {
       if (this.navigating) return;
       e.deltaY > 0 ? this.next() : this.prev();
     }, { passive: false });
-
-    // BroadcastChannel (Presenter Mode)
-    this._channel = new BroadcastChannel('slides-presenter-sync');
-    this._channel.onmessage = e => {
-      const { type, payload } = e.data || {};
-      if (type === 'navigate' && payload) this.goTo(payload.index, true);
-      if (type === 'request-init') this._broadcastState();
-      if (type === 'pointer-pos' && payload) this._showLaser(payload.x, payload.y);
-      if (type === 'blackout' && payload) this._setBlackout(payload.active);
-    };
-
-    // Laser pointer overlay
-    this._laserDot = document.createElement('div');
-    this._laserDot.style.cssText = 'position:fixed;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#ff3b30 30%,rgba(255,59,48,0));pointer-events:none;z-index:9999;display:none;transform:translate(-50%,-50%);';
-    document.body.appendChild(this._laserDot);
-
-    // Blackout overlay
-    this._blackoutOverlay = document.createElement('div');
-    this._blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9998;display:none;cursor:pointer;';
-    this._blackoutOverlay.addEventListener('click', () => this._setBlackout(false));
-    document.body.appendChild(this._blackoutOverlay);
   }
 
   _initObserver() {
@@ -1112,7 +1069,7 @@ class SlidePresentation {
   next() { if (this.current < this.slides.length - 1) this.goTo(this.current + 1); }
   prev() { if (this.current > 0) this.goTo(this.current - 1); }
 
-  goTo(idx, fromBroadcast = false) {
+  goTo(idx) {
     if (idx < 0 || idx >= this.slides.length) return;
     if (idx === this.current && !this.navigating) return;
     this.navigating = true;
@@ -1126,7 +1083,6 @@ class SlidePresentation {
       setTimeout(() => el.classList.add('visible'), i * 110);
     });
     this._updateUI(idx);
-    if (!fromBroadcast) this._broadcastState();
     setTimeout(() => { this.navigating = false; }, 650);
   }
 
@@ -1146,153 +1102,6 @@ class SlidePresentation {
     this.slides.forEach((s, i) => s.setAttribute('aria-current', i === idx ? 'true' : 'false'));
   }
 
-  _showLaser(x, y) {
-    this._laserDot.style.display = 'block';
-    this._laserDot.style.left = (x * 100) + '%';
-    this._laserDot.style.top = (y * 100) + '%';
-    clearTimeout(this._laserDot._hideTimer);
-    this._laserDot._hideTimer = setTimeout(() => { this._laserDot.style.display = 'none'; }, 1200);
-  }
-
-  _setBlackout(active) {
-    this._blackoutOverlay.style.display = active ? 'block' : 'none';
-  }
-
-  _broadcastState() {
-    const notes = this.slides[this.current]?.dataset.notes || '';
-    this._channel.postMessage({
-      type: 'slide-change',
-      payload: { index: this.current, total: this.slides.length, notes }
-    });
-    this._channel.postMessage({
-      type: 'source-url',
-      payload: { url: location.href }
-    });
-  }
-
-  /* ── Presenter Mode v2 ─────────────────────────────────────── */
-  _openPresenterView() {
-    const html = this._presenterViewHTML();
-    const w = window.open('', 'PresenterView',
-      'width=1280,height=800,scrollbars=no,toolbar=no,menubar=no');
-    if (!w) { alert('请允许弹出窗口以使用演讲者视图。\n请点击地址栏的弹出窗口拦截图标。'); return; }
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => this._broadcastState(), 350);
-  }
-
-  _presenterViewHTML() {
-    return `<!DOCTYPE html><html lang="zh-CN"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>演讲者视图 — ForAI White</title>
-<style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0d0d18;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;}
-  #topbar{background:#111120;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  #timer{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;color:#6b7280;cursor:pointer;user-select:none;transition:color .2s;}
-  #timer:hover{color:#9ca3af;} #timer.warn{color:#f59e0b;} #timer.over{color:#ef4444;}
-  #slide-counter{margin-left:auto;font-size:13px;color:#888;}
-  #slide-counter strong{color:#fff;font-size:15px;}
-  .topbar-divider{width:1px;height:26px;background:rgba(255,255,255,0.1);flex-shrink:0;}
-  .nav-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.12);color:#ccc;font-size:16px;width:36px;height:32px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;flex-shrink:0;}
-  .nav-btn:hover{background:#252540;border-color:rgba(255,255,255,.2);}
-  .tool-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.1);color:#aaa;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;letter-spacing:.08em;transition:background .15s;}
-  .tool-btn:hover{background:#252540;}
-  .tool-btn.active{background:rgba(220,40,40,.2);border-color:rgba(220,40,40,.4);color:#ff6b6b;}
-  #blackout-btn.blackout-active{background:rgba(0,0,0,.6);border-color:#555;color:#ccc;}
-  #main{display:grid;grid-template-columns:3fr 2fr;height:100%;overflow:hidden;}
-  #current-pane{position:relative;overflow:hidden;background:#0a0a14;}
-  #current-preview{width:100%;height:100%;position:relative;overflow:hidden;}
-  #current-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
-  #right-col{display:grid;grid-template-rows:1fr 1fr;overflow:hidden;}
-  #next-pane{background:#0f0f1e;overflow:hidden;position:relative;border-left:1px solid rgba(255,255,255,.05);}
-  #next-preview{width:100%;height:100%;position:relative;overflow:hidden;}
-  #next-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
-  #next-label,#current-label{position:absolute;top:8px;left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.25);z-index:10;}
-  #notes-pane{background:#111;padding:16px 18px;display:flex;flex-direction:column;gap:8px;overflow:hidden;border-left:1px solid rgba(255,255,255,.05);border-top:1px solid rgba(255,255,255,.05);}
-  #notes-label{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.3);flex-shrink:0;}
-  #notes-text{font-size:13px;line-height:1.7;color:#ccc;flex:1;overflow-y:auto;}
-  #notes-text.empty{color:#555;font-style:italic;}
-  #progress{position:fixed;bottom:0;left:0;width:0;height:2px;background:#6366f1;transition:width .4s;z-index:200;}
-  .laser-dot{position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,.85);box-shadow:0 0 12px 4px rgba(220,40,40,.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);display:none;}
-</style>
-</head><body>
-<div id="topbar">
-  <button class="nav-btn" id="prevBtn" title="Previous (←)">&#8592;</button>
-  <button class="nav-btn" id="nextBtn" title="Next (→)">&#8594;</button>
-  <div class="topbar-divider"></div>
-  <span id="timer" title="Click to reset">00:00</span>
-  <div class="topbar-divider"></div>
-  <button class="tool-btn" id="laser-btn">&#9679; 激光笔</button>
-  <button class="tool-btn" id="blackout-btn">&#9632; 黑屏</button>
-  <div class="topbar-divider"></div>
-  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
-</div>
-<div id="main">
-  <div id="current-pane">
-    <div id="current-label">当前</div>
-    <div id="current-preview"><iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
-  </div>
-  <div id="right-col">
-    <div id="next-pane">
-      <div id="next-label">下一张</div>
-      <div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
-    </div>
-    <div id="notes-pane">
-      <div id="notes-label">演讲备注</div>
-      <div id="notes-text" class="empty">（此幻灯片无备注）</div>
-    </div>
-  </div>
-</div>
-<div id="progress"></div>
-<div class="laser-dot" id="laser-dot"></div>
-<script>
-  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null;
-  let laserActive=false,blackoutActive=false;
-  const ch=new BroadcastChannel('slides-presenter-sync');
-  ch.addEventListener('message',(e)=>{
-    const{type,payload}=e.data||{};
-    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
-    if(type==='source-url'){
-      const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
-      if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}
-    }
-    if(type==='pointer-pos'&&payload){const d=document.getElementById('laser-dot');d.style.left=(payload.x*100)+'%';d.style.top=(payload.y*100)+'%';d.style.display='block';}
-    if(type==='pointer-hide'){document.getElementById('laser-dot').style.display='none';}
-    if(type==='blackout'&&payload){toggleBlackout(payload.active);}
-  });
-  ch.postMessage({type:'request-init'});
-  function updateUI(p){
-    document.getElementById('pv-current').textContent=currentIndex+1;
-    document.getElementById('pv-total').textContent=totalSlides;
-    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
-    const n=document.getElementById('notes-text'),t=p.notes||'';
-    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
-    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
-    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
-    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
-    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
-    if(!timerRunning)startTimer();
-  }
-  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform='scale('+s+')';f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
-  function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=1800)el.classList.add('over');else if(timerSeconds>=1200){el.classList.add('warn');el.classList.remove('over');}else{el.classList.remove('warn','over');}},1000);}
-  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
-  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
-  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
-  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')document.getElementById('laser-btn').click();else if(e.key.toLowerCase()==='b')document.getElementById('blackout-btn').click();});
-  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
-  // Laser
-  const laserBtn=document.getElementById('laser-btn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
-  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
-  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  // Blackout
-  let blackoutEl=null;
-  function toggleBlackout(active){blackoutActive=active!==undefined?active:!blackoutActive;document.getElementById('blackout-btn').classList.toggle('blackout-active',blackoutActive);document.getElementById('blackout-btn').textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';if(blackoutActive){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.addEventListener('click',()=>{toggleBlackout(false);ch.postMessage({type:'blackout',payload:{active:false}});});document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}else if(blackoutEl){blackoutEl.style.display='none';}}
-  document.getElementById('blackout-btn').addEventListener('click',()=>{toggleBlackout();ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
-<\/script></body></html>`;
-  }
 }
 
 /* ── Init ──────────────────────────────────────────────────────── */

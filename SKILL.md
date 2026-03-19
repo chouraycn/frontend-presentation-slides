@@ -1,6 +1,6 @@
 ---
 name: frontend-presentation-slides
-description: "Create zero-dependency, animation-rich HTML presentations that run entirely in the browser. This skill should be used when the user wants to build a presentation, convert a PPT/PPTX to web slides, or create slides for a talk, pitch, or product demo. Helps non-designers discover their preferred aesthetic through visual exploration rather than abstract descriptions. Trigger words: 制作幻灯片、创建演示文稿、做PPT、生成slides、PPT转HTML、网页版幻灯片、做一个演讲稿、产品发布会slide、技术分享slide、chouray、pitch deck、将pptx转换为网页、演讲者模式、presenter mode、模板、快速生成幻灯片、Dark Elegance、Vibrant Energy、Clean Minimal、Claude Warmth、Warm Inspire、ForAI White、Pash Orange、投资人演讲、融资路演、技术分享、季度报告、产品发布、品牌故事、设计作品集、橙色品牌、汇报材料、业务汇报、述职报告、工作汇报、年度总结、年终汇报、项目汇报、运营报告、数据报告、策略提案、设计提案、视觉提案、创意提案、品牌提案、slide deck、slideshow、web slides、slide show、html slides、presentation deck、keynote slides、conference slides、demo slides、open source promo、发布会、开幕slide、路演、路演材料、产品路演、investor deck、deck。"
+description: "Create zero-dependency, animation-rich HTML presentations that run entirely in the browser. This skill should be used when the user wants to build a presentation, convert a PPT/PPTX to web slides, or create slides for a talk, pitch, or product demo. Helps non-designers discover their preferred aesthetic through visual exploration rather than abstract descriptions. Trigger words: 制作幻灯片、创建演示文稿、做PPT、生成slides、PPT转HTML、网页版幻灯片、做一个演讲稿、产品发布会slide、技术分享slide、chouray、pitch deck、将pptx转换为网页、模板、快速生成幻灯片、Dark Elegance、Vibrant Energy、Clean Minimal、Claude Warmth、Warm Inspire、ForAI White、Pash Orange、投资人演讲、融资路演、技术分享、季度报告、产品发布、品牌故事、设计作品集、橙色品牌、汇报材料、业务汇报、述职报告、工作汇报、年度总结、年终汇报、项目汇报、运营报告、数据报告、策略提案、设计提案、视觉提案、创意提案、品牌提案、slide deck、slideshow、web slides、slide show、html slides、presentation deck、keynote slides、conference slides、demo slides、open source promo、发布会、开幕slide、路演、路演材料、产品路演、investor deck、deck。"
 ---
 
 # Frontend Slides
@@ -282,7 +282,7 @@ If yes, identify which slides need which modules. Then:
 - All modules are zero-dependency and work offline (QR code has optional network fallback — see `offline: true`)
 - `wordcloud` supports both a static preset list and a live audience-input mode
 - Vote / word data persists in localStorage across page reloads
-- Multi-window sync via BroadcastChannel (works with Presenter Mode)
+- Multi-window sync via BroadcastChannel for multi-device interaction
 - Call `SlideInteractive.clearData()` to reset between sessions
 
 ---
@@ -673,72 +673,6 @@ Requirements: `pip install requests beautifulsoup4`
    - Navigate: Arrow keys / Space / swipe / scroll / click dots
    - Customize: Edit CSS variables in `:root {}` at the top of the file
    - Full screen: F11 or browser fullscreen
-   - Presenter mode: Press `[P]` to open the Presenter View
-
----
-
-## Phase 6: Presenter Mode
-
-Every presentation built with this skill supports a **Presenter Mode** that uses the BroadcastChannel API for real-time two-window synchronization — no server required.
-
-### How to use
-
-1. Open the presentation in a browser tab (the **audience display** — put this on the projector)
-2. Press `[P]` to open the **Presenter View** in a new window
-3. The presenter view shows:
-   - Current slide (large preview, left)
-   - Next slide preview (top right)
-   - Speaker notes (bottom right)
-   - Elapsed time counter (click to reset; turns yellow at 20 min, red at 30 min)
-   - **← → navigation buttons** to advance/go back from the presenter window
-   - **Laser pointer** (button or `L` key): move mouse over the current slide preview to project a red dot on the audience screen
-   - **Blackout** (button or `B` key): toggle a black screen on the audience display; click the audience screen to cancel
-4. Navigate from either window — both stay in sync
-
-### How to add Presenter Mode to a new presentation
-
-The full implementation is in `assets/demos/presenter-mode-demo.html`. The key pieces to add:
-
-**1. Add the BroadcastChannel broadcaster to the main SlidePresentation class:**
-```js
-const presenterChannel = new BroadcastChannel('slides-presenter-sync');
-
-// In goToSlide():
-presenterChannel.postMessage({ type: 'slide-change', index: newIndex, total: slides.length });
-
-// On load:
-presenterChannel.postMessage({ type: 'init', index: currentIndex, total: slides.length,
-  sourceUrl: location.href });
-
-// Handle incoming navigate commands:
-presenterChannel.onmessage = (e) => {
-  if (e.data.type === 'navigate') goToSlide(e.data.index);
-  if (e.data.type === 'request-init') {
-    presenterChannel.postMessage({ type: 'init', index: currentIndex,
-      total: slides.length, sourceUrl: location.href });
-  }
-};
-```
-
-**2. Add the `[P]` key shortcut** to open the presenter view in a new window:
-```js
-if (e.key === 'p' || e.key === 'P') openPresenterView();
-```
-
-**3. The Presenter View HTML** is self-contained inline template (see `presenter-mode-demo.html`
-for the complete `<script id="presenter-view-html" type="text/plain">` template block).
-It uses CSS Grid: `3fr 2fr` columns, `1fr 1fr` rows for the 2×2 layout.
-
-### Speaker notes format
-
-Add notes as `data-notes` attribute on each `.slide`:
-```html
-<section class="slide" data-notes="Key talking point: emphasize the 3x ROI. Pause here for questions.">
-  <!-- slide content -->
-</section>
-```
-
-The presenter view reads `slide.dataset.notes` and displays it in the notes panel.
 
 ---
 
@@ -848,8 +782,7 @@ If the deck contains Chinese/Japanese/Korean text (detected via `\u4e00–\u9fff
 - `scripts/embed_images.py` — **Image inlining tool**. Converts all local `<img src="...">` and CSS `background-image: url(...)` references into base64 data URIs, making the HTML fully self-contained for sharing/archiving. Usage: `python3 scripts/embed_images.py deck.html`. Flags: `--output` (custom path), `--list` (list images only), `--resize W` (max-width resize; requires Pillow), `--quality Q` (JPEG quality 1–95, default 88), `--skip-missing`, `--verbose`. Requires: `pip3 install beautifulsoup4`; optional: `pip3 install Pillow` for resize.
 - `scripts/apply_comments.py` — **Reviewer comments tool** (Direction 5). Reads a structured JSON comments file and applies text changes to an HTML deck. Supports five actions: `replace` / `insert` / `delete` (content changes), `highlight` (wraps target text in `<mark>` with custom color for visual review — no content change), and `note` (informational, no file change). Supports `--dry-run` to preview changes without writing, and auto-creates timestamped backups. Generate a blank template with `--init`. Usage: `python3 scripts/apply_comments.py review.json`. Init template: `python3 scripts/apply_comments.py --init deck.html` → produces `deck-comments.json`.
 - `setup.html` — **Interactive config wizard** (new). Open in any browser for a 3-step visual configurator: choose visual style → fill in content details → copy the generated CLI command. No install required. Located at the project root.
-- `assets/demos/presenter-mode-demo.html` — Full Presenter Mode demo and reference implementation. Press `[P]` to see the two-window sync in action.
-- `assets/templates/` — Template library with **8** ready-to-use presentations: pitch-deck, tech-talk, quarterly-report, product-launch, claude-warmth, forai-white, pash-orange, hhart-red. All templates include v2 Presenter Mode (bidirectional navigation, laser pointer, blackout), mobile responsive CSS, and print/PDF styles. See `assets/templates/README.md` for catalog.
+- `assets/templates/` — Template library with **8** ready-to-use presentations: pitch-deck, tech-talk, quarterly-report, product-launch, claude-warmth, forai-white, pash-orange, hhart-red. All templates include mobile responsive CSS and print/PDF styles. See `assets/templates/README.md` for catalog.
 
 ### Two-Way Editing Workflow
 

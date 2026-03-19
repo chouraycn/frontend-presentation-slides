@@ -31,7 +31,7 @@
  *
  * BroadcastChannel sync:
  *   Votes are broadcast on 'slide-interactive' channel so multiple open
- *   windows (e.g., Presenter View) stay in sync automatically.
+ *   windows stay in sync automatically.
  * ════════════════════════════════════════════════════════════════════════════
  */
 

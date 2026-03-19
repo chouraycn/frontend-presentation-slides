@@ -868,85 +868,13 @@ Best for: multi-dimensional comparisons — competitive analysis, skill matrices
 
 ---
 
-## Presenter Mode Integration
+## Keyboard Shortcuts Reference
 
-The Presenter Mode uses the **BroadcastChannel API** to synchronize the main (audience) window with a separate Presenter View window in real time. No server or WebSocket needed.
-
-### Communication flow
-
-```
-Main window (projector)          Presenter View window (speaker's laptop)
-        │                                     │
-        │── slide-change ──────────────────►  │
-        │◄─ request-init ──────────────────── │
-        │── init ──────────────────────────►  │
-        │◄─ navigate (optional) ───────────── │
-```
-
-### Minimum integration — 5 steps
-
-**Step 1** — Add channel at top of `<script>`:
-```js
-const presenterChannel = new BroadcastChannel('slide-sync');
-```
-
-**Step 2** — Broadcast on every slide change:
-```js
-function goToSlide(index) {
-  // ... existing navigation logic ...
-  presenterChannel.postMessage({ type: 'slide-change', index: currentIndex, total: slides.length });
-}
-```
-
-**Step 3** — Handle incoming messages:
-```js
-presenterChannel.onmessage = (e) => {
-  if (e.data.type === 'navigate') goToSlide(e.data.index);
-  if (e.data.type === 'request-init') {
-    presenterChannel.postMessage({ type: 'init', index: currentIndex,
-      total: slides.length, sourceUrl: location.href });
-  }
-};
-```
-
-**Step 4** — Broadcast init on load:
-```js
-window.addEventListener('load', () => {
-  presenterChannel.postMessage({ type: 'init', index: 0, total: slides.length, sourceUrl: location.href });
-});
-```
-
-**Step 5** — Add `[P]` key shortcut: see `assets/demos/presenter-mode-demo.html` for the complete `openPresenterView()` implementation.
-
-### Speaker notes
-
-```html
-<section class="slide" data-notes="Mention the 3x ROI here. Pause for questions.">
-```
-
-### Presenter View grid layout
-
-```
-┌─────────────────────┬──────────────┐
-│                     │  Next slide  │
-│   Current slide     │   preview    │
-│   (large iframe)    ├──────────────┤
-│                     │    Notes     │
-└─────────────────────┴──────────────┘
-  grid-column: 3fr           2fr
-  grid-rows: 1fr             1fr
-```
-
-### Timer — color states
-
-| Time elapsed | Color | Meaning |
-|---|---|---|
-| 0:00 – 19:59 | White | Normal |
-| 20:00 – 29:59 | Yellow | Approaching limit |
-| 30:00+ | Red | Over time |
-
-Click the timer display to reset to 00:00.
-
-### Reference implementation
-
-`assets/demos/presenter-mode-demo.html` — 5-slide demo that explains and demonstrates the feature with the full inline Presenter View HTML template.
+| Key | Action |
+|-----|--------|
+| `ArrowRight` / `ArrowDown` / `Space` | Next slide |
+| `ArrowLeft` / `ArrowUp` / `Shift+Space` | Previous slide |
+| `Home` | First slide |
+| `End` | Last slide |
+| `F` | Toggle fullscreen |
+| `Escape` | Exit fullscreen |

@@ -12,7 +12,6 @@
     1. Edit :root {} constants (colors, fonts)
     2. Replace [PLACEHOLDER] content
     3. Paste scripts/charts.js before </body> for data slides
-    4. Press [P] for presenter mode
 -->
 <html lang="zh-CN">
 <head>
@@ -652,25 +651,6 @@
       z-index: 200;
     }
 
-    #presenterBtn {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--ink-light);
-      font-size: 10px;
-      font-family: var(--font-body);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 2px;
-      cursor: pointer;
-      z-index: 200;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    #presenterBtn:hover { border-color: var(--orange); color: var(--orange); }
-
     /* ═══════════════════════════════════════════════════════
        MOBILE RESPONSIVE
        ═══════════════════════════════════════════════════════ */
@@ -700,7 +680,7 @@
         position: relative !important;
         transform: none !important;
       }
-      .progress-bar, .nav-dots, .slide-counter, #presenterBtn { display: none !important; }
+      .progress-bar, .nav-dots, .slide-counter { display: none !important; }
       [data-animate] { opacity: 1 !important; transform: none !important; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
@@ -757,7 +737,6 @@
 <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
 <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
 <div class="slide-counter"><span id="currentSlide">01</span> / <span id="totalSlides">9</span></div>
-<button id="presenterBtn">演讲者视图 [P]</button>
 
 <main class="slides-container" id="slidesContainer" role="main">
 
@@ -1118,12 +1097,6 @@
       b.setAttribute('aria-current', i === idx ? 'true' : 'false');
     });
 
-    /* BroadcastChannel for Presenter Mode */
-    try {
-      const notes = slides[idx].dataset.notes || '';
-      presenterChannel.postMessage({ type: 'slide-change', payload: { index: idx, total, notes } });
-    } catch (e) {}
-
     setTimeout(() => { navigating = false; }, 680);
   }
 
@@ -1140,7 +1113,6 @@
     else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
     else if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
     else if (e.key === ' ') { e.preventDefault(); e.shiftKey ? goTo(current - 1) : goTo(current + 1); }
-    else if (e.key === 'p' || e.key === 'P') { openPresenterView(); }
     else if (e.key === 'f' || e.key === 'F') {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
       else document.exitFullscreen?.();
@@ -1164,210 +1136,13 @@
     if (Math.abs(delta) > 50) goTo(current + (delta > 0 ? 1 : -1));
   }, { passive: true });
 
-  /* ═══════════════════════════════════════════════════════
-     BROADCASTER — for Presenter Mode
-     Must be defined BEFORE goTo(0) so the initial postMessage doesn't throw
-     ═══════════════════════════════════════════════════════ */
-  const presenterChannel = new BroadcastChannel('slides-presenter-sync');
-
   /* ── Init first slide ── */
   goTo(0, true);  // force=true: bypass idx===current guard on init; also triggers animations
 
-  presenterChannel.onmessage = (e) => {
-    const { type, payload } = e.data || {};
-    if (type === 'navigate' && payload) goTo(payload.index);
-    if (type === 'request-init') {
-      presenterChannel.postMessage({ type: 'init', payload: { index: current, total, notes: slides[current]?.dataset.notes || '' } });
-      presenterChannel.postMessage({ type: 'source-url', payload: { url: location.href } });
-    }
-    if (type === 'pointer-pos' && payload) showLaser(payload.x, payload.y);
-    if (type === 'blackout' && payload) toggleBlackout(payload.active);
-  };
-
-  window.addEventListener('load', () => {
-    presenterChannel.postMessage({ type: 'init', payload: { index: 0, total, notes: slides[0]?.dataset.notes || '' } });
-    presenterChannel.postMessage({ type: 'source-url', payload: { url: location.href } });
-  });
-
-  /* ── Laser pointer overlay ── */
-  const laserDot = document.createElement('div');
-  laserDot.style.cssText = 'position:fixed;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#ff3b30 30%,rgba(255,59,48,0));pointer-events:none;z-index:9999;display:none;transform:translate(-50%,-50%);';
-  document.body.appendChild(laserDot);
-
-  function showLaser(x, y) {
-    laserDot.style.display = 'block';
-    laserDot.style.left = (x * 100) + '%';
-    laserDot.style.top = (y * 100) + '%';
-    clearTimeout(laserDot._hideTimer);
-    laserDot._hideTimer = setTimeout(() => { laserDot.style.display = 'none'; }, 1200);
-  }
-
-  /* ── Blackout ── */
-  const blackoutOverlay = document.createElement('div');
-  blackoutOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9998;display:none;cursor:pointer;';
-  blackoutOverlay.addEventListener('click', () => toggleBlackout(false));
-  document.body.appendChild(blackoutOverlay);
-  let blackoutActive = false;
-
-  function toggleBlackout(active) {
-    blackoutActive = active !== undefined ? active : !blackoutActive;
-    blackoutOverlay.style.display = blackoutActive ? 'block' : 'none';
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'b' || e.key === 'B') toggleBlackout();
-  });
-
-  /* ═══════════════════════════════════════════════════════
-     PRESENTER VIEW
-     Opens in a new window with BroadcastChannel sync.
-     Full implementation: iframe current slide + next slide preview + notes + timer.
-     ═══════════════════════════════════════════════════════ */
-  document.getElementById('presenterBtn').addEventListener('click', openPresenterView);
-
-  function openPresenterView() {
-    // Use document.write instead of Blob URL — Blob URL gives origin=null,
-    // which breaks BroadcastChannel (same-origin requirement).
-    const w = window.open('', 'PresenterView', 'width=1200,height=720,toolbar=no,menubar=no');
-    if (!w) { alert('请允许弹出窗口以使用 Presenter Mode'); return; }
-    const htmlContent = document.getElementById('presenter-view-html').textContent;
-    w.document.write(htmlContent);
-    w.document.close();
-    // Give presenter window time to register its BroadcastChannel listener
-    setTimeout(() => {
-      presenterChannel.postMessage({
-        type: 'init', payload: { index: current, total, notes: slides[current].dataset.notes || '' }
-      });
-      presenterChannel.postMessage({ type: 'source-url', payload: { url: location.href } });
-    }, 350);
-  }
-
-  // postMessage bridge — Presenter iframe drives this page via postMessage
-  window.addEventListener('message', e => {
-    if (e.data && e.data.type === 'goto-slide') goTo(e.data.index);
-  });
 })();
-</script>
 
-<!-- ══════════════════════════════════════════════════════
-     PRESENTER VIEW TEMPLATE (inline, not rendered)
-     ══════════════════════════════════════════════════════ -->
-<script id="presenter-view-html" type="text/plain">
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>演讲者视图</title>
-<style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0d0d18;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;}
-  #topbar{background:#111120;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  #timer{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;color:#f97316;cursor:pointer;user-select:none;transition:color .2s;}
-  #timer:hover{color:#fb923c;} #timer.warn{color:#f59e0b;} #timer.over{color:#ef4444;}
-  #slide-counter{margin-left:auto;font-size:13px;color:#888;}
-  #slide-counter strong{color:#fff;font-size:15px;}
-  .topbar-divider{width:1px;height:26px;background:rgba(255,255,255,0.1);flex-shrink:0;}
-  .nav-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.12);color:#ccc;font-size:16px;width:36px;height:32px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;flex-shrink:0;}
-  .nav-btn:hover{background:#252540;border-color:rgba(255,255,255,.2);}
-  .tool-btn{background:#1c1c2e;border:1px solid rgba(255,255,255,0.1);color:#aaa;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;letter-spacing:.08em;transition:background .15s;}
-  .tool-btn:hover{background:#252540;}
-  .tool-btn.active{background:rgba(220,40,40,.2);border-color:rgba(220,40,40,.4);color:#ff6b6b;}
-  #blackout-btn.blackout-active{background:rgba(0,0,0,.6);border-color:#555;color:#ccc;}
-  #main{display:grid;grid-template-columns:3fr 2fr;height:100%;overflow:hidden;}
-  #current-pane{position:relative;overflow:hidden;background:#0a0a14;}
-  #current-preview{width:100%;height:100%;position:relative;overflow:hidden;}
-  #current-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
-  #right-col{display:grid;grid-template-rows:1fr 1fr;overflow:hidden;}
-  #next-pane{background:#0f0f1e;overflow:hidden;position:relative;border-left:1px solid rgba(255,255,255,.05);}
-  #next-preview{width:100%;height:100%;position:relative;overflow:hidden;}
-  #next-iframe{border:none;pointer-events:none;position:absolute;top:0;left:0;}
-  #next-label,#current-label{position:absolute;top:8px;left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.25);z-index:10;}
-  #notes-pane{background:#111;padding:16px 18px;display:flex;flex-direction:column;gap:8px;overflow:hidden;border-left:1px solid rgba(255,255,255,.05);border-top:1px solid rgba(255,255,255,.05);}
-  #notes-label{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.3);flex-shrink:0;}
-  #notes-text{font-size:13px;line-height:1.7;color:#ccc;flex:1;overflow-y:auto;}
-  #notes-text.empty{color:#555;font-style:italic;}
-  #progress{position:fixed;bottom:0;left:0;width:0;height:2px;background:#f97316;transition:width .4s;z-index:200;}
-  .laser-dot{position:fixed;width:18px;height:18px;border-radius:50%;background:rgba(220,40,40,.85);box-shadow:0 0 12px 4px rgba(220,40,40,.45);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);display:none;}
-</style>
-</head>
-<body>
-<div id="topbar">
-  <button class="nav-btn" id="prevBtn" title="Previous (←)">&#8592;</button>
-  <button class="nav-btn" id="nextBtn" title="Next (→)">&#8594;</button>
-  <div class="topbar-divider"></div>
-  <span id="timer" title="Click to reset">00:00</span>
-  <div class="topbar-divider"></div>
-  <button class="tool-btn" id="laserBtn">&#9679; 激光笔</button>
-  <button class="tool-btn" id="blackout-btn">&#9632; 黑屏</button>
-  <div class="topbar-divider"></div>
-  <div id="slide-counter">幻灯片 <strong id="pv-current">1</strong> / <strong id="pv-total">?</strong></div>
-</div>
-<div id="main">
-  <div id="current-pane">
-    <div id="current-label">当前</div>
-    <div id="current-preview"><iframe id="current-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
-  </div>
-  <div id="right-col">
-    <div id="next-pane">
-      <div id="next-label">下一张</div>
-      <div id="next-preview"><iframe id="next-iframe" scrolling="no" tabindex="-1" aria-hidden="true"></iframe></div>
-    </div>
-    <div id="notes-pane">
-      <div id="notes-label">演讲备注</div>
-      <div id="notes-text" class="empty">（此幻灯片无备注）</div>
-    </div>
-  </div>
-</div>
-<div id="progress"></div>
-<div class="laser-dot" id="laser-dot"></div>
-<script>
-  let currentIndex=0,totalSlides=0,timerSeconds=0,timerRunning=false,timerInterval=null;
-  let laserActive=false,blackoutActive=false;
-  const ch=new BroadcastChannel('slides-presenter-sync');
-  ch.addEventListener('message',(e)=>{
-    const{type,payload}=e.data||{};
-    if(type==='slide-change'||type==='init'){currentIndex=payload.index;totalSlides=payload.total;updateUI(payload);}
-    if(type==='source-url'){
-      const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
-      if(cf.src!==payload.url){cf.src=payload.url;nf.src=payload.url;}
-    }
-    if(type==='pointer-pos'&&payload){const d=document.getElementById('laser-dot');d.style.left=(payload.x*100)+'%';d.style.top=(payload.y*100)+'%';d.style.display='block';}
-    if(type==='pointer-hide'){document.getElementById('laser-dot').style.display='none';}
-    if(type==='blackout'&&payload){toggleBlackout(payload.active);}
-  });
-  ch.postMessage({type:'request-init'});
-  function updateUI(p){
-    document.getElementById('pv-current').textContent=currentIndex+1;
-    document.getElementById('pv-total').textContent=totalSlides;
-    document.getElementById('progress').style.width=(totalSlides>1?(currentIndex/(totalSlides-1))*100:100)+'%';
-    const n=document.getElementById('notes-text'),t=p.notes||'';
-    if(t){n.textContent=t;n.classList.remove('empty');}else{n.textContent='（此幻灯片无备注）';n.classList.add('empty');}
-    scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');
-    const cf=document.getElementById('current-iframe'),nf=document.getElementById('next-iframe');
-    try{cf.contentWindow&&cf.contentWindow.postMessage({type:'goto-slide',index:currentIndex},'*');}catch(ex){}
-    try{nf.contentWindow&&nf.contentWindow.postMessage({type:'goto-slide',index:Math.min(currentIndex+1,totalSlides-1)},'*');}catch(ex){}
-    if(!timerRunning)startTimer();
-  }
-  function scaleIframe(fid,cid){const c=document.getElementById(cid),f=document.getElementById(fid);if(!c||!f)return;const w=c.clientWidth,h=c.clientHeight,s=Math.min(w/1280,h/720);f.style.width='1280px';f.style.height='720px';f.style.transform='scale('+s+')';f.style.transformOrigin='top left';f.style.marginLeft=((w-1280*s)/2)+'px';f.style.marginTop=((h-720*s)/2)+'px';}
-  function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-  function startTimer(){if(timerRunning)return;timerRunning=true;timerInterval=setInterval(()=>{timerSeconds++;const el=document.getElementById('timer');el.textContent=fmt(timerSeconds);if(timerSeconds>=1800)el.classList.add('over');else if(timerSeconds>=1200){el.classList.add('warn');el.classList.remove('over');}else{el.classList.remove('warn','over');}},1000);}
-  document.getElementById('timer').addEventListener('click',()=>{timerSeconds=0;const el=document.getElementById('timer');el.textContent='00:00';el.classList.remove('warn','over');});
-  document.getElementById('prevBtn').addEventListener('click',()=>{if(currentIndex>0)ch.postMessage({type:'navigate',payload:{index:currentIndex-1}});});
-  document.getElementById('nextBtn').addEventListener('click',()=>{if(currentIndex<totalSlides-1)ch.postMessage({type:'navigate',payload:{index:currentIndex+1}});});
-  document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('nextBtn').click();}else if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('prevBtn').click();}else if(e.key.toLowerCase()==='l')document.getElementById('laserBtn').click();else if(e.key.toLowerCase()==='b')document.getElementById('blackout-btn').click();});
-  window.addEventListener('resize',()=>{scaleIframe('current-iframe','current-preview');scaleIframe('next-iframe','next-preview');});
-  const laserBtn=document.getElementById('laserBtn'),laserDot=document.getElementById('laser-dot'),preview=document.getElementById('current-preview');
-  laserBtn.addEventListener('click',()=>{laserActive=!laserActive;laserBtn.classList.toggle('active',laserActive);laserBtn.textContent=laserActive?'⬤ 激光笔 ON':'● 激光笔';preview.style.cursor=laserActive?'crosshair':'default';if(!laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  preview.addEventListener('mousemove',(e)=>{if(!laserActive)return;const r=preview.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;laserDot.style.left=(e.clientX-r.left)+'px';laserDot.style.top=(e.clientY-r.top)+'px';laserDot.style.display='block';ch.postMessage({type:'pointer-pos',payload:{x,y}});});
-  preview.addEventListener('mouseleave',()=>{if(laserActive){laserDot.style.display='none';ch.postMessage({type:'pointer-hide'});}});
-  let blackoutEl=null;
-  function toggleBlackout(active){blackoutActive=active!==undefined?active:!blackoutActive;document.getElementById('blackout-btn').classList.toggle('blackout-active',blackoutActive);document.getElementById('blackout-btn').textContent=blackoutActive?'▪ 恢复画面':'■ 黑屏';if(blackoutActive){if(!blackoutEl){blackoutEl=document.createElement('div');blackoutEl.style.cssText='position:fixed;inset:0;background:#000;z-index:9998;cursor:pointer;';blackoutEl.addEventListener('click',()=>{toggleBlackout(false);ch.postMessage({type:'blackout',payload:{active:false}});});document.body.appendChild(blackoutEl);}blackoutEl.style.display='block';}else if(blackoutEl){blackoutEl.style.display='none';}}
-  document.getElementById('blackout-btn').addEventListener('click',()=>{toggleBlackout();ch.postMessage({type:'blackout',payload:{active:blackoutActive}});});
-<\/script>
-</body>
-</html>
 </script>
 
 </body>
 </html>
+

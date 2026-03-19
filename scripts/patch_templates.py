@@ -61,7 +61,6 @@ for f in sorted(TEMPLATES_DIR.glob("template-*.html")):
         print(f"  SKIP (already patched): {f.name}")
         continue
     # Find the LAST </style> tag to avoid issues with multiple style blocks
-    # (e.g., presenter mode styles in quarterly-report template)
     idx = content.rfind("</style>")
     if idx == -1:
         print(f"  SKIP (no </style>): {f.name}")

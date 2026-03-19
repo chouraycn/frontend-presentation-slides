@@ -143,8 +143,7 @@ def export_playwright(html_path: Path, pdf_path: Path, width_mm: float, height_m
                     scroll-snap-align: none !important;
                     break-after: page !important;
                 }
-                .progress-bar, .nav-dots, .slide-counter,
-                #presenterBtn, [id="presenterBtn"] {
+                .progress-bar, .nav-dots, .slide-counter {
                     display: none !important;
                 }
                 * {
@@ -191,7 +190,7 @@ const puppeteer = require('puppeteer');
     @media print {{
       .slides-container {{ overflow: visible !important; height: auto !important; }}
       .slide {{ height: 100vh !important; page-break-after: always !important; break-after: page !important; scroll-snap-align: none !important; }}
-      .progress-bar, .nav-dots, .slide-counter, #presenterBtn {{ display: none !important; }}
+      .progress-bar, .nav-dots, .slide-counter {{ display: none !important; }}
       * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
     }}
   ` }});
@@ -245,7 +244,7 @@ def export_weasyprint(html_path: Path, pdf_path: Path, width_mm: float, height_m
             break-after: page !important;
             scroll-snap-align: none !important;
         }}
-        .progress-bar, .nav-dots, .slide-counter, #presenterBtn {{ display: none !important; }}
+        .progress-bar, .nav-dots, .slide-counter {{ display: none !important; }}
         [data-animate] {{ opacity: 1 !important; transform: none !important; }}
         * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
     """)

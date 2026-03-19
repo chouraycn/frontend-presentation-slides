@@ -555,11 +555,21 @@ Then show a compact per-slide summary (slide number, layout type, title). **Do N
 
 Reordering, combining, or omitting slides requires **explicit user instruction**. Default is always: preserve every slide.
 
-### Step 4c — Template selection (ask the user before generating)
+### Step 4c — Template selection (REQUIRED: open visual gallery)
 
-After showing the slide summary, **pause and ask the user to choose a template** before generating any HTML. Present the eight options as a clear comparison table, and point them to the visual gallery if they want to see screenshots:
+After showing the slide summary, you **MUST** open the visual template gallery for the user to select a style. This is a required step — do not skip it.
 
-> "I've extracted **N slides** from your PPT. Before I generate the HTML, please pick a template style — each one is a complete, zero-dependency presentation with full Presenter Mode:
+**Action: Open the template gallery**
+
+Immediately use the `preview_url` tool to open the interactive template gallery:
+
+```
+preview_url(url="file:///absolute/path/to/assets/index.html", explanation="Open the interactive template gallery to browse all 8 styles and select one for your PPT conversion")
+```
+
+Then present the template options to the user:
+
+> "I've extracted **N slides** from your PPT. Please choose a template style — click any card in the gallery above to preview, then tell me which one you prefer:
 >
 > | # | Template | Style | Colors | Best for |
 > |---|----------|-------|--------|----------|
@@ -572,13 +582,7 @@ After showing the slide summary, **pause and ask the user to choose a template**
 > | 7 | **Pash Orange** | Agency Editorial | White + pure orange | Studio pitches, brand decks |
 > | 8 | **Hhart Red Power** | Studio Red | Near-black + crimson | Creative studio, red brand |
 >
-> 👉 Want to see visuals first? Open `assets/index.html` in your browser for the interactive style gallery.
->
 > Just reply with a number (1–8) or style name, and I'll start generating."
-
-**Wait for the user's reply before proceeding to Step 4d.** Do not auto-select a template or skip this step.
-
-If the user's PPT content clearly signals a theme (e.g., a fundraising deck → Dark Elegance, a dev conference talk → Vibrant Energy), you may suggest a recommendation alongside the table, but still require explicit confirmation.
 
 ### Step 4d — Generate HTML
 

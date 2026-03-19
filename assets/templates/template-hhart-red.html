@@ -1303,6 +1303,57 @@
       setTimeout(animateCounters, 300);
     };
     setTimeout(animateCounters, 600);
+
+    /* ── Mouse Follow Glow Effect ─────────────────────────────────── */
+    (function initMouseGlow(){
+      const glow = document.createElement('div');
+      glow.className = 'mouse-glow';
+      glow.style.cssText = `
+        position: fixed;
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(200,16,46,0.1) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.3s ease;
+        opacity: 0;
+      `;
+      document.body.appendChild(glow);
+      
+      let mouseX = 0, mouseY = 0;
+      let glowX = 0, glowY = 0;
+      let isActive = false;
+      let rafId = null;
+      
+      function updateGlow() {
+        if (!isActive) return;
+        const dx = mouseX - glowX;
+        const dy = mouseY - glowY;
+        glowX += dx * 0.12;
+        glowY += dy * 0.12;
+        glow.style.left = glowX + 'px';
+        glow.style.top = glowY + 'px';
+        rafId = requestAnimationFrame(updateGlow);
+      }
+      
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        if (!isActive) {
+          isActive = true;
+          glow.style.opacity = '1';
+          updateGlow();
+        }
+      }, { passive: true });
+      
+      document.addEventListener('mouseleave', () => {
+        isActive = false;
+        glow.style.opacity = '0';
+        if (rafId) cancelAnimationFrame(rafId);
+      });
+    })();
   </script>
 
 </body>

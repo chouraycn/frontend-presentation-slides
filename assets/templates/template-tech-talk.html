@@ -146,6 +146,48 @@
     .bench-win { color: var(--accent3); }
     .bench-lose { color: var(--text-secondary); }
 
+    /* ── Hover Micro-interactions ── */
+    .card {
+      transition: border-color 0.25s ease, transform 0.3s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(124,58,237,0.4);
+      box-shadow: 0 8px 24px rgba(124,58,237,0.1), 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .card:hover .card-title { color: var(--accent); }
+    .card-static:hover { transform: none; border-color: rgba(255,255,255,0.06); box-shadow: none; }
+    .card-title { transition: color 0.25s ease; }
+
+    /* Benchmark table row hover */
+    .bench-table tbody tr { transition: background 0.2s ease; }
+    .bench-table tbody tr:hover { background: rgba(124,58,237,0.04); }
+
+    /* Step item hover */
+    .step-item { transition: transform 0.25s ease; }
+    .step-item:hover { transform: translateX(4px); }
+
+    /* Nav dots hover */
+    .nav-dots button:hover { background: rgba(255,255,255,0.35); transform: scaleY(1.5); }
+
+    /* ── View Transitions ── */
+    @keyframes techFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes techFadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-10px); }
+    }
+    @supports (view-transition-name: none) {
+      ::view-transition-old(slide-content) { animation: 280ms ease-in both techFadeOut; }
+      ::view-transition-new(slide-content) { animation: 280ms ease-out 40ms both techFadeIn; }
+      .slide { view-transition-name: slide-content; }
+    }
+
+    /* ── Counter Animation ── */
+    .card-title[data-count-to] { display: inline-block; }
+
     /* ── Animations ── */
     [data-animate] { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
     [data-animate="left"] { transform: translateX(-24px); }
@@ -227,6 +269,10 @@
       <p data-animate style="font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 12px;">YOUR NAME · @handle · Company · Venue, Year</p>
     </div>
   </section>
+    <!-- 键盘导航提示 -->
+    <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,0.5);">
+      ← → ↑ ↓ 翻页 · Space 下一页 · Home/End 首尾 · F 全屏
+    </div>
 
   <!-- Slide 2: Context / Why This Matters -->
   <section class="slide bg-dark" role="region" aria-label="Context"
@@ -258,13 +304,17 @@
           <div class="card-title">Option A (rejected)</div>
           <p class="subtitle">Why this seemed obvious but didn't work.</p>
         </div>
-        <div class="card" data-animate style="border-color: rgba(124,58,237,0.4);">
+        <div class="card card-static" data-animate>
           <div class="card-title" style="color: var(--accent);">Option B (chosen) ✓</div>
           <p class="subtitle">The key insight that made this the right choice.</p>
         </div>
         <div class="card" data-animate>
           <div class="card-title">Option C (rejected)</div>
           <p class="subtitle">What this would cost you in complexity or performance.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Option D (alternative)</div>
+          <p class="subtitle">An alternative approach worth considering.</p>
         </div>
       </div>
     </div>
@@ -300,6 +350,14 @@
         <div class="card" data-animate>
           <div class="card-title">Insight 2</div>
           <p class="subtitle">The edge case this handles that others miss.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Insight 3</div>
+          <p class="subtitle">The performance bottleneck this solves.</p>
+        </div>
+        <div class="card" data-animate>
+          <div class="card-title">Insight 4</div>
+          <p class="subtitle">The maintainability benefit for future changes.</p>
         </div>
       </div>
     </div>
@@ -363,8 +421,8 @@
           <div class="card-title" style="color: #f87171;">⚠ Pitfall 3</div>
           <p class="subtitle">[The edge case that only appeared at scale]</p>
         </div>
-        <div class="card" data-animate style="border-color: rgba(16,185,129,0.3);">
-          <div class="card-title" style="color: var(--accent3);">✓ The fix</div>
+        <div class="card" data-animate style="border-color: rgba(239,68,68,0.2);">
+          <div class="card-title" style="color: #f87171;">✓ The fix</div>
           <p class="subtitle">[What you'd do differently and the lesson learned]</p>
         </div>
       </div>
@@ -444,6 +502,8 @@
 </main>
 
 <script>
+  const CHANNEL = 'slides-presenter-sync';
+  let bc = null;
   try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
   const container = document.getElementById('slidesContainer');
   const slides = Array.from(container.querySelectorAll('.slide'));
@@ -460,6 +520,49 @@
   updateChrome(0); setTimeout(()=>{slides[0].querySelectorAll('[data-animate]').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),100+i*120));},200);
   let touchY=0; container.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY;},{passive:true}); container.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50)goTo(current+(d>0?1:-1));},{passive:true});
   container.addEventListener('wheel',e=>{e.preventDefault();if(navigating)return;goTo(current+(e.deltaY>0?1:-1));},{passive:false});
+
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName))return;
+    if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1);}
+    else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1);}
+    else if(e.key==='Home'){e.preventDefault();goTo(0);}
+    else if(e.key==='End'){e.preventDefault();goTo(total-1);}
+    else if(e.key.toLowerCase()==='f'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+  });
+
+  window.addEventListener('message',e=>{
+    if(e.data?.type==='goto-slide')goTo(e.data.index);
+  });
+
+  /* ── Counter Animation ─────────────────────────────────────────── */
+  function animateCounters(){
+    const slide = slides[current];
+    if(!slide)return;
+    slide.querySelectorAll('[data-count-to]').forEach(el=>{
+      if(el.dataset.counted)return;
+      el.dataset.counted='1';
+      const target=parseFloat(el.dataset.countTo);
+      const suffix=el.dataset.suffix||'';
+      const prefix=el.dataset.prefix||'';
+      const decimals=el.dataset.decimals?parseInt(el.dataset.decimals):0;
+      const duration=1200;
+      const start=performance.now();
+      function tick(now){
+        const progress=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-progress,3);
+        el.textContent=prefix+eased.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g,',')+suffix;
+        if(progress<1)requestAnimationFrame(tick);
+        else el.textContent=prefix+target.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g,',')+suffix;
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+  const _origGoTo=goTo;
+  goTo=function(i){_origGoTo(i);setTimeout(animateCounters,300);};
+  setTimeout(animateCounters,600);
 
 </script>
 </html>

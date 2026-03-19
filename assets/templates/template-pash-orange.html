@@ -383,6 +383,7 @@
       letter-spacing: 0.02em;
       transition: text-shadow 0.3s ease;
     }
+    .stat-value[data-count-to] { display: inline-block; }
 
     .stat-label {
       font-family: var(--font-body);
@@ -763,6 +764,10 @@
       </div>
     </div>
   </section>
+    <!-- 键盘导航提示 -->
+    <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(80,80,80,0.8);">
+      ← → ↑ ↓ 翻页 · Space 下一页 · Home/End 首尾 · F 全屏
+    </div>
 
   <!-- ══════════════════════════════════════════════════════
        SLIDE 02 — MANIFESTO / PHILOSOPHY
@@ -1030,6 +1035,13 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════
+   BROADCASTCHANNEL FOR PRESENTER SYNC
+   ═══════════════════════════════════════════════════════ */
+const CHANNEL = 'slides-presenter-sync';
+let bc = null;
+try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+
+/* ═══════════════════════════════════════════════════════
    SLIDE NAVIGATION ENGINE
    Zero-dependency, single-file. Keyboard + wheel + touch.
    ═══════════════════════════════════════════════════════ */
@@ -1138,6 +1150,34 @@
 
   /* ── Init first slide ── */
   goTo(0, true);  // force=true: bypass idx===current guard on init; also triggers animations
+
+  /* ── Counter Animation ─────────────────────────────────────────── */
+  function animateCounters(){
+    const slide=slides[current];
+    if(!slide)return;
+    slide.querySelectorAll('.stat-value[data-count-to]').forEach(el=>{
+      if(el.dataset.counted)return;
+      el.dataset.counted='1';
+      const target=parseFloat(el.dataset.countTo);
+      const suffix=el.dataset.suffix||'';
+      const prefix=el.dataset.prefix||'';
+      const decimals=el.dataset.decimals?parseInt(el.dataset.decimals):0;
+      const duration=1200;
+      const start=performance.now();
+      function tick(now){
+        const progress=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-progress,3);
+        const currentVal=eased*target;
+        el.textContent=prefix+currentVal.toFixed(decimals)+suffix;
+        if(progress<1)requestAnimationFrame(tick);
+        else el.textContent=prefix+target.toFixed(decimals)+suffix;
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+  const _origGoToPO=goTo;
+  goTo=function(idx,force){_origGoToPO(idx,force);setTimeout(animateCounters,300);};
+  setTimeout(animateCounters,600);
 
 })();
 

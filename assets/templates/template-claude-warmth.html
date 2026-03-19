@@ -421,6 +421,10 @@
       </p>
       <div class="divider" data-animate style="margin-top: 8px;"></div>
     </div>
+    <!-- 键盘导航提示 -->
+    <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;color:#999;opacity:0.6;">
+      ← → ↑ ↓ 翻页 · Space 下一页 · Home/End 首尾 · F 全屏
+    </div>
   </section>
 
   <!-- ══════════════════════════════════════════════════════════
@@ -447,13 +451,13 @@
           <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent2); font-weight:600; margin-bottom:8px;">Founded</p>
           <p style="font-size:2.2rem; font-weight:800; color:var(--text-on-dark); letter-spacing:-0.03em;">[Year]</p>
         </div>
-        <div class="frost-card">
-          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-sec-dark); font-weight:600; margin-bottom:8px;">Headquartered</p>
-          <p style="font-size:1.1rem; font-weight:600; color:var(--text-on-dark);">[City, Country]</p>
+        <div class="frost-card frost-card-accent">
+          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent2); font-weight:600; margin-bottom:8px;">Headquartered</p>
+          <p style="font-size:2.2rem; font-weight:800; color:var(--text-on-dark); letter-spacing:-0.03em;">[City, Country]</p>
         </div>
-        <div class="frost-card">
-          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-sec-dark); font-weight:600; margin-bottom:8px;">Team</p>
-          <p style="font-size:1.1rem; font-weight:600; color:var(--text-on-dark);">[N] people across [N] countries</p>
+        <div class="frost-card frost-card-accent">
+          <p style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent2); font-weight:600; margin-bottom:8px;">Team</p>
+          <p style="font-size:2.2rem; font-weight:800; color:var(--text-on-dark); letter-spacing:-0.03em;">[N] people across [N] countries</p>
         </div>
       </div>
     </div>
@@ -487,9 +491,9 @@
           <div class="feature-title">[Problem Dimension 3]</div>
           <p class="feature-desc">[Why existing solutions fail — what gap or frustration persists despite alternatives.]</p>
         </div>
-        <div class="feature-card" style="background: rgba(218,119,86,0.06); border-color: rgba(218,119,86,0.2);">
-          <div class="feature-icon" style="background: rgba(218,119,86,0.15);">→</div>
-          <div class="feature-title" style="color: var(--accent);">The Opportunity</div>
+        <div class="feature-card">
+          <div class="feature-icon">④</div>
+          <div class="feature-title">[Problem Dimension 4]</div>
           <p class="feature-desc">[The market gap that your approach addresses — sets up the solution reveal.]</p>
         </div>
       </div>
@@ -558,8 +562,10 @@
           <div class="feature-title">[Feature 5]</div>
           <p class="feature-desc">[A reliability or trust-building feature — security, uptime, compliance, support.]</p>
         </div>
-        <div class="feature-card" data-animate style="background: rgba(218,119,86,0.04); border-color: rgba(218,119,86,0.15); justify-content: center; text-align:center;">
-          <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">And <span class="accent-text" style="font-weight:700;">[N]+ more</span><br>capabilities in the platform</p>
+        <div class="feature-card" data-animate>
+          <div class="feature-icon">✧</div>
+          <div class="feature-title">[Feature 6]</div>
+          <p class="feature-desc">[And more capabilities — the platform that keeps surprising you with depth.]</p>
         </div>
       </div>
     </div>
@@ -578,19 +584,19 @@
       </h2>
       <div class="stats-row" data-animate style="margin-top: 12px; flex-wrap: wrap;">
         <div class="stat-item">
-          <div class="stat-number dark">[X]M</div>
+          <div class="stat-number dark"><span class="counter" data-target="12" data-suffix="M">0M</span></div>
           <div class="stat-label dark">[users / tasks / events]</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number dark">[X]×</div>
+          <div class="stat-number dark"><span class="counter" data-target="10" data-suffix="×">0×</span></div>
           <div class="stat-label dark">[efficiency / speed gain]</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number dark">[X]%</div>
+          <div class="stat-number dark"><span class="counter" data-target="97" data-suffix="%">0%</span></div>
           <div class="stat-label dark">[retention / satisfaction / NPS]</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number dark">[X]K</div>
+          <div class="stat-number dark"><span class="counter" data-target="500" data-suffix="K">0K</span></div>
           <div class="stat-label dark">[teams / customers / installs]</div>
         </div>
       </div>
@@ -712,6 +718,8 @@
 </main>
 
 <script>
+  const CHANNEL='slides-presenter-sync'; let presenterWin=null,bc=null;
+  try{bc=new BroadcastChannel(CHANNEL);}catch(e){}
   const container=document.getElementById('slidesContainer');
   const slides=Array.from(container.querySelectorAll('.slide'));
   const total=slides.length; let current=0; let navigating=false;
@@ -790,6 +798,35 @@
   function hidePointer(){if(laserDot)laserDot.style.display='none';}
 
   // ── Blackout ──
+
+  // ── Animated number counters ──
+  function animateCounters(){
+    document.querySelectorAll('.counter').forEach(el=>{
+      const target=parseInt(el.dataset.target)||0;
+      const suffix=el.dataset.suffix||'';
+      const duration=1800;
+      const start=performance.now();
+      function tick(now){
+        const elapsed=now-start;
+        const progress=Math.min(elapsed/duration,1);
+        // ease-out cubic
+        const ease=1-Math.pow(1-progress,3);
+        const current=Math.round(target*ease);
+        el.textContent=current+suffix;
+        if(progress<1)requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+  // Trigger counters when navigating to slide 5 (index 5, the stats slide)
+  const origGoTo=goTo;
+  goTo=function(i){
+    origGoTo(i);
+    if(i===5)setTimeout(animateCounters,300);
+  };
+  // Also trigger if starting on that slide
+  if(current===5)setTimeout(animateCounters,600);
+
 
 </script>
 </html>

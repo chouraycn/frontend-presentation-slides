@@ -189,6 +189,7 @@
       text-shadow: 0 0 20px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.25);
     }
     .big-stat { transition: text-shadow 0.3s ease; }
+    .big-stat[data-count-to] { display: inline-block; }
 
     /* Feature list item: indent + bullet enlarge */
     .feature-list li {
@@ -373,13 +374,13 @@
     /* forai-white uses --ink; quarterly-report uses default dark; etc.   */
     :root {
       --text-primary:   var(--text-primary-override,
-                          var(--fg, var(--ink, var(--color-text, #1a1a1a))));
+                          var(--fg, var(--ink, var(--color-text, var(--text-primary-light, #f0ece0)))));
       --text-secondary: var(--text-secondary-override,
-                          var(--ink-2, var(--muted, var(--color-muted, #666))));
+                          var(--ink-2, var(--muted, var(--color-muted, #9b8f7a))));
       --surface:        var(--surface-override,
                           var(--bg-muted, var(--card-bg, rgba(255,255,255,0.06))));
       --bg:             var(--bg-override,
-                          var(--background, var(--page-bg, #fff)));
+                          var(--background, var(--page-bg, #0d0d1a)));
     }
 
     /* Chart slide layout helpers */
@@ -426,6 +427,10 @@
       <p data-animate style="font-size: 12px; color: rgba(201,168,76,0.5); margin-top: 16px; letter-spacing: 0.08em;">
         FOUNDER NAME · FOUNDER NAME · CITY, YEAR
       </p>
+    </div>
+    <!-- 键盘导航提示 -->
+    <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,0.5);">
+      ← → ↑ ↓ 翻页 · Space 下一页 · Home/End 首尾 · F 全屏
     </div>
   </section>
 
@@ -595,9 +600,12 @@
 </main>
 
 <script>
-  /* ── SlidePresentation controller ── */
+  /* ── BroadcastChannel for presenter sync ── */
+  const CHANNEL = 'slides-presenter-sync';
+  let bc = null;
   try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
 
+  /* ── SlidePresentation controller ── */
   const container = document.getElementById('slidesContainer');
   const slides = Array.from(container.querySelectorAll('.slide'));
   const total = slides.length;
@@ -695,6 +703,33 @@
     if (navigating) return;
     goTo(current + (e.deltaY > 0 ? 1 : -1));
   }, { passive: false });
+
+  /* ── Counter Animation ─────────────────────────────────────────── */
+  function animateCounters(){
+    const slide = slides[current];
+    if(!slide)return;
+    slide.querySelectorAll('.big-stat[data-count-to]').forEach(el=>{
+      if(el.dataset.counted)return;
+      el.dataset.counted='1';
+      const target=parseFloat(el.dataset.countTo);
+      const suffix=el.dataset.suffix||'';
+      const prefix=el.dataset.prefix||'';
+      const decimals=el.dataset.decimals?parseInt(el.dataset.decimals):0;
+      const duration=1200;
+      const start=performance.now();
+      function tick(now){
+        const progress=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-progress,3);
+        el.textContent=prefix+(eased*target).toFixed(decimals)+suffix;
+        if(progress<1)requestAnimationFrame(tick);
+        else el.textContent=prefix+target.toFixed(decimals)+suffix;
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+  const _origGoToPD=goTo;
+  goTo=function(i){_origGoToPD(i);setTimeout(animateCounters,300);};
+  setTimeout(animateCounters,600);
 
   /* ── Uncomment to add traction chart ──
   SlideCharts.area('#tractionChart', {

@@ -640,6 +640,19 @@ def _render_slide_open(bg_class: str, label_html: str, aria_label: str, notes: s
     return ''.join(parts)
 
 
+def _slide_image_html(s: dict) -> str:
+    """Generate image HTML for slides that have extracted images (BUG FIX).
+    
+    This enables images to be displayed on any slide type, not just pure-image slides.
+    """
+    img = s.get('image')
+    if not img:
+        return ''
+    # Escape the image path for safe HTML insertion
+    safe_img = he(img)
+    return f'\n      <figure data-animate style="margin-top:20px;"><img src="{safe_img}" alt="Slide content" style="max-width:100%;max-height:40vh;object-fit:contain;border-radius:8px;"/></figure>'
+
+
 def render_title(s: dict, palette: dict, idx: int, total: int) -> str:
     title    = he(s.get('title', '[Title]'))
     subtitle = he(s.get('subtitle', ''))
@@ -688,12 +701,15 @@ def render_text(s: dict, palette: dict, idx: int, total: int) -> str:
     if body:
         body_html = f'<p class="{sub_cls}" data-animate style="font-size:clamp(0.9rem,1.6vw,1.1rem);line-height:1.85;max-width:740px;">{body}</p>'
 
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+
     return dedent(f"""\
 {_render_slide_open(bg, label, title, notes)}
     <div class="slide-content" style="max-width:780px;">
       <h2 data-animate>{title}</h2>
       <div class="divider" data-animate></div>
-      {body_html}
+      {body_html}{img_html}
     </div>
   </section>""")
 
@@ -722,12 +738,15 @@ def render_bullets(s: dict, palette: dict, idx: int, total: int) -> str:
         lis = '\n'.join(f'      <li data-animate>{he(str(it))}</li>' for it in items)
         list_html = f'<ul class="feature-list {dark_cls}">\n{lis}\n      </ul>'
 
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+
     return dedent(f"""\
 {_render_slide_open(bg, label, title, notes)}
     <div class="slide-content" style="max-width:740px;">
       <h2 data-animate>{title}</h2>
       <div class="divider" data-animate></div>
-      {list_html}
+      {list_html}{img_html}
     </div>
   </section>""")
 
@@ -750,6 +769,9 @@ def render_two_col(s: dict, palette: dict, idx: int, total: int) -> str:
     l_title_html = f'<h3 data-animate style="margin-bottom:10px;">{l_title}</h3>' if l_title else ''
     r_title_html = f'<h3 data-animate style="margin-bottom:10px;">{r_title}</h3>' if r_title else ''
 
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+
     return dedent(f"""\
 {_render_slide_open(bg, label, title, notes)}
     <div class="slide-content two-col">
@@ -762,6 +784,7 @@ def render_two_col(s: dict, palette: dict, idx: int, total: int) -> str:
       <div data-animate="slide-left">
         {r_title_html}
         <p class="{sub_cls}">{r_body}</p>
+        {img_html}
       </div>
     </div>
   </section>""")
@@ -823,12 +846,15 @@ def render_stats(s: dict, palette: dict, idx: int, total: int) -> str:
         )
         stats_html = f'<div class="stats-row">\n{items_html}\n      </div>'
 
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+
     return dedent(f"""\
 {_render_slide_open(bg, label, title, notes)}
     <div class="slide-content">
       <h2 data-animate>{title}</h2>
       <div class="divider" data-animate></div>
-      {stats_html}
+      {stats_html}{img_html}
     </div>
   </section>""")
 
@@ -859,6 +885,9 @@ def render_features(s: dict, palette: dict, idx: int, total: int) -> str:
         sub_cls = 'subtitle-dark' if is_dark else 'subtitle'
         subtitle_html = f'<p class="{sub_cls}" data-animate>{subtitle}</p>'
 
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+
     return dedent(f"""\
 {_render_slide_open(bg, label, title, notes)}
     <div class="slide-content centered" style="max-width:1060px;">
@@ -867,6 +896,7 @@ def render_features(s: dict, palette: dict, idx: int, total: int) -> str:
       <div class="{grid_cls}" style="margin-top:8px;">
 {cards}
       </div>
+      {img_html}
     </div>
   </section>""")
 
@@ -881,6 +911,9 @@ def render_quote(s: dict, palette: dict, idx: int, total: int) -> str:
     is_dark = _is_dark_bg(bg, palette)
 
     # Template-specific quote rendering
+    # BUG FIX: Include extracted image if present
+    img_html = _slide_image_html(s)
+    
     if tpl == 'product-launch':
         author_html = f'<cite class="subtitle" data-animate style="font-style:normal;font-size:0.82rem;">— {author}</cite>' if author else ''
         return dedent(f"""\
@@ -888,6 +921,7 @@ def render_quote(s: dict, palette: dict, idx: int, total: int) -> str:
     <div class="slide-content centered" style="max-width:760px;">
       <div class="hero-quote" data-animate>"{quote}"</div>
       {author_html}
+      {img_html}
     </div>
   </section>""")
     elif tpl in ('forai-white', 'pash-orange'):
@@ -899,6 +933,7 @@ def render_quote(s: dict, palette: dict, idx: int, total: int) -> str:
         <blockquote>"{quote}"</blockquote>
         {author_html}
       </div>
+      {img_html}
     </div>
   </section>""")
     elif tpl == 'hhart-red':
@@ -912,6 +947,7 @@ def render_quote(s: dict, palette: dict, idx: int, total: int) -> str:
         {author_html}
       </div>
       <div class="divider" style="background:rgba(255,255,255,0.2);margin-top:24px" data-animate="fade"></div>
+      {img_html}
     </div>
   </section>""")
     else:
@@ -923,6 +959,7 @@ def render_quote(s: dict, palette: dict, idx: int, total: int) -> str:
     <div class="slide-content centered" style="max-width:740px;">
       <p class="quote-text {text_cls}" data-animate>&#8220;{quote}&#8221;</p>
       {author_html}
+      {img_html}
     </div>
   </section>""")
 
@@ -975,6 +1012,9 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
     }})();
   </script>""")
 
+    # BUG FIX: Include extracted image if present (for slides that have both chart and image)
+    img_html = _slide_image_html(s)
+
     if layout == 'chart-split' and body:
         # Two-column: text left, chart right
         return dedent(f"""\
@@ -984,6 +1024,7 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
         <h2 data-animate>{title}</h2>
         <div class="divider" data-animate></div>
         <p class="{sub_cls}" data-animate style="font-size:clamp(0.88rem,1.5vw,1rem);line-height:1.8;">{body}</p>
+        {img_html}
       </div>
       <div class="sc-chart-chart-col">
         <div id="{chart_id}" class="chart-container" style="height:100%;min-height:260px;" data-animate></div>
@@ -998,6 +1039,7 @@ def render_chart(s: dict, palette: dict, idx: int, total: int) -> str:
     <div class="slide-content sc-chart-full" style="display:flex;flex-direction:column;gap:16px;width:80%;max-width:740px;">
       <h2 data-animate>{title}</h2>
       <div id="{chart_id}" class="chart-container" style="height:300px;" data-animate></div>
+      {img_html}
     </div>
   </section>
 {init_script}""")
@@ -1971,6 +2013,12 @@ def _normalise_pptx(raw_slides: list) -> list:
             'title': slide_title,
             'notes': notes,
         }
+
+        # ── Always include primary image if available (BUG FIX) ────────────────
+        # Previously images were only shown for pure-image slides.
+        # Now all slide types can access the extracted image.
+        if primary_image:
+            entry['image'] = primary_image
 
         if slide_type == 'title':
             subtitle = s.get('subtitle') or (body_texts[0] if body_texts else '')

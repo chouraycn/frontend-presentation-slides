@@ -2102,7 +2102,7 @@ def _enrich_charts(slides: list) -> list:
 
     Rules:
     - Only applies to slides with type == "stats"
-    - Requires at least 3 stat items where the value is a pure number (int/float),
+    - Requires at least 2 stat items where the value is a pure number (int/float),
       possibly with common suffixes like K/M/B/% — but NOT percentage suffix alone,
       because percentage bars are already shown in progress-style stats layouts
     - Auto-selects chart type:
@@ -2161,8 +2161,8 @@ def _enrich_charts(slides: list) -> list:
             if num is not None:
                 parsed.append({'label': st.get('label', val_str), 'num': num, 'suffix': suffix, 'raw': val_str})
 
-        # Need at least 3 parseable numeric stats
-        if len(parsed) < 3:
+        # Need at least 2 parseable numeric stats (lowered from 3 for better usability)
+        if len(parsed) < 2:
             continue
 
         # Decide chart type

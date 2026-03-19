@@ -34,6 +34,7 @@ from pathlib import Path
 def check_dependencies():
     """Check if required packages are available."""
     missing = []
+    optional_missing = []
     try:
         import pptx
     except ImportError:
@@ -42,11 +43,21 @@ def check_dependencies():
         from PIL import Image
     except ImportError:
         missing.append("Pillow")
+    # lxml is optional but recommended for SmartArt extraction
+    try:
+        from lxml import etree
+    except ImportError:
+        optional_missing.append("lxml")
 
     if missing:
         print(f"❌ Missing required packages: {', '.join(missing)}")
         print(f"   Run: pip3 install {' '.join(missing)}")
         sys.exit(1)
+
+    if optional_missing:
+        print(f"⚠️  Optional packages missing: {', '.join(optional_missing)}")
+        print(f"   SmartArt extraction will be limited without lxml.")
+        print(f"   Run: pip3 install lxml for full SmartArt support.")
 
 
 # ── Text style extraction ────────────────────────────────────────────────────

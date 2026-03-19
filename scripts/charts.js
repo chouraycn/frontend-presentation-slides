@@ -226,7 +226,10 @@ const SlideCharts = (() => {
 
       @media (prefers-reduced-motion: reduce) {
         .sc-bar-rect, .sc-line-path, .sc-donut-arc, .sc-progress-fill,
-        .sc-hbar-rect { animation: none !important; transition: none !important; }
+        .sc-hbar-rect, .sc-radar-fill, .sc-radar-stroke, .sc-radar-dot,
+        .sc-treemap-tile, .sc-treemap-child, .sc-bullet-bar, .sc-bullet-target,
+        .sc-scatter-dot, .sc-gauge-zone, .sc-gauge-value, .sc-gauge-needle,
+        .sc-gauge-cap, .sc-wf-bar { animation: none !important; transition: none !important; }
       }
     `;
     document.head.appendChild(style);

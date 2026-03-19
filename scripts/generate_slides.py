@@ -1987,10 +1987,17 @@ def _normalise_pptx(raw_slides: list) -> list:
         # happen to contain numeric data.
         slide_type = PPTX_LAYOUT_TO_TYPE.get(pptx_layout, 'bullets')
 
-        # Override to 'image' when there's a primary image and little text
-        if primary_image and not body_texts and not table_lines:
+        # IMPROVED: Better handling of mixed content
+        # Priority: table > image > text/bullets
+        # If there are actual tables, prioritize table type
+        has_tables = bool(s.get('tables'))
+        if has_tables and table_lines:
+            slide_type = 'table'
+        # Override to 'image' only when there's a primary image AND very little text
+        # For mixed image+text, keep as mixed content rather than throwing away text
+        elif primary_image and not body_texts and not table_lines and not smartart_texts:
             slide_type = 'image'
-
+        
         # Collect all text items before stats detection
         all_items = body_texts + table_lines + smartart_texts
 
@@ -2030,8 +2037,14 @@ def _normalise_pptx(raw_slides: list) -> list:
 
         elif slide_type == 'image':
             entry['image_url'] = primary_image or ''
-            caption_parts      = body_texts[:2]
-            entry['caption']   = ' '.join(caption_parts)[:120] if caption_parts else ''
+            # IMPROVED: Preserve ALL body text, not just first 2
+            # Use newline separation for clarity, no character limit
+            if body_texts:
+                entry['caption'] = '\n'.join(body_texts)
+            if smartart_texts:
+                caption_parts = (entry.get('caption', '') or '').split('\n')
+                caption_parts.extend(smartart_texts)
+                entry['caption'] = '\n'.join(caption_parts)
 
         elif slide_type == 'stats':
             # Parse "value label" pairs, where value is a numeric token.
@@ -2066,13 +2079,20 @@ def _normalise_pptx(raw_slides: list) -> list:
                 first = raw_tables[0]
                 entry['headers'] = first.get('headers') or []
                 entry['rows']    = first.get('rows') or []
-                # Include remaining body text as a caption
+                # IMPROVED: Include ALL remaining body text and smartart as full caption (no truncation)
+                # This ensures mixed table+text content doesn't lose text items
+                caption_parts = []
                 if body_texts:
-                    entry['caption'] = ' '.join(body_texts)[:200]
+                    caption_parts.extend(body_texts)
+                if smartart_texts:
+                    caption_parts.extend(smartart_texts)
+                if caption_parts:
+                    entry['caption'] = '\n'.join(caption_parts)
             else:
                 # No structured table data — fall back to bullets
+                # IMPROVED: Include items from other sources (smartart, etc)
                 entry['type']  = 'bullets'
-                entry['items'] = all_items
+                entry['items'] = all_items if all_items else ['']
 
         else:
             # bullets / text

@@ -57,15 +57,21 @@ When user asks to "use a template", "quickly create a [type] deck", or their sce
    | D7 | Agency / studio pitch / orange brand | `assets/templates/template-pash-orange.html` | Pash Orange | white `#FFFFFF` + pure orange `#FF5C00` |
    | D8 | Creative studio / red brand / photography | `assets/templates/template-hhart-red.html` | Hhart Red Power | near-black `#0a0a0a` + crimson `#C8102E` |
 
-   > When unsure, direct the user to `assets/index.html` — the visual gallery lets them pick by look rather than description.
+   > When unsure, **open the interactive style gallery** via `preview_url` tool pointing to `assets/index.html` — the visual gallery lets users pick by look rather than description. This is REQUIRED before proceeding.
 
-2. **Read the template file** to understand its slide structure and components.
+2. **If user is uncertain**, execute this action:
+   ```
+   preview_url(url="file:///.../assets/index.html", explanation="Open the interactive template gallery to browse all 8 styles")
+   ```
+   Wait for the user to view the gallery and select a style name. Then proceed to step 3.
 
-3. **Ask for content**: Request the user's actual content to fill into the template, or offer to use placeholder content if they want to see it first.
+3. **Read the template file** to understand its slide structure and components.
 
-4. **Customize**: Replace placeholder content, adjust colors via `:root {}` CSS variables, and deliver the final file. Refer to `assets/templates/README.md` for each template's exact CSS variable names and component reference.
+4. **Ask for content**: Request the user's actual content to fill into the template, or offer to use placeholder content if they want to see it first.
 
-5. **Skip Phase 1 and Phase 2** — templates already have a defined structure and style. Go directly to **Phase 3** (content customization and generation) and then **Phase 5** (delivery).
+5. **Customize**: Replace placeholder content, adjust colors via `:root {}` CSS variables, and deliver the final file. Refer to `assets/templates/README.md` for each template's exact CSS variable names and component reference.
+
+6. **Skip Phase 1 and Phase 2** — templates already have a defined structure and style. Go directly to **Phase 3** (content customization and generation) and then **Phase 5** (delivery).
 
 See `assets/templates/README.md` for full template catalog and component reference.
 See `assets/index.html` for the interactive visual gallery of all templates.
@@ -147,7 +153,7 @@ _Best for: workshops, onboarding, documentation-as-slides. Key rule: one concept
 
 ## Phase 2: Style Discovery (Visual Exploration)
 
-This is the "show, don't tell" core. **Never skip this phase.**
+This is the "show, don't tell" core. **Never skip this phase.** User must see visual previews before making style decisions.
 
 ### Step 2a — Mood selection
 
@@ -174,8 +180,16 @@ Eight named previews are available in `assets/style-previews/`. Each is a faithf
 
 **Decision logic:**
 
-- **If the user selected a mood in Step 2a** → recommend the 2–3 previews that best match that mood (use the Mood column above), ask them to pick one, then proceed to **Phase 3**.
-- **If the user's mood is unclear or they want to browse** → present the full table above, ask them to open any that appeal and pick one, then proceed to **Phase 3**.
+- **If the user selected a mood in Step 2a** → recommend the 2–3 previews that best match that mood (use the Mood column above). Open the top recommendations via `preview_url` tool, ask the user to pick one, then proceed to **Phase 3**.
+  ```
+  preview_url(url="file:///.../assets/style-previews/style-preview-[name].html", explanation="Preview: [Style Name] style for [Use Case]")
+  ```
+
+- **If the user's mood is unclear or they want to browse all** → use `preview_url` to open `assets/index.html` (the gallery shows all 8 styles at once). Ask them to pick one, then proceed to **Phase 3**.
+  ```
+  preview_url(url="file:///.../assets/index.html", explanation="Browse all 8 template styles in the interactive gallery")
+  ```
+
 - **If none of the 8 styles fit** → generate a custom preview HTML inline and present it directly via `preview_url` (do **not** create new files in `assets/style-previews/`). Custom preview rules:
   - Show 2–3 sample slides with real-looking content
   - Use a completely distinct visual identity (not just a color swap)
